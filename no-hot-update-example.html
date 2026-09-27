@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQL UPDATE không HOT</title>
+<style>
+  :root {
+    --bg: #0b1120;
+    --bg-soft: #111c33;
+    --panel: #16213a;
+    --panel-2: #1c2a47;
+    --border: #2c3e5e;
+    --border-soft: #22314d;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-faint: #64748b;
+    --blue: #60a5fa;
+    --indigo: #818cf8;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --purple: #a78bfa;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px 16px 60px;
+    line-height: 1.6;
+  }
+  .container { max-width: 1080px; margin: 0 auto; }
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+    background: linear-gradient(120deg, #e2e8f0 20%, #818cf8 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  h1 em { font-style: normal; color: var(--amber); -webkit-text-fill-color: var(--amber); }
+  .subtitle { color: var(--text-dim); margin: 0 0 20px; font-size: 0.95rem; }
+  .subtitle strong { color: var(--blue); }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .controls button:hover:not(:disabled) {
+    background: var(--indigo);
+    color: #0b1120;
+    border-color: var(--indigo);
+  }
+  .controls button:disabled { opacity: 0.35; cursor: not-allowed; }
+  #reset { margin-left: auto; }
+  #step-indicator {
+    font-weight: 700;
+    color: var(--indigo);
+    font-size: 0.9rem;
+    padding: 0 8px;
+    font-family: ui-monospace, monospace;
+  }
+
+  /* Description */
+  .desc {
+    background: linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(129,140,248,0.05) 100%);
+    border: 1px solid var(--border-soft);
+    border-left: 4px solid var(--indigo);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    min-height: 96px;
+    transition: all 0.3s;
+  }
+  .desc h3 { margin: 0 0 6px; font-size: 1.02rem; color: #c7d2fe; }
+  .desc p { margin: 0; color: #cbd5e1; font-size: 0.92rem; }
+  .desc code {
+    background: rgba(129,140,248,0.14);
+    color: #c7d2fe;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    border: 1px solid rgba(129,140,248,0.18);
+    font-family: ui-monospace, monospace;
+  }
+  .desc strong { color: #f1f5f9; }
+
+  /* Panel */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel h2 code {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: var(--blue);
+    font-family: ui-monospace, monospace;
+  }
+
+  /* Pages */
+  .pages { display: flex; gap: 14px; flex-wrap: wrap; }
+  .page {
+    flex: 1;
+    min-width: 300px;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--bg-soft);
+    transition: all 0.3s;
+  }
+  .page.active { border-color: var(--amber); background: rgba(251,191,36,0.06); }
+  .page-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .tuples { display: flex; gap: 10px; flex-wrap: wrap; min-height: 96px; align-items: flex-start; }
+
+  /* Tuple */
+  .tuple {
+    background: rgba(52,211,153,0.10);
+    border: 2px solid var(--green);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    min-width: 158px;
+    transition: all 0.4s ease;
+  }
+  .tuple .tid {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .tuple .field { display: block; color: #cbd5e1; white-space: nowrap; }
+
+  .tuple.dead {
+    background: rgba(148,163,184,0.06);
+    border-color: var(--text-faint);
+    opacity: 0.55;
+  }
+  .tuple.dead .tid,
+  .tuple.dead .field {
+    color: var(--text-faint);
+    text-decoration: line-through;
+  }
+
+  .tuple.new {
+    background: rgba(251,191,36,0.12);
+    border-color: var(--amber);
+    box-shadow: 0 0 0 4px rgba(251,191,36,0.15);
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tuple.new .tid { color: var(--amber); }
+  .tuple.new .field { color: #e2e8f0; }
+
+  @keyframes pop {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .tuple.target {
+    outline: 3px dashed var(--red);
+    outline-offset: 3px;
+    animation: blink 0.9s ease-in-out infinite alternate;
+  }
+  @keyframes blink {
+    from { outline-color: var(--red); }
+    to { outline-color: rgba(248,113,113,0.12); }
+  }
+
+  .empty-slot {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 24px 12px;
+    color: var(--text-faint);
+    font-size: 0.72rem;
+    font-style: italic;
+    min-width: 158px;
+    text-align: center;
+    background: rgba(255,255,255,0.01);
+  }
+
+  /* Index */
+  .index {
+    border: 2px solid rgba(167,139,250,0.4);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: rgba(167,139,250,0.05);
+    margin-bottom: 12px;
+    transition: all 0.3s;
+  }
+  .index:last-child { margin-bottom: 0; }
+  .index.updated {
+    border-color: var(--blue);
+    background: rgba(96,165,250,0.07);
+    box-shadow: 0 0 0 3px rgba(96,165,250,0.12);
+  }
+  .index-title {
+    font-weight: 700;
+    color: var(--purple);
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    font-family: ui-monospace, monospace;
+  }
+  .index.updated .index-title { color: var(--blue); }
+  .entries { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .entry {
+    background: var(--panel-2);
+    border: 2px solid rgba(196,181,253,0.45);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.74rem;
+    color: #ddd6fe;
+    transition: all 0.4s ease;
+  }
+  .entry.new {
+    background: rgba(59,130,246,0.18);
+    border-color: var(--blue);
+    color: #bfdbfe;
+    font-weight: 700;
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .entry.dead {
+    background: rgba(148,163,184,0.06);
+    border-color: var(--text-faint);
+    color: var(--text-faint);
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    padding: 10px 4px 0;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot {
+    width: 12px; height: 12px; border-radius: 3px;
+    border: 2px solid transparent; display: inline-block;
+  }
+  .dot.live { background: rgba(52,211,153,0.25); border-color: var(--green); }
+  .dot.dead { background: rgba(148,163,184,0.12); border-color: var(--text-faint); }
+  .dot.new { background: rgba(251,191,36,0.25); border-color: var(--amber); }
+  .dot.entry-new { background: rgba(96,165,250,0.25); border-color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>PostgreSQL UPDATE khi <em>KHÔNG</em> có HOT</h1>
+  <p class="subtitle">Mô phỏng MVCC: tuple cũ chết, tuple mới nằm ở vị trí khác → <strong>tất cả index</strong> đều phải cập nhật.</p>
+
+  <div class="controls">
+    <button id="prev">← Trước</button>
+    <span id="step-indicator">Bước 0 / 6</span>
+    <button id="next">Tiếp →</button>
+    <button id="reset">↺ Reset</button>
+  </div>
+
+  <div class="desc">
+    <h3 id="desc-title">Trạng thái ban đầu</h3>
+    <p id="desc-body">Bảng <code>users</code> có 3 bản ghi ở Page 0. Hai index <code>users_pkey</code> và <code>users_email_idx</code> đang trỏ tới các TID tương ứng.</p>
+  </div>
+
+  <!-- HEAP -->
+  <div class="panel">
+    <h2>🗄️ HEAP — bảng <code>users</code></h2>
+    <div class="pages">
+      <div class="page" id="page-0">
+        <div class="page-label">Page 0</div>
+        <div class="tuples">
+          <div class="tuple" id="t-0-1">
+            <div class="tid">TID (0,1)</div>
+            <span class="field">id    = 1</span>
+            <span class="field">name  = An</span>
+            <span class="field">email = an@x.com</span>
+          </div>
+          <div class="tuple" id="t-0-2">
+            <div class="tid">TID (0,2)</div>
+            <span class="field">id    = 2</span>
+            <span class="field">name  = Binh</span>
+            <span class="field">email = binh@x.com</span>
+          </div>
+          <div class="tuple" id="t-0-3">
+            <div class="tid">TID (0,3)</div>
+            <span class="field">id    = 3</span>
+            <span class="field">name  = Chi</span>
+            <span class="field">email = chi@x.com</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-1">
+        <div class="page-label">Page 1 (còn chỗ trống)</div>
+        <div class="tuples">
+          <div class="tuple new hidden" id="t-new">
+            <div class="tid">TID (1,1) ✦ mới</div>
+            <span class="field">id    = 2</span>
+            <span class="field">name  = Binh</span>
+            <span class="field">email = binh@new.com</span>
+          </div>
+          <div class="empty-slot">trống</div>
+          <div class="empty-slot">trống</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INDEXES -->
+  <div class="panel">
+    <h2>📇 INDEX</h2>
+
+    <div class="index" id="idx-pkey">
+      <div class="index-title">users_pkey (id)</div>
+      <div class="entries">
+        <div class="entry">1 → (0,1)</div>
+        <div class="entry" id="pkey-old">2 → (0,2)</div>
+        <div class="entry new hidden" id="pkey-new">2 → (1,1)</div>
+        <div class="entry">3 → (0,3)</div>
+      </div>
+    </div>
+
+    <div class="index" id="idx-email">
+      <div class="index-title">users_email_idx (email)</div>
+      <div class="entries">
+        <div class="entry">an@x.com → (0,1)</div>
+        <div class="entry" id="email-old">binh@x.com → (0,2)</div>
+        <div class="entry new hidden" id="email-new">binh@new.com → (1,1)</div>
+        <div class="entry">chi@x.com → (0,3)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot live"></span> tuple sống</span>
+    <span><span class="dot dead"></span> tuple / entry đã chết (chờ VACUUM)</span>
+    <span><span class="dot new"></span> tuple mới</span>
+    <span><span class="dot entry-new"></span> index entry mới</span>
+  </div>
+
+</div>
+
+<script>
+  const steps = [
+    {
+      title: "Trạng thái ban đầu",
+      body: "Bảng <code>users</code> có 3 bản ghi ở Page 0. Hai index <code>users_pkey</code> và <code>users_email_idx</code> đang trỏ tới các TID tương ứng."
+    },
+    {
+      title: "Câu lệnh UPDATE được chạy",
+      body: "<code>UPDATE users SET email = 'binh@new.com' WHERE id = 2;</code> — PostgreSQL tìm thấy tuple <code>(0,2)</code> cần cập nhật."
+    },
+    {
+      title: "Đánh dấu tuple cũ là DEAD",
+      body: "Do MVCC, tuple <code>(0,2)</code> <strong>không bị xoá</strong>. Nó chỉ được đánh dấu 'dead' để các transaction bắt đầu trước đó vẫn đọc được. Dữ liệu rác vẫn chiếm chỗ trên đĩa."
+    },
+    {
+      title: "Ghi tuple MỚI vào vị trí KHÁC",
+      body: "Vì không dùng được HOT (page 0 không đủ chỗ, hoặc index trên cột bị update bị thay đổi), tuple mới <code>(1,1)</code> phải nằm ở Page 1. Nó có <strong>TID hoàn toàn khác</strong>."
+    },
+    {
+      title: "Cập nhật index users_pkey",
+      body: "Vì TID thay đổi, index trên cột <code>id</code> cũng phải thêm entry mới: <code>2 → (1,1)</code>. Entry cũ <code>2 → (0,2)</code> vẫn còn nhưng trỏ tới tuple đã chết — nó sẽ bị VACUUM xoá sau."
+    },
+    {
+      title: "Cập nhật index users_email_idx",
+      body: "Tương tự, index email nhận entry mới <code>binh@new.com → (1,1)</code>. <strong>Đây là điểm mấu chốt:</strong> ngay cả index trên cột KHÔNG được update (như <code>id</code>) cũng phải thêm entry mới, vì mọi index đều trỏ tới TID."
+    },
+    {
+      title: "Hệ quả: cần VACUUM",
+      body: "Sau update, ta có: <strong>1 tuple chết</strong> + <strong>2 index entry chết</strong> rải rác trong heap và index. Chúng chiếm chỗ cho đến khi <code>VACUUM</code> dọn. Đây chính là lý do update không-HOT đắt hơn HOT rất nhiều."
+    }
+  ];
+
+  let current = 0;
+  const TOTAL = steps.length - 1;
+
+  const $ = id => document.getElementById(id);
+
+  function render() {
+    // --- Reset all dynamic classes ---
+    ['t-0-1', 't-0-2', 't-0-3'].forEach(id => {
+      $(id).classList.remove('dead', 'target');
+    });
+    $('t-new').classList.add('hidden');
+    $('t-new').classList.remove('new');
+    void $('t-new').offsetWidth; // force reflow để animation chạy lại
+    $('t-new').classList.add('new');
+
+    $('pkey-old').classList.remove('dead');
+    $('pkey-new').classList.add('hidden');
+    $('pkey-new').classList.remove('new');
+    void $('pkey-new').offsetWidth;
+    $('pkey-new').classList.add('new');
+
+    $('email-old').classList.remove('dead');
+    $('email-new').classList.add('hidden');
+    $('email-new').classList.remove('new');
+    void $('email-new').offsetWidth;
+    $('email-new').classList.add('new');
+
+    $('page-0').classList.remove('active');
+    $('page-1').classList.remove('active');
+    $('idx-pkey').classList.remove('updated');
+    $('idx-email').classList.remove('updated');
+
+    // --- Apply state based on current step ---
+    if (current === 1) {
+      $('t-0-2').classList.add('target');
+    }
+    if (current >= 2) {
+      $('t-0-2').classList.add('dead');
+    }
+    if (current >= 3) {
+      $('t-new').classList.remove('hidden');
+      $('page-1').classList.add('active');
+    }
+    if (current >= 4) {
+      $('pkey-old').classList.add('dead');
+      $('pkey-new').classList.remove('hidden');
+      $('idx-pkey').classList.add('updated');
+    }
+    if (current >= 5) {
+      $('email-old').classList.add('dead');
+      $('email-new').classList.remove('hidden');
+      $('idx-email').classList.add('updated');
+    }
+
+    // --- Text ---
+    $('desc-title').textContent = steps[current].title;
+    $('desc-body').innerHTML = steps[current].body;
+    $('step-indicator').textContent = `Bước ${current} / ${TOTAL}`;
+    $('prev').disabled = current === 0;
+    $('next').disabled = current === TOTAL;
+  }
+
+  $('next').addEventListener('click', () => { if (current < TOTAL) { current++; render(); } });
+  $('prev').addEventListener('click', () => { if (current > 0) { current--; render(); } });
+  $('reset').addEventListener('click', () => { current = 0; render(); });
+
+  render();
+</script>
+</body>
+</html>

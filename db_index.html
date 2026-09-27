@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Indexing — Notes</title>
+<style>
+  :root {
+    --bg: #0b1120;
+    --bg-soft: #111c33;
+    --panel: #16213a;
+    --panel-2: #1c2a47;
+    --border: #2c3e5e;
+    --border-soft: #22314d;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-faint: #64748b;
+    --blue: #60a5fa;
+    --blue-dim: #1e3a5f;
+    --indigo: #818cf8;
+    --green: #34d399;
+    --green-dim: #064e3b;
+    --amber: #fbbf24;
+    --amber-dim: #78350f;
+    --pink: #f472b6;
+    --red: #f87171;
+    --purple: #a78bfa;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 15.5px;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    margin-bottom: 44px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  header .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--indigo);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  header h1 {
+    font-size: 2.1rem;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(120deg, #e2e8f0 20%, #818cf8 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+  }
+
+  /* ---------- TOC ---------- */
+  nav.toc {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 0.86rem;
+  }
+  nav.toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    border-bottom: 1px dashed transparent;
+    transition: all 0.15s;
+  }
+  nav.toc a:hover {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  /* ---------- Section ---------- */
+  section {
+    margin-bottom: 52px;
+    scroll-margin-top: 24px;
+  }
+  h2 {
+    font-size: 1.42rem;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--blue-dim);
+    color: var(--blue);
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  h2.amber .num { background: rgba(251,191,36,0.14); color: var(--amber); }
+  h2.green .num { background: rgba(52,211,153,0.12); color: var(--green); }
+
+  h3 {
+    font-size: 1.04rem;
+    margin: 26px 0 10px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h3::before {
+    content: "";
+    width: 3px; height: 16px;
+    border-radius: 2px;
+    background: var(--indigo);
+  }
+
+  p { margin: 0 0 12px; color: #cbd5e1; }
+
+  ul, ol { margin: 0 0 14px; padding-left: 22px; color: #cbd5e1; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--indigo); }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.86em;
+    background: rgba(129,140,248,0.12);
+    color: #c7d2fe;
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(129,140,248,0.18);
+  }
+
+  strong { color: #f1f5f9; font-weight: 650; }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin: 16px 0;
+  }
+  .card.accent-blue  { border-left: 3px solid var(--blue); }
+  .card.accent-amber { border-left: 3px solid var(--amber); }
+  .card.accent-green { border-left: 3px solid var(--green); }
+  .card.accent-pink  { border-left: 3px solid var(--pink); }
+
+  .card-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ---------- Pros / Cons ---------- */
+  .pc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  @media (max-width: 680px) { .pc-grid { grid-template-columns: 1fr; } }
+
+  .pc {
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid;
+  }
+  .pc.pro {
+    background: rgba(52,211,153,0.06);
+    border-color: rgba(52,211,153,0.25);
+  }
+  .pc.con {
+    background: rgba(248,113,113,0.06);
+    border-color: rgba(248,113,113,0.25);
+  }
+  .pc h4 {
+    margin: 0 0 10px;
+    font-size: 0.88rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pc.pro h4 { color: var(--green); }
+  .pc.con h4 { color: var(--red); }
+  .pc ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
+  .pc li { margin-bottom: 5px; color: #cbd5e1; }
+
+  /* ---------- Operations table ---------- */
+  .ops {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+    margin: 14px 0;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ops th {
+    background: var(--panel-2);
+    color: var(--text-dim);
+    text-align: left;
+    padding: 11px 14px;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+  .ops td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    color: #cbd5e1;
+    vertical-align: top;
+  }
+  .ops tr:last-child td { border-bottom: none; }
+  .ops tr:nth-child(even) td { background: rgba(255,255,255,0.012); }
+  .ops td:first-child {
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    width: 90px;
+  }
+  .ops .tag {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    padding: 1px 7px;
+    border-radius: 5px;
+    background: rgba(96,165,250,0.12);
+    color: var(--blue);
+    border: 1px solid rgba(96,165,250,0.25);
+  }
+
+  /* ---------- Compare table ---------- */
+  .compare {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.87rem;
+    margin: 16px 0;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .compare th {
+    background: var(--panel-2);
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare th:nth-child(1) { color: var(--text-dim); }
+  .compare th:nth-child(2) { color: var(--amber); }
+  .compare th:nth-child(3) { color: var(--green); }
+  .compare td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    color: #cbd5e1;
+    vertical-align: top;
+  }
+  .compare tr:last-child td { border-bottom: none; }
+  .compare td:first-child { color: var(--text); font-weight: 600; }
+  .compare tr:nth-child(even) td { background: rgba(255,255,255,0.012); }
+
+  /* ---------- SVG figure ---------- */
+  figure {
+    margin: 22px 0;
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 20px 16px 14px;
+    overflow-x: auto;
+  }
+  figure svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  figcaption {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.8rem;
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* SVG common styles */
+  .n      { fill: var(--panel-2); stroke: #475569; stroke-width: 1.5; }
+  .n-root { fill: #312e81; stroke: var(--indigo); stroke-width: 1.8; }
+  .n-int  { fill: #1e3a5f; stroke: var(--blue); stroke-width: 1.6; }
+  .n-leaf { fill: #064e3b; stroke: var(--green); stroke-width: 1.6; }
+  .n-data { fill: #78350f; stroke: var(--amber); stroke-width: 1.6; }
+  .n-idx  { fill: #1e3a5f; stroke: var(--blue); stroke-width: 1.6; }
+
+  .e { stroke: #475569; stroke-width: 1.6; fill: none; }
+  .e-ptr { stroke: var(--amber); stroke-width: 1.5; fill: none; stroke-dasharray: 4 3; }
+  .e-link { stroke: var(--green); stroke-width: 1.4; fill: none; stroke-dasharray: 3 3; opacity: 0.7; }
+
+  text { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; fill: #e2e8f0; }
+  .t-sm { font-size: 11px; fill: #94a3b8; }
+  .t-xs { font-size: 10px; fill: #64748b; }
+  .t-label { font-size: 11.5px; fill: var(--text-dim); font-family: -apple-system, sans-serif; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .t-blue { fill: var(--blue); }
+  .t-green { fill: var(--green); }
+  .t-amber { fill: var(--amber); }
+  .t-indigo { fill: var(--indigo); }
+
+  /* ---------- Note box ---------- */
+  .note {
+    background: rgba(96,165,250,0.07);
+    border: 1px solid rgba(96,165,250,0.22);
+    border-left: 3px solid var(--blue);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+  }
+  .note strong { color: var(--blue); }
+  .note.amber {
+    background: rgba(251,191,36,0.07);
+    border-color: rgba(251,191,36,0.22);
+    border-left-color: var(--amber);
+  }
+  .note.amber strong { color: var(--amber); }
+
+  /* ---------- Footer ---------- */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.82rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Database Internals</div>
+    <h1>Database Indexing</h1>
+    <p>B-tree, Clustered Index (InnoDB) và Heap + ctid (PostgreSQL)</p>
+  </header>
+
+  <nav class="toc">
+    <a href="#s1">1. Index là gì?</a>
+    <a href="#s2">2. Clustered Index (MySQL / InnoDB)</a>
+    <a href="#s3">3. Heap + ctid (PostgreSQL)</a>
+    <a href="#s4">4. So sánh tổng hợp</a>
+    <a href="#s5">5. Ghi chú thêm: HOT update</a>
+  </nav>
+
+  <!-- ================= SECTION 1 ================= -->
+  <section id="s1">
+    <h2><span class="num">1</span> Index là gì?</h2>
+
+    <p><strong>Index là một look-up table</strong> — cấu trúc dữ liệu phụ trợ được tạo ra để <strong>truy vấn dữ liệu nhanh hơn</strong>, đổi lấy chi phí lưu trữ và chi phí ghi (insert/update/delete).</p>
+
+    <div class="card accent-blue">
+      <div class="card-title">Định nghĩa cốt lõi</div>
+      <ul>
+        <li>Là một <strong>look-up table</strong> ánh xạ <code>key</code> → <code>vị trí của row</code>.</li>
+        <li>Dùng để <strong>truy vấn data một cách nhanh chóng</strong>, thay vì phải quét toàn bộ bảng.</li>
+        <li>Cấu trúc phổ biến nhất: <strong>B-tree</strong> (chính xác hơn là <strong>B+tree</strong>).</li>
+      </ul>
+    </div>
+
+    <h3>Tại sao B-tree nhanh hơn đọc tuần tự?</h3>
+
+    <p>Nếu dữ liệu được lưu như một <strong>array</strong> hoặc <strong>linked-list</strong> không có thứ tự đánh index, muốn tìm 1 record bạn phải <strong>quét từng phần tử (linear scan)</strong>. Với <em>N</em> record, độ phức tạp là <code>O(N)</code>.</p>
+
+    <p>B-tree tổ chức dữ liệu theo <strong>cây nhiều nhánh có thứ tự</strong>, cho phép <strong>loại trừ một lượng lớn dữ liệu ở mỗi bước</strong> — độ phức tạp tìm kiếm chỉ còn <code>O(log N)</code>.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 360" role="img" aria-label="Cấu trúc B-tree">
+        <!-- Edges -->
+        <path class="e" d="M 380 68 L 190 138" />
+        <path class="e" d="M 380 68 L 570 138" />
+
+        <path class="e" d="M 190 182 L 80 268" />
+        <path class="e" d="M 190 182 L 190 268" />
+        <path class="e" d="M 190 182 L 300 268" />
+
+        <path class="e" d="M 570 182 L 460 268" />
+        <path class="e" d="M 570 182 L 570 268" />
+        <path class="e" d="M 570 182 L 680 268" />
+
+        <!-- Leaf linked list -->
+        <path class="e-link" d="M 130 290 L 140 290" />
+        <path class="e-link" d="M 240 290 L 250 290" />
+        <path class="e-link" d="M 350 290 L 410 290" />
+        <path class="e-link" d="M 510 290 L 520 290" />
+        <path class="e-link" d="M 620 290 L 630 290" />
+
+        <!-- Root -->
+        <rect class="n-root" x="335" y="24" width="90" height="44" rx="8" />
+        <text x="380" y="52" text-anchor="middle" class="t-indigo" font-weight="700">50</text>
+
+        <!-- Level 2 -->
+        <rect class="n-int" x="115" y="138" width="150" height="44" rx="8" />
+        <text x="190" y="166" text-anchor="middle" class="t-blue">20  |  35</text>
+
+        <rect class="n-int" x="495" y="138" width="150" height="44" rx="8" />
+        <text x="570" y="166" text-anchor="middle" class="t-blue">65  |  80</text>
+
+        <!-- Leaves -->
+        <rect class="n-leaf" x="30"  y="268" width="100" height="44" rx="8" />
+        <text x="80"  y="296" text-anchor="middle" class="t-green">5  15</text>
+
+        <rect class="n-leaf" x="140" y="268" width="100" height="44" rx="8" />
+        <text x="190" y="296" text-anchor="middle" class="t-green">25  30</text>
+
+        <rect class="n-leaf" x="250" y="268" width="100" height="44" rx="8" />
+        <text x="300" y="296" text-anchor="middle" class="t-green">40  45</text>
+
+        <rect class="n-leaf" x="410" y="268" width="100" height="44" rx="8" />
+        <text x="460" y="296" text-anchor="middle" class="t-green">55  60</text>
+
+        <rect class="n-leaf" x="520" y="268" width="100" height="44" rx="8" />
+        <text x="570" y="296" text-anchor="middle" class="t-green">70  75</text>
+
+        <rect class="n-leaf" x="630" y="268" width="100" height="44" rx="8" />
+        <text x="680" y="296" text-anchor="middle" class="t-green">85  90</text>
+
+        <!-- Labels -->
+        <text x="20" y="24" class="t-label">Root</text>
+        <text x="20" y="200" class="t-label">Internal</text>
+        <text x="20" y="330" class="t-label">Leaf</text>
+
+        <!-- Level markers -->
+        <text x="740" y="52"  text-anchor="end" class="t-xs">level 0</text>
+        <text x="740" y="166" text-anchor="end" class="t-xs">level 1</text>
+        <text x="740" y="296" text-anchor="end" class="t-xs">level 2</text>
+      </svg>
+      <figcaption>B+tree: tìm một key mất đúng số bước bằng chiều cao cây (ở đây là 2 bước), thay vì quét hết các record</figcaption>
+    </figure>
+
+    <div class="note">
+      <strong>Điểm mấu chốt:</strong> B-tree không "nhảy cóc" thần kỳ — nó chỉ đảm bảo rằng mỗi lần so sánh sẽ <strong>loại bỏ được phần lớn dữ liệu</strong>. Đó là lý do một bảng 1 triệu dòng chỉ cần ~3–4 lần đọc page để tìm ra record, thay vì 1 triệu lần.
+    </div>
+  </section>
+
+  <!-- ================= SECTION 2 ================= -->
+  <section id="s2">
+    <h2 class="amber"><span class="num">2</span> Clustered Index</h2>
+    <p style="color:var(--text-dim); margin-top:-4px;">MySQL · InnoDB — mô hình <strong>"table as index"</strong></p>
+
+    <h3>Đặc điểm</h3>
+    <ul>
+      <li><strong>Luôn có mặc định 1 index là table hiện tại</strong>, đánh index theo <strong>primary key</strong>.</li>
+      <li>Đi từ <strong>gốc xuống lá là có luôn row data</strong>.</li>
+      <li><strong>Chỉ có lá chứa data</strong>. Các node trên (root, internal) chỉ gồm <strong>chỉ mục</strong> (page_id, row line / key) để dẫn đường.</li>
+      <li>Dữ liệu được lưu <strong>vật lý theo thứ tự primary key</strong> → range scan cực nhanh.</li>
+    </ul>
+
+    <figure>
+      <svg viewBox="0 0 760 400" role="img" aria-label="Clustered index: leaf chứa row data">
+        <!-- Edges -->
+        <path class="e" d="M 380 68 L 190 148" />
+        <path class="e" d="M 380 68 L 570 148" />
+
+        <path class="e" d="M 190 192 L 100 288" />
+        <path class="e" d="M 190 192 L 280 288" />
+
+        <path class="e" d="M 570 192 L 480 288" />
+        <path class="e" d="M 570 192 L 660 288" />
+
+        <!-- Root -->
+        <rect class="n-root" x="335" y="24" width="90" height="44" rx="8" />
+        <text x="380" y="52" text-anchor="middle" class="t-indigo" font-weight="700">50</text>
+
+        <!-- Internal: chỉ chứa key dẫn đường -->
+        <rect class="n-int" x="125" y="148" width="130" height="44" rx="8" />
+        <text x="190" y="176" text-anchor="middle" class="t-blue">25</text>
+
+        <rect class="n-int" x="505" y="148" width="130" height="44" rx="8" />
+        <text x="570" y="176" text-anchor="middle" class="t-blue">75</text>
+
+        <!-- Leaves: chứa key + TOÀN BỘ row data -->
+        <rect class="n-data" x="40"  y="288" width="120" height="82" rx="8" />
+        <text x="100" y="310" text-anchor="middle" class="t-amber" font-weight="700">id = 10</text>
+        <text x="100" y="330" text-anchor="middle" class="t-sm">An · an@x</text>
+        <text x="100" y="348" text-anchor="middle" class="t-sm">age = 24</text>
+        <text x="100" y="364" text-anchor="middle" class="t-xs">(full row)</text>
+
+        <rect class="n-data" x="220" y="288" width="120" height="82" rx="8" />
+        <text x="280" y="310" text-anchor="middle" class="t-amber" font-weight="700">id = 30</text>
+        <text x="280" y="330" text-anchor="middle" class="t-sm">Chi · chi@x</text>
+        <text x="280" y="348" text-anchor="middle" class="t-sm">age = 31</text>
+        <text x="280" y="364" text-anchor="middle" class="t-xs">(full row)</text>
+
+        <rect class="n-data" x="420" y="288" width="120" height="82" rx="8" />
+        <text x="480" y="310" text-anchor="middle" class="t-amber" font-weight="700">id = 60</text>
+        <text x="480" y="330" text-anchor="middle" class="t-sm">Dung · dung@x</text>
+        <text x="480" y="348" text-anchor="middle" class="t-sm">age = 28</text>
+        <text x="480" y="364" text-anchor="middle" class="t-xs">(full row)</text>
+
+        <rect class="n-data" x="600" y="288" width="120" height="82" rx="8" />
+        <text x="660" y="310" text-anchor="middle" class="t-amber" font-weight="700">id = 80</text>
+        <text x="660" y="330" text-anchor="middle" class="t-sm">Em · em@x</text>
+        <text x="660" y="348" text-anchor="middle" class="t-sm">age = 22</text>
+        <text x="660" y="364" text-anchor="middle" class="t-xs">(full row)</text>
+
+        <!-- Labels -->
+        <text x="20" y="176" class="t-label">Chỉ key</text>
+        <text x="40" y="276" class="t-label">Key + Data</text>
+      </svg>
+      <figcaption>Clustered index (InnoDB): node trên chỉ dẫn đường, <strong>leaf chứa nguyên row</strong> — đi tới lá là có data luôn</figcaption>
+    </figure>
+
+    <div class="pc-grid">
+      <div class="pc pro">
+        <h4>Ưu điểm</h4>
+        <ul>
+          <li>Tìm theo PK chỉ <strong>1 lần traverse</strong> — đến lá là có data.</li>
+          <li><strong>Range query rất nhanh</strong>: row nằm liền kề nhau trên leaf, đọc tuần tự page.</li>
+          <li><code>ORDER BY pk</code> gần như miễn phí — data đã được sắp sẵn.</li>
+          <li>Không tốn thêm I/O để lookup bảng (khác với PostgreSQL).</li>
+        </ul>
+      </div>
+      <div class="pc con">
+        <h4>Nhược điểm</h4>
+        <ul>
+          <li><strong>Chỉ có 1 clustered index / table</strong> — không thể có 2.</li>
+          <li>Secondary index phải lưu <strong>PK</strong> thay vì địa chỉ row → nếu PK to thì secondary index phình.</li>
+          <li>Query qua secondary index phải đi <strong>2 lần</strong>: secondary → PK → clustered.</li>
+          <li>INSERT không theo thứ tự PK → <strong>page split</strong>, phân mảnh, hiệu năng ghi giảm.</li>
+          <li>UPDATE làm đổi PK → phải <strong>di chuyển row</strong> (delete + insert).</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Insert / Update / Delete diễn ra thế nào?</h3>
+    <table class="ops">
+      <thead>
+        <tr><th>Thao tác</th><th>Cơ chế</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag">INSERT</span></td>
+          <td>Chèn vào leaf đúng vị trí theo PK. Nếu page đầy → <strong>split page</strong> (thường 50/50), đẩy key lên node cha, tốn I/O và có thể cascade split.</td>
+        </tr>
+        <tr>
+          <td><span class="tag">UPDATE</span></td>
+          <td>
+            • Không đổi PK và size không đổi → <strong>update tại chỗ</strong> trong leaf.<br>
+            • Đổi PK → coi như <strong>DELETE + INSERT</strong>: xoá row khỏi vị trí cũ, chèn vào vị trí mới theo PK.<br>
+            • Đổi size → có thể phải move row sang page khác.
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tag">DELETE</span></td>
+          <td>Đánh dấu xoá (tombstone) và để lại <strong>khoảng trống</strong> trong leaf. InnoDB tái sử dụng khoảng trống này cho các insert sau, nhưng không tự động thu hồi về OS.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note amber">
+      <strong>Hệ quả thực tế:</strong> chọn PK là <code>UUID random</code> trong InnoDB là một <em>anti-pattern</em> — mỗi insert nhảy vào một page ngẫu nhiên, gây page split liên tục. Nên dùng <code>AUTO_INCREMENT</code> hoặc UUID có thứ tự (ULID, UUIDv7).
+    </div>
+  </section>
+
+  <!-- ================= SECTION 3 ================= -->
+  <section id="s3">
+    <h2 class="green"><span class="num">3</span> Heap + ctid</h2>
+    <p style="color:var(--text-dim); margin-top:-4px;">PostgreSQL — mô hình <strong>index tách rời khỏi bảng</strong></p>
+
+    <h3>Đặc điểm</h3>
+    <ul>
+      <li><strong>Row records luôn nằm trong heap</strong> — lưu lộn xộn, <strong>không quan tâm vị trí</strong>, không sắp theo thứ tự nào.</li>
+      <li><strong>Lá của index là một tuple</strong> lưu <strong>vị trí (ctid) + primary key</strong> của record tương ứng trong heap.</li>
+      <li>Index và heap là <strong>hai cấu trúc hoàn toàn độc lập</strong> — bảng không phải là index, index chỉ trỏ tới bảng.</li>
+      <li><code>ctid</code> = <code>(block_number, offset)</code> = địa chỉ vật lý của tuple trong heap.</li>
+    </ul>
+
+    <figure>
+      <svg viewBox="0 0 860 420" role="img" aria-label="PostgreSQL: index trỏ tới heap qua ctid">
+        <!-- Index box -->
+        <rect x="20" y="30" width="250" height="360" rx="12" fill="var(--panel-2)" stroke="var(--blue)" stroke-width="1.4" opacity="0.55"/>
+        <text x="145" y="58" text-anchor="middle" class="t-label t-blue">Index (B-tree)</text>
+        <text x="145" y="76" text-anchor="middle" class="t-xs">chỉ lưu key + ctid</text>
+
+        <!-- Index entries -->
+        <rect class="n-idx" x="40" y="100" width="210" height="44" rx="7"/>
+        <text x="60" y="128" class="t-blue">10</text>
+        <text x="230" y="128" text-anchor="end" class="t-amber">→ (0,1)</text>
+
+        <rect class="n-idx" x="40" y="158" width="210" height="44" rx="7"/>
+        <text x="60" y="186" class="t-blue">15</text>
+        <text x="230" y="186" text-anchor="end" class="t-amber">→ (0,2)</text>
+
+        <rect class="n-idx" x="40" y="216" width="210" height="44" rx="7"/>
+        <text x="60" y="244" class="t-blue">20</text>
+        <text x="230" y="244" text-anchor="end" class="t-amber">→ (0,3)</text>
+
+        <rect class="n-idx" x="40" y="274" width="210" height="44" rx="7"/>
+        <text x="60" y="302" class="t-blue">25</text>
+        <text x="230" y="302" text-anchor="end" class="t-amber">→ (1,1)</text>
+
+        <rect class="n-idx" x="40" y="332" width="210" height="44" rx="7"/>
+        <text x="60" y="360" class="t-blue">30</text>
+        <text x="230" y="360" text-anchor="end" class="t-amber">→ (1,2)</text>
+
+        <!-- Arrow paths: index → heap -->
+        <path class="e-ptr" d="M 250 122 C 320 122, 340 145, 400 145"/>
+        <path class="e-ptr" d="M 250 180 C 330 180, 360 145, 480 145"/>
+        <path class="e-ptr" d="M 250 238 C 350 238, 400 145, 560 145"/>
+        <path class="e-ptr" d="M 250 296 C 320 296, 340 335, 400 335"/>
+        <path class="e-ptr" d="M 250 354 C 330 354, 360 335, 480 335"/>
+
+        <!-- Heap box -->
+        <rect x="380" y="30" width="460" height="360" rx="12" fill="var(--panel-2)" stroke="var(--green)" stroke-width="1.4" opacity="0.55"/>
+        <text x="610" y="58" text-anchor="middle" class="t-label t-green">Heap (bảng users)</text>
+        <text x="610" y="76" text-anchor="middle" class="t-xs">row lưu lộn xộn, không theo thứ tự</text>
+
+        <!-- Page 0 -->
+        <rect x="400" y="96" width="420" height="110" rx="9" fill="none" stroke="var(--border)" stroke-width="1.3" stroke-dasharray="5 4"/>
+        <text x="412" y="116" class="t-xs">Page 0 (block 0)</text>
+
+        <rect class="n-data" x="412" y="126" width="120" height="68" rx="7"/>
+        <text x="472" y="146" text-anchor="middle" class="t-amber" font-weight="700">(0,1)</text>
+        <text x="472" y="164" text-anchor="middle" class="t-sm">id = 10</text>
+        <text x="472" y="182" text-anchor="middle" class="t-sm">An</text>
+
+        <rect class="n-data" x="548" y="126" width="120" height="68" rx="7"/>
+        <text x="608" y="146" text-anchor="middle" class="t-amber" font-weight="700">(0,2)</text>
+        <text x="608" y="164" text-anchor="middle" class="t-sm">id = 15</text>
+        <text x="608" y="182" text-anchor="middle" class="t-sm">Binh</text>
+
+        <rect class="n-data" x="684" y="126" width="120" height="68" rx="7"/>
+        <text x="744" y="146" text-anchor="middle" class="t-amber" font-weight="700">(0,3)</text>
+        <text x="744" y="164" text-anchor="middle" class="t-sm">id = 20</text>
+        <text x="744" y="182" text-anchor="middle" class="t-sm">Chi</text>
+
+        <!-- Page 1 -->
+        <rect x="400" y="226" width="420" height="110" rx="9" fill="none" stroke="var(--border)" stroke-width="1.3" stroke-dasharray="5 4"/>
+        <text x="412" y="246" class="t-xs">Page 1 (block 1)</text>
+
+        <rect class="n-data" x="412" y="256" width="120" height="68" rx="7"/>
+        <text x="472" y="276" text-anchor="middle" class="t-amber" font-weight="700">(1,1)</text>
+        <text x="472" y="294" text-anchor="middle" class="t-sm">id = 25</text>
+        <text x="472" y="312" text-anchor="middle" class="t-sm">Dung</text>
+
+        <rect class="n-data" x="548" y="256" width="120" height="68" rx="7"/>
+        <text x="608" y="276" text-anchor="middle" class="t-amber" font-weight="700">(1,2)</text>
+        <text x="608" y="294" text-anchor="middle" class="t-sm">id = 30</text>
+        <text x="608" y="312" text-anchor="middle" class="t-sm">Em</text>
+
+        <!-- Legend -->
+        <text x="412" y="372" class="t-xs">ctid = (block, offset) → địa chỉ vật lý của tuple trong heap</text>
+      </svg>
+      <figcaption>PostgreSQL: index leaf chỉ giữ <code>key + ctid</code>. Muốn lấy row phải <strong>lookup heap</strong> theo ctid</figcaption>
+    </figure>
+
+    <div class="pc-grid">
+      <div class="pc pro">
+        <h4>Ưu điểm</h4>
+        <ul>
+          <li><strong>Nhiều index độc lập</strong>, không cái nào phụ thuộc cái nào.</li>
+          <li>Secondary index lookup chỉ <strong>1 lần traverse</strong> (index → heap), không phải qua PK.</li>
+          <li><strong>Index nhỏ</strong>: chỉ lưu ctid 6 byte + key, không lưu PK.</li>
+          <li>INSERT luôn append → <strong>ít page split</strong>, ghi nhanh.</li>
+          <li>UPDATE có thể dùng <strong>HOT</strong> → không cần cập nhật index (xem mục 5).</li>
+        </ul>
+      </div>
+      <div class="pc con">
+        <h4>Nhược điểm</h4>
+        <ul>
+          <li><strong>Phải lookup heap</strong> sau khi tìm index → thêm I/O (2 bước).</li>
+          <li>Range query phải nhảy lung tung trong heap nếu chưa <code>CLUSTER</code>.</li>
+          <li>UPDATE tạo <strong>dead tuple</strong> → cần <code>VACUUM</code>, dễ <strong>table bloat</strong>.</li>
+          <li><code>ctid</code> không ổn định — đổi sau UPDATE / VACUUM FULL / CLUSTER.</li>
+          <li>Index có thể bị "phình" nếu update nhiều mà chưa vacuum.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Insert / Update / Delete diễn ra thế nào?</h3>
+    <table class="ops">
+      <thead>
+        <tr><th>Thao tác</th><th>Cơ chế</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag">INSERT</span></td>
+          <td>Append tuple vào page còn chỗ (tra Free Space Map). <strong>Không quan tâm thứ tự</strong>. Sau đó ghi entry mới vào <strong>mọi index</strong> trên bảng, trỏ tới ctid vừa tạo.</td>
+        </tr>
+        <tr>
+          <td><span class="tag">UPDATE</span></td>
+          <td>
+            Không sửa tại chỗ (do MVCC). Tạo <strong>tuple mới</strong> ở vị trí mới → tuple cũ bị đánh dấu <strong>dead</strong>.<br>
+            • Nếu <strong>HOT</strong> được: tuple mới cùng page + không đụng cột có index → <strong>không cần update index</strong>.<br>
+            • Nếu <strong>không HOT</strong>: <a href="no-hot-update-example.html" target="_blank" class="ref-link"> phải thêm entry mới vào </a> <strong>tất cả index</strong>.
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tag">DELETE</span></td>
+          <td>Chỉ <strong>đánh dấu dead</strong> (MVCC). Index entry vẫn còn trỏ tới tuple đã chết. <code>VACUUM</code> mới thực sự thu hồi không gian.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>Chi phí ẩn:</strong> mỗi UPDATE trong PostgreSQL = 1 tuple mới + có thể là N index entry mới (N = số index trên bảng). Đây là lý do bảng có quá nhiều index sẽ ghi rất chậm.
+    </div>
+  </section>
+
+  <!-- ================= SECTION 4 ================= -->
+  <section id="s4">
+    <h2><span class="num">4</span> So sánh tổng hợp</h2>
+
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Tiêu chí</th>
+          <th>Clustered Index (InnoDB)</th>
+          <th>Heap + ctid (PostgreSQL)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Row data nằm ở đâu</td>
+          <td>Ngay trong leaf của clustered index</td>
+          <td>Trong heap, tách rời khỏi index</td>
+        </tr>
+        <tr>
+          <td>Thứ tự vật lý</td>
+          <td>Sắp theo primary key</td>
+          <td>Lộn xộn (append-only)</td>
+        </tr>
+        <tr>
+          <td>Số clustered index / bảng</td>
+          <td>Đúng 1 (chính là bảng)</td>
+          <td>0 (không có khái niệm này)</td>
+        </tr>
+        <tr>
+          <td>Tìm theo PK</td>
+          <td>1 lần traverse</td>
+          <td>1 traverse index + 1 lookup heap</td>
+        </tr>
+        <tr>
+          <td>Query qua secondary index</td>
+          <td>2 lần traverse (secondary → PK → clustered)</td>
+          <td>1 traverse + 1 heap lookup</td>
+        </tr>
+        <tr>
+          <td>Range scan</td>
+          <td>Rất nhanh (data liền kề)</td>
+          <td>Chậm hơn nếu heap chưa cluster</td>
+        </tr>
+        <tr>
+          <td>INSERT</td>
+          <td>Có thể page split nếu PK không tăng dần</td>
+          <td>Append nhanh, ít phân mảnh</td>
+        </tr>
+        <tr>
+          <td>UPDATE</td>
+          <td>Sửa tại chỗ (nếu không đổi PK/size)</td>
+          <td>Luôn tạo tuple mới + dead tuple</td>
+        </tr>
+        <tr>
+          <td>Cần VACUUM?</td>
+          <td>Không (có purge nội bộ)</td>
+          <td>Có — bắt buộc để tránh bloat</td>
+        </tr>
+        <tr>
+          <td>ctid / địa chỉ vật lý ổn định?</td>
+          <td>Không công khai, ẩn bên trong</td>
+          <td><code>ctid</code> công khai nhưng <strong>không ổn định</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================= SECTION 5 ================= -->
+  <section id="s5">
+    <h2><span class="num">5</span> Ghi chú thêm: HOT update</h2>
+
+    <p><strong>HOT (Heap-Only Tuple)</strong> là tối ưu của PostgreSQL cho phép UPDATE <em>không cần cập nhật index</em>.</p>
+
+    <div class="card accent-green">
+      <div class="card-title">Điều kiện để dùng được HOT</div>
+      <ul>
+        <li>Tuple mới phải nằm <strong>cùng page</strong> với tuple cũ.</li>
+        <li><strong>Không có cột nào đang được index bị thay đổi</strong>.</li>
+        <li>Page còn đủ chỗ trống (thường cần <code>fillfactor &lt; 100</code> để chừa chỗ).</li>
+      </ul>
+    </div>
+
+    <table class="ops">
+      <thead>
+        <tr><th></th><th>Có HOT</th><th>Không HOT</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Vị trí tuple mới</td>
+          <td>Cùng page với tuple cũ</td>
+          <td>Page khác (bất kỳ còn chỗ)</td>
+        </tr>
+        <tr>
+          <td>Index</td>
+          <td><strong>Không</strong> cập nhật — index vẫn trỏ vào đầu HOT chain</td>
+          <td><strong>Cập nhật tất cả</strong> index trên bảng</td>
+        </tr>
+        <tr>
+          <td>Chi phí ghi</td>
+          <td>Thấp (chỉ heap)</td>
+          <td>Cao (heap + N index)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note amber">
+      <strong>Nhớ nhanh:</strong> index của PostgreSQL lưu <code>ctid</code> = <code>(block, offset)</code>. Nếu block đổi → index trỏ sai → phải ghi entry mới. HOT giữ nguyên block nên index "không cần biết" đã có tuple mới.
+    </div>
+  </section>
+
+  <footer>
+    Notes · Database Indexing · Dark mode
+  </footer>
+
+</div>
+</body>
+</html>

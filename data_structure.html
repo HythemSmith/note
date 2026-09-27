@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Note: Java Collections — Memory & Operations</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card2: #273449;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #f472b6;
+    --good: #4ade80;
+    --bad: #f87171;
+    --warn: #fbbf24;
+    --code-bg: #0b1220;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-width: 1280px;
+    margin: 0 auto;
+    gap: 32px;
+    padding: 0 24px;
+  }
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 24px 0;
+    border-right: 1px solid var(--border);
+  }
+  .sidebar h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin: 16px 0 8px;
+  }
+  .sidebar a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    border-left: 2px solid transparent;
+  }
+  .sidebar a:hover {
+    background: var(--card);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+  main { padding: 40px 0 80px; min-width: 0; }
+  header {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: 1.9rem;
+    margin: 0 0 8px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle { color: var(--muted); font-size: 0.95rem; }
+  h2 {
+    font-size: 1.4rem;
+    margin-top: 56px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+    color: #f1f5f9;
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin-top: 32px;
+    color: var(--accent2);
+  }
+  h4 {
+    font-size: 0.98rem;
+    margin-top: 20px;
+    color: var(--accent3);
+  }
+  code {
+    background: var(--code-bg);
+    color: #7dd3fc;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  pre code { background: none; padding: 0; color: #e2e8f0; }
+  .comment { color: #64748b; }
+  .kw { color: #c084fc; }
+  .str { color: #86efac; }
+  .type { color: #7dd3fc; }
+  .num { color: #fdba74; }
+  .mth { color: #fbbf24; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.88rem;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--card2);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.84rem;
+  }
+  tr:last-child td { border-bottom: none; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .card.good { border-left: 4px solid var(--good); }
+  .card.bad { border-left: 4px solid var(--bad); }
+  .card.warn { border-left: 4px solid var(--warn); }
+  .card.info { border-left: 4px solid var(--accent); }
+  .card.cls { border-left: 4px solid var(--accent2); }
+  .label {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .label.good { background: rgba(74,222,128,0.15); color: var(--good); }
+  .label.bad { background: rgba(248,113,113,0.15); color: var(--bad); }
+  .label.warn { background: rgba(251,191,36,0.15); color: var(--warn); }
+  .label.info { background: rgba(56,189,248,0.15); color: var(--accent); }
+  .label.cls { background: rgba(167,139,250,0.15); color: var(--accent2); }
+  .quote {
+    background: var(--card2);
+    border-left: 4px solid var(--accent2);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #cbd5e1;
+    margin: 18px 0;
+  }
+  .diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    color: #cbd5e1;
+    white-space: pre;
+    line-height: 1.55;
+    margin: 12px 0;
+  }
+  .diagram .arr { color: #7dd3fc; }
+  .diagram .box { color: #fbbf24; }
+  .diagram .ptr { color: #f472b6; }
+  .diagram .new { color: #4ade80; }
+  .diagram .old { color: #64748b; }
+  .diagram .note { color: #94a3b8; }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 12px 0;
+  }
+  @media (max-width: 800px) { .grid2 { grid-template-columns: 1fr; } }
+  .methods {
+    background: var(--code-bg);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+  .methods code {
+    background: none;
+    color: #fbbf24;
+    padding: 0;
+    font-size: 1em;
+  }
+  .pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .pill.o1 { background: rgba(74,222,128,0.15); color: var(--good); }
+  .pill.on { background: rgba(248,113,113,0.15); color: var(--bad); }
+  .pill.olog { background: rgba(251,191,36,0.15); color: var(--warn); }
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <h3>Cơ bản</h3>
+  <a href="#why">1. Tại sao cần hiểu memory?</a>
+  <a href="#concepts">2. Khái niệm nền</a>
+
+  <h3>Dynamic Array</h3>
+  <a href="#arraylist">3. ArrayList — chi tiết</a>
+  <a href="#al-get">3.1 get / set</a>
+  <a href="#al-add">3.2 add (cuối)</a>
+  <a href="#al-insert">3.3 add (giữa) / insert</a>
+  <a href="#al-remove">3.4 remove</a>
+  <a href="#al-resize">3.5 resize</a>
+
+  <h3>Linked List</h3>
+  <a href="#linkedlist">4. LinkedList — chi tiết</a>
+  <a href="#ll-get">4.1 get</a>
+  <a href="#ll-insert">4.2 insert</a>
+  <a href="#ll-remove">4.3 remove</a>
+
+  <h3>Hash-based</h3>
+  <a href="#hashmap">5. HashMap — chi tiết</a>
+  <a href="#hm-put">5.1 put</a>
+  <a href="#hm-get">5.2 get</a>
+  <a href="#hm-resize">5.3 resize / rehash</a>
+  <a href="#hm-collision">5.4 collision</a>
+  <a href="#hashset">6. HashSet</a>
+
+  <h3>Khác</h3>
+  <a href="#deque">7. ArrayDeque</a>
+  <a href="#priorityqueue">8. PriorityQueue</a>
+  <a href="#treemap">9. TreeMap</a>
+  <a href="#concurrent">10. ConcurrentHashMap</a>
+
+  <h3>Tổng hợp</h3>
+  <a href="#summary">11. Bảng tóm tắt memory behavior</a>
+</aside>
+
+<main>
+
+<header>
+  <h1>Java Collections — Memory &amp; Operations</h1>
+  <div class="subtitle">Hiểu bộ nhớ làm gì đằng sau mỗi method → biết tại sao nhanh/chậm</div>
+</header>
+
+<!-- ============================================================ -->
+<h2 id="why">1. Tại sao phải hiểu memory behavior?</h2>
+
+<div class="quote">
+  <strong>Big-O chỉ là kết luận.</strong> Muốn nhớ lâu và trả lời phỏng vấn thuyết phục, phải hiểu
+  <strong>bộ nhớ đang làm gì</strong> khi thực hiện thao tác đó.
+</div>
+
+<p>Ví dụ cùng là <code>O(n)</code>:</p>
+<ul>
+  <li><code>ArrayList.add(0, x)</code> — O(n) vì phải <strong>dịch toàn bộ phần tử sang phải</strong>.</li>
+  <li><code>LinkedList.get(500)</code> — O(n) vì phải <strong>đi từng node theo con trỏ</strong>.</li>
+</ul>
+<p>Cùng Big-O nhưng <strong>bản chất vật lý khác nhau</strong>. Hiểu memory → phân biệt được.</p>
+
+<!-- ============================================================ -->
+<h2 id="concepts">2. Khái niệm nền</h2>
+
+<table>
+  <thead><tr><th>Khái niệm</th><th>Ý nghĩa</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Contiguous memory</strong></td><td>Các phần tử nằm liền kề nhau trong RAM. Truy cập bằng <code>base + i * size</code> → O(1).</td></tr>
+    <tr><td><strong>Node-based</strong></td><td>Mỗi phần tử là object riêng, rải rác trên heap, liên kết bằng con trỏ.</td></tr>
+    <tr><td><strong>Reference</strong></td><td>Con trỏ 4/8 byte trỏ tới object trên heap.</td></tr>
+    <tr><td><strong>Boxing</strong></td><td><code>int</code> → <code>Integer</code> object. Tốn thêm 16 byte header + reference.</td></tr>
+    <tr><td><strong>Amortized</strong></td><td>Chi phí trung bình qua nhiều thao tác (resize đắt nhưng hiếm).</td></tr>
+    <tr><td><strong>Cache locality</strong></td><td>CPU cache hoạt động theo block 64 byte — dữ liệu liền kề nhanh hơn nhiều lần.</td></tr>
+    <tr><td><strong>Load factor</strong></td><td>Ngưỡng đầy của hash table trước khi resize (mặc định 0.75).</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="arraylist">3. ArrayList — chi tiết</h2>
+
+<div class="card cls">
+  <span class="label cls">ArrayList</span>
+  <p><strong>Cấu trúc bên trong:</strong></p>
+  <pre><code><span class="kw">transient</span> <span class="type">Object</span>[] elementData;   <span class="comment">// mảng chứa reference</span>
+<span class="kw">private int</span> size;                 <span class="comment">// số phần tử thực tế</span>
+<span class="kw">private static final int</span> DEFAULT_CAPACITY = <span class="num">10</span>;</code></pre>
+  <p>Mảng có <strong>capacity</strong> (kích thước mảng) và <strong>size</strong> (số phần tử đang dùng). Hai khái niệm khác nhau.</p>
+</div>
+
+<h4>Minh họa bộ nhớ ban đầu</h4>
+
+<div class="diagram">
+elementData (capacity = 10):
+<span class="arr">┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │null│null│null│null│null│null│null│</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘</span>
+  <span class="note">0    1    2    3    4    5    6    7    8    9</span>
+
+size = 3
+capacity = 10
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="al-get">3.1. <code>get(i)</code> / <code>set(i, x)</code> — O(1)</h3>
+
+<div class="methods">
+<code>E get(int index)</code><br>
+<code>E set(int index, E element)</code>
+</div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+get(2):
+  address = base + 2 * sizeof(reference)
+  → CPU đọc trực tiếp ô nhớ đó
+
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │ 50 │</span>  <span class="new">↑ đọc trực tiếp</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+  <span class="note">base  base+8 base+16 ...</span>
+</div>
+
+<div class="card good">
+  <span class="label good">Tại sao O(1)?</span>
+  <p>Vì mảng liên tục → địa chỉ phần tử <code>i</code> tính được bằng công thức <code>base + i * size</code>. Không cần duyệt.</p>
+  <p><strong>Bonus:</strong> cache locality cực tốt — đọc 1 phần tử thường kéo cả block 64 byte vào cache, các phần tử kế tiếp gần như free.</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="al-add">3.2. <code>add(e)</code> — thêm cuối — O(1) amortized</h3>
+
+<div class="methods"><code>boolean add(E e)</code></div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+Trước: size = 3
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │null│null│</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+
+Sau: size = 4, gán vào vị trí size cũ
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │null│</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+                    <span class="new">↑ ghi trực tiếp</span>
+</div>
+
+<div class="card good">
+  <span class="label good">O(1) amortized</span>
+  <p>Chỉ cần ghi 1 ô nhớ + tăng size. Nhưng nếu <code>size == capacity</code> → phải <strong>resize</strong> (O(n) nhưng hiếm). Trung bình qua nhiều lần add vẫn là O(1).</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="al-insert">3.3. <code>add(i, e)</code> — chèn giữa — O(n)</h3>
+
+<div class="methods"><code>void add(int index, E element)</code></div>
+
+<h4>Bộ nhớ làm gì? (dịch phải)</h4>
+
+<div class="diagram">
+Chèn 99 vào index = 1:
+
+Bước 1: dịch phải từ index → size
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │null│</span>   <span class="note">trước</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 20 │ 30 │ 40 │</span>   <span class="note">dịch 20→2, 30→3, 40→4</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+
+Bước 2: ghi đè index = 1
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │<span class="new"> 99 </span>│ 20 │ 30 │ 40 │</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+</div>
+
+<div class="card bad">
+  <span class="label bad">Tại sao O(n)?</span>
+  <p>Phải dịch <code>(size - index)</code> phần tử sang phải. Chèn ở đầu → dịch toàn bộ. Chèn ở cuối → không dịch (chính là case add(e)).</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="al-remove">3.4. <code>remove(i)</code> — xóa — O(n)</h3>
+
+<div class="methods">
+<code>E remove(int index)</code><br>
+<code>boolean remove(Object o)</code>
+</div>
+
+<h4>Bộ nhớ làm gì? (dịch trái + xóa reference)</h4>
+
+<div class="diagram">
+Xóa index = 1:
+
+Bước 1: dịch trái
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │<span class="old"> 20 </span>│ 30 │ 40 │null│</span>   <span class="note">trước</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 30 │ 40 │ 40 │null│</span>   <span class="note">dịch trái 30→1, 40→2</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+
+Bước 2: null hóa ô cuối (giúp GC)
+<span class="arr">┌────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 30 │ 40 │null│null│</span>
+<span class="arr">└────┴────┴────┴────┴────┘</span>
+</div>
+
+<div class="card warn">
+  <span class="label warn">Lưu ý về GC</span>
+  <p>Java phải gán <code>elementData[--size] = null</code> để GC biết object đó không còn được tham chiếu. Nếu không, object bị "rò rỉ" memory — vẫn bị coi là live dù đã bị xóa khỏi list.</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="al-resize">3.5. Resize — khi mảng đầy</h3>
+
+<div class="card bad">
+  <span class="label bad">Đắt nhất nhưng hiếm</span>
+  <p>Khi <code>size == capacity</code>, ArrayList phải:</p>
+  <ol>
+    <li>Cấp mảng mới với capacity = <code>oldCap * 1.5</code> (JDK 8+; trước đó là <code>oldCap * 2</code>).</li>
+    <li>Copy toàn bộ phần tử sang mảng mới — <strong>O(n)</strong>.</li>
+    <li>Trỏ <code>elementData</code> sang mảng mới, mảng cũ trở thành rác → GC dọn.</li>
+  </ol>
+</div>
+
+<div class="diagram">
+Trước (capacity = 4, size = 4):
+<span class="arr">┌────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │</span>
+<span class="arr">└────┴────┴────┴────┘</span>
+
+Resize: cấp mảng mới capacity = 6
+<span class="arr">┌────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │null│null│</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┘</span>
+  <span class="note">Mảng cũ bị bỏ rơi → GC</span>
+
+Sau khi add(50):
+<span class="arr">┌────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │ 50 │null│</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┘</span>
+</div>
+
+<div class="card info">
+  <span class="label info">Best practice</span>
+  <p>Nếu biết trước số lượng phần tử, dùng constructor có capacity:</p>
+  <pre><code><span class="type">List</span>&lt;String&gt; list = <span class="kw">new</span> <span class="type">ArrayList</span>&lt;&gt;(<span class="num">10000</span>);</code></pre>
+  <p>Tránh được nhiều lần resize + copy.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="linkedlist">4. LinkedList — chi tiết</h2>
+
+<div class="card cls">
+  <span class="label cls">LinkedList</span>
+  <p><strong>Cấu trúc bên trong:</strong></p>
+  <pre><code><span class="kw">transient int</span> size;
+<span class="kw">transient</span> <span class="type">Node</span>&lt;E&gt; first;
+<span class="kw">transient</span> <span class="type">Node</span>&lt;E&gt; last;
+
+<span class="kw">private static class</span> <span class="type">Node</span>&lt;E&gt; {
+    E item;
+    <span class="type">Node</span>&lt;E&gt; next;
+    <span class="type">Node</span>&lt;E&gt; prev;
+}</code></pre>
+</div>
+
+<h4>Minh họa bộ nhớ</h4>
+
+<div class="diagram">
+first                                       last
+  │                                            │
+  ▼                                            ▼
+<span class="box">┌──────┐</span>   <span class="box">┌──────┐</span>   <span class="box">┌──────┐</span>   <span class="box">┌──────┐</span>
+<span class="box">│prev=null│</span>◀─▶<span class="box">│prev ────┼</span>◀─▶<span class="box">│prev ────┼</span>◀─▶<span class="box">│prev ────┼</span>
+<span class="box">│item=10 │</span>   <span class="box">│item=20 │</span>   <span class="box">│item=30 │</span>   <span class="box">│item=40 │</span>
+<span class="box">│next ───┼</span>─▶ <span class="box">│next ───┼</span>─▶ <span class="box">│next ───┼</span>─▶ <span class="box">│next=null│</span>
+<span class="box">└──────┘</span>   <span class="box">└──────┘</span>   <span class="box">└──────┘</span>   <span class="box">└──────┘</span>
+  <span class="note">node 0     node 1     node 2     node 3</span>
+  <span class="note">(rải rác trên heap — không liền kề)</span>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="ll-get">4.1. <code>get(i)</code> — O(n)</h3>
+
+<div class="methods"><code>E get(int index)</code></div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+get(2):
+  Nếu index &lt; size/2: đi từ first theo next
+  Nếu index ≥ size/2: đi từ last theo prev
+
+first
+  │
+  ▼
+  <span class="box">[10]</span> ──▶ <span class="box">[20]</span> ──▶ <span class="box">[30]</span> ──▶ <span class="box">[40]</span>
+  <span class="note">bước 0     bước 1     bước 2 (trả về)</span>
+</div>
+
+<div class="card bad">
+  <span class="label bad">Tại sao O(n)?</span>
+  <p>LinkedList không có index → không tính được địa chỉ trực tiếp. Phải <strong>duyệt từng node theo con trỏ</strong> — mỗi bước là một lần <em>pointer dereference</em> (đọc RAM).</p>
+  <p>Ngoài ra, node rải rác trên heap → <strong>cache miss liên tục</strong> → chậm hơn nhiều so với Big-O thể hiện.</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="ll-insert">4.2. <code>add(i, e)</code> — insert — O(n) để tìm + O(1) để chèn</h3>
+
+<div class="methods"><code>void add(int index, E element)</code></div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+Chèn 99 vào index = 2:
+
+Bước 1: tìm node tại index-1 (O(n))
+<span class="box">[10]</span> ──▶ <span class="box">[20]</span> ──▶ <span class="box">[30]</span> ──▶ <span class="box">[40]</span>
+       <span class="note">▲ tại đây</span>
+
+Bước 2: tạo node mới (O(1))
+<span class="new">newNode</span> = { prev = [20], item = 99, next = [30] }
+
+Bước 3: nối con trỏ (O(1))
+<span class="box">[20]</span>.next  = <span class="new">newNode</span>
+<span class="box">[30]</span>.prev  = <span class="new">newNode</span>
+
+Kết quả:
+<span class="box">[10]</span> ◀─▶ <span class="box">[20]</span> ◀─▶ <span class="new">[99]</span> ◀─▶ <span class="box">[30]</span> ◀─▶ <span class="box">[40]</span>
+</div>
+
+<div class="card info">
+  <span class="label info">Điểm hay bị hỏi</span>
+  <p>Insert trong LinkedList chỉ là <strong>O(1)</strong> nếu bạn <em>đã có node reference</em> tại vị trí chèn (ví dụ đang duyệt bằng iterator).</p>
+  <p>Nhưng <code>list.add(i, e)</code> phải <strong>tìm node tại index i trước</strong> → tốn O(n). Tổng = O(n).</p>
+  <p>Vì vậy trong thực tế <code>LinkedList.add(i, e)</code> chậm hơn cả <code>ArrayList.add(i, e)</code> vì cache miss.</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="ll-remove">4.3. <code>remove(i)</code> — xóa — O(n)</h3>
+
+<div class="methods"><code>E remove(int index)</code></div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+Xóa index = 1:
+
+Bước 1: tìm node tại index (O(n))
+<span class="box">[10]</span> ◀─▶ <span class="old">[20]</span> ◀─▶ <span class="box">[30]</span> ◀─▶ <span class="box">[40]</span>
+       <span class="note">▲ node cần xóa</span>
+
+Bước 2: nối con trỏ (O(1))
+[20].prev.next = [20].next  →  [10].next = [30]
+[20].next.prev = [20].prev  →  [30].prev = [10]
+
+Bước 3: xóa reference để GC dọn
+[20].item = null
+[20].next = null
+[20].prev = null
+
+Kết quả:
+<span class="box">[10]</span> ◀─▶ <span class="box">[30]</span> ◀─▶ <span class="box">[40]</span>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="hashmap">5. HashMap — chi tiết</h2>
+
+<div class="card cls">
+  <span class="label cls">HashMap</span>
+  <pre><code><span class="kw">transient</span> <span class="type">Node</span>&lt;K,V&gt;[] table;   <span class="comment">// mảng các bucket</span>
+<span class="kw">transient int</span> size;
+<span class="kw">final float</span> loadFactor = <span class="num">0.75f</span>;
+<span class="kw">int</span> threshold;                  <span class="comment">// capacity * loadFactor</span>
+
+<span class="kw">static class</span> <span class="type">Node</span>&lt;K,V&gt; {
+    <span class="kw">final int</span> hash;
+    <span class="kw">final</span> K key;
+    V value;
+    <span class="type">Node</span>&lt;K,V&gt; next;              <span class="comment">// linked list trong bucket</span>
+}</code></pre>
+</div>
+
+<h4>Minh họa bộ nhớ</h4>
+
+<div class="diagram">
+table (capacity = 16):
+<span class="arr">┌─────┐</span>
+<span class="arr">│  0  │</span> ──▶ null
+<span class="arr">│  1  │</span> ──▶ null
+<span class="arr">│  2  │</span> ──▶ <span class="box">[hash,key,val,next]</span> ──▶ <span class="box">[hash,key,val,next]</span> ──▶ null
+<span class="arr">│  3  │</span> ──▶ null
+<span class="arr">│  4  │</span> ──▶ <span class="box">[hash,key,val,next]</span> ──▶ null
+<span class="arr">│ ... │</span>
+<span class="arr">│ 15  │</span> ──▶ null
+<span class="arr">└─────┘</span>
+  <span class="note">index      linked list trong bucket (khi có collision)</span>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="hm-put">5.1. <code>put(k, v)</code> — O(1) trung bình</h3>
+
+<div class="methods"><code>V put(K key, V value)</code></div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+put("apple", 100):
+
+Bước 1: tính hash
+  h = "apple".hashCode()
+  h = h ^ (h >>> 16)                 <span class="note">// spread bits</span>
+
+Bước 2: tính bucket index
+  index = h & (capacity - 1)         <span class="note">// = h % 16, nhanh vì capacity là power of 2</span>
+
+Bước 3: vào bucket, duyệt linked list
+  - Nếu bucket rỗng → tạo Node mới
+  - Nếu có node:
+      - hash == h && (k == key || key.equals(k))
+        → <span class="new">replace value</span>
+      - ngược lại → append vào cuối list
+
+Bước 4: nếu list dài &gt; 8 và capacity ≥ 64
+        → chuyển thành Red-Black Tree
+
+Bước 5: nếu ++size &gt; threshold (capacity * 0.75)
+        → resize (x2)
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="hm-get">5.2. <code>get(k)</code> — O(1) trung bình</h3>
+
+<div class="methods"><code>V get(Object key)</code></div>
+
+<h4>Bộ nhớ làm gì?</h4>
+<div class="diagram">
+get("apple"):
+
+Bước 1: tính hash → index (giống put)
+Bước 2: vào bucket[index]
+Bước 3: duyệt linked list
+  - So sánh hash trước (nhanh)
+  - Nếu match → so sánh equals
+  - Nếu match → trả value
+  - Không tìm thấy → null
+</div>
+
+<div class="card warn">
+  <span class="label warn">Tại sao phải so sánh cả hash và equals?</span>
+  <p>Vì <strong>hash collision</strong> — 2 key khác nhau có thể cùng hash. So sánh hash trước để loại nhanh (int comparison), chỉ khi hash trùng mới gọi <code>equals</code> (đắt hơn).</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="hm-resize">5.3. Resize / Rehash — O(n)</h3>
+
+<div class="card bad">
+  <span class="label bad">Đắt</span>
+  <p>Khi <code>size &gt; capacity * 0.75</code>:</p>
+  <ol>
+    <li>Cấp mảng mới gấp đôi capacity.</li>
+    <li>Duyệt toàn bộ entry cũ.</li>
+    <li>Tính lại index cho từng entry.</li>
+    <li>Đưa vào bucket mới.</li>
+  </ol>
+</div>
+
+<div class="diagram">
+Trước (capacity = 4, đã đầy 3):
+<span class="arr">[0]</span> ──▶ A
+<span class="arr">[1]</span> ──▶ null
+<span class="arr">[2]</span> ──▶ B ──▶ C
+<span class="arr">[3]</span> ──▶ null
+
+Resize lên 8:
+A, B, C được tính lại index. Ví dụ:
+<span class="arr">[0]</span> ──▶ A       <span class="note">// index cũ = 0, giữ nguyên</span>
+<span class="arr">[2]</span> ──▶ B       <span class="note">// index cũ = 2, giữ nguyên (bit cao = 0)</span>
+<span class="arr">[6]</span> ──▶ C       <span class="note">// index cũ = 2, nhưng bit thứ 3 = 1 → 2 + 4 = 6</span>
+</div>
+
+<div class="card info">
+  <span class="label info">Trick của JDK 8+</span>
+  <p>Vì capacity luôn là power of 2, khi resize chỉ cần kiểm tra <strong>1 bit cao</strong>: nếu bit = 0 → giữ nguyên index cũ; nếu bit = 1 → index mới = index cũ + oldCapacity. Không cần tính lại hash.</p>
+</div>
+
+<!-- ---------------------------------------------------------- -->
+<h3 id="hm-collision">5.4. Collision — khi nhiều key cùng bucket</h3>
+
+<h4>Cách 1: Separate Chaining (JDK 7)</h4>
+<div class="diagram">
+bucket[2] ──▶ <span class="box">[A]</span> ──▶ <span class="box">[B]</span> ──▶ <span class="box">[C]</span> ──▶ null
+              <span class="note">linked list</span>
+
+Tệ nhất: mọi key vào cùng bucket → O(n)
+</div>
+
+<h4>Cách 2: Treeify (JDK 8+)</h4>
+<div class="diagram">
+Khi list dài &gt; 8 và capacity ≥ 64:
+
+bucket[2] ──▶ Red-Black Tree
+                 <span class="box">[B]</span>
+                /   \
+             <span class="box">[A]</span>     <span class="box">[C]</span>
+
+Tệ nhất: O(log n) thay vì O(n)
+</div>
+
+<div class="card warn">
+  <span class="label warn">Điều kiện treeify</span>
+  <p><code>capacity ≥ 64</code>. Nếu capacity &lt; 64 → ưu tiên resize thay vì treeify.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="hashset">6. HashSet — bọc HashMap</h2>
+
+<div class="card cls">
+  <span class="label cls">HashSet</span>
+  <pre><code><span class="kw">private transient</span> <span class="type">HashMap</span>&lt;E,Object&gt; map;
+<span class="kw">private static final</span> <span class="type">Object</span> PRESENT = <span class="kw">new</span> <span class="type">Object</span>();
+
+<span class="kw">public boolean</span> <span class="mth">add</span>(E e) {
+    <span class="kw">return</span> map.<span class="mth">put</span>(e, PRESENT) == <span class="kw">null</span>;
+}</code></pre>
+</div>
+
+<p>Mọi thao tác của HashSet thực chất <strong>delegate sang HashMap</strong>:</p>
+
+<table>
+  <thead><tr><th>HashSet method</th><th>HashMap tương đương</th></tr></thead>
+  <tbody>
+    <tr><td><code>add(e)</code></td><td><code>map.put(e, PRESENT)</code></td></tr>
+    <tr><td><code>contains(e)</code></td><td><code>map.containsKey(e)</code></td></tr>
+    <tr><td><code>remove(e)</code></td><td><code>map.remove(e)</code></td></tr>
+    <tr><td><code>iterator()</code></td><td><code>map.keySet().iterator()</code></td></tr>
+  </tbody>
+</table>
+
+<p>→ Bộ nhớ, collision, resize, treeify của HashSet <strong>giống y hệt HashMap</strong>.</p>
+
+<!-- ============================================================ -->
+<h2 id="deque">7. ArrayDeque — mảng vòng</h2>
+
+<div class="card cls">
+  <span class="label cls">ArrayDeque</span>
+  <pre><code><span class="kw">transient</span> <span class="type">Object</span>[] elements;
+<span class="kw">transient int</span> head;
+<span class="kw">transient int</span> tail;</code></pre>
+</div>
+
+<h4>Minh họa mảng vòng (circular array)</h4>
+<div class="diagram">
+Dùng làm stack hoặc queue.
+
+elements (capacity = 8):
+<span class="arr">┌────┬────┬────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 30 │ 40 │ 50 │null│null│ 10 │ 20 │null│</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┴────┴────┘</span>
+  <span class="note">0    1    2    3    4    5    6    7</span>
+              <span class="ptr">head=5</span>          <span class="ptr">tail=3</span>
+
+Queue (FIFO):
+  poll()   → lấy ở head (10), head++
+  offer()  → thêm ở tail (30), tail++
+
+Khi head/tail vượt capacity → wrap về 0 (modulo)
+</div>
+
+<div class="card good">
+  <span class="label good">Tại sao nhanh?</span>
+  <ul>
+    <li><code>addFirst</code>, <code>addLast</code>, <code>pollFirst</code>, <code>pollLast</code> — O(1) amortized.</li>
+    <li>Contiguous memory → cache locality tốt hơn LinkedList nhiều.</li>
+    <li>Không cấp node mỗi lần thêm → ít GC pressure.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="priorityqueue">8. PriorityQueue — binary heap</h2>
+
+<div class="card cls">
+  <span class="label cls">PriorityQueue</span>
+  <pre><code><span class="kw">transient</span> <span class="type">Object</span>[] queue;   <span class="comment">// mảng chứa heap</span>
+<span class="kw">private int</span> size;
+<span class="kw">private final</span> <span class="type">Comparator</span>&lt;? <span class="kw">super</span> E&gt; comparator;</code></pre>
+</div>
+
+<h4>Heap là gì? — mảng biểu diễn cây</h4>
+<div class="diagram">
+Min-heap:
+              <span class="box">10</span>          index 0
+            /     \
+         <span class="box">20</span>       <span class="box">30</span>       index 1, 2
+        /   \    /
+      <span class="box">40</span>   <span class="box">50</span>  <span class="box">60</span>       index 3,4,5
+
+Lưu trong mảng:
+<span class="arr">┌────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │ 50 │ 60 │</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┘</span>
+
+Quan hệ parent-child:
+  parent(i) = (i - 1) / 2
+  left(i)   = 2*i + 1
+  right(i)  = 2*i + 2
+</div>
+
+<h4>add(e) — O(log n)</h4>
+<div class="diagram">
+1. Chèn vào cuối mảng
+2. "Sift up": so sánh với parent, đổi chỗ nếu nhỏ hơn
+3. Lặp đến khi đúng vị trí
+
+Thêm 5 vào heap trên:
+<span class="arr">┌────┬────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 30 │ 40 │ 50 │ 60 │ 5  │</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┴────┘</span>
+  5 < 30 → swap
+<span class="arr">┌────┬────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 10 │ 20 │ 5  │ 40 │ 50 │ 60 │ 30 │</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┴────┘</span>
+  5 < 10 → swap
+<span class="arr">┌────┬────┬────┬────┬────┬────┬────┐</span>
+<span class="arr">│ 5  │ 20 │ 10 │ 40 │ 50 │ 60 │ 30 │</span>
+<span class="arr">└────┴────┴────┴────┴────┴────┴────┘</span>
+</div>
+
+<h4>poll() — O(log n)</h4>
+<div class="diagram">
+1. Lấy queue[0] (min)
+2. Đưa queue[size-1] lên queue[0], giảm size
+3. "Sift down": so sánh với con, đổi với con nhỏ hơn
+4. Lặp đến khi đúng vị trí
+</div>
+
+<!-- ============================================================ -->
+<h2 id="treemap">9. TreeMap — Red-Black Tree</h2>
+
+<div class="card cls">
+  <span class="label cls">TreeMap</span>
+  <p>Red-Black Tree — cây nhị phân tự cân bằng, đảm bảo chiều cao ≤ 2*log(n+1).</p>
+</div>
+
+<h4>Minh họa</h4>
+<div class="diagram">
+            <span class="box">20 (B)</span>
+           /        \
+       <span class="box">10 (R)</span>        <span class="box">30 (B)</span>
+       /    \        /    \
+    <span class="box">5 (B)</span>  <span class="box">15 (B)</span>  <span class="box">25 (R)</span>  <span class="box">40 (R)</span>
+
+B = Black, R = Red
+
+Rule:
+  1. Root là Black
+  2. Red node không có con Red
+  3. Mọi đường từ root đến leaf có cùng số Black node
+</div>
+
+<h4>put(k, v) — O(log n)</h4>
+<div class="diagram">
+1. Đi từ root xuống theo so sánh key (BST insert)
+2. Thêm node mới ở leaf, color = Red
+3. Nếu vi phạm Red-Black rules → rebalance:
+   - Recolor (đổi màu)
+   - Rotate (xoay trái/phải)
+4. Số lần xoay tối đa: O(1) amortized
+</div>
+
+<div class="card good">
+  <span class="label good">Tại sao O(log n)?</span>
+  <p>Cây tự cân bằng → chiều cao ~log n. Mỗi bước đi xuống là 1 pointer dereference (từ parent đến child). Không duyệt tuyến tính.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="concurrent">10. ConcurrentHashMap</h2>
+
+<div class="card cls">
+  <span class="label cls">ConcurrentHashMap (JDK 8+)</span>
+  <pre><code><span class="kw">transient volatile</span> <span class="type">Node</span>&lt;K,V&gt;[] table;
+<span class="comment">// Mỗi bucket là 1 node, lock granularity = bucket</span></code></pre>
+</div>
+
+<h4>put(k, v) — không lock toàn cục</h4>
+<div class="diagram">
+1. Tính hash → index
+2. Nếu bucket rỗng:
+     <span class="new">CAS</span> để gán node mới (không lock)
+3. Nếu bucket có node:
+     <span class="kw">synchronized</span> (head của bucket) {
+         duyệt list/tree, chèn/replace
+     }
+4. Nếu resize → multi-thread hỗ trợ chuyển dữ liệu
+
+Khác JDK 7:
+  JDK 7: chia thành 16 Segment, lock từng Segment
+  JDK 8+: lock từng bucket → concurrency cao hơn
+</div>
+
+<div class="card good">
+  <span class="label good">Ưu điểm</span>
+  <ul>
+    <li>Nhiều thread ghi vào bucket khác nhau → không block nhau.</li>
+    <li>Đọc không cần lock (nhờ <code>volatile</code>).</li>
+    <li>Iterator weakly consistent — không throw CME.</li>
+  </ul>
+</div>
+
+<div class="card bad">
+  <span class="label bad">Hạn chế</span>
+  <ul>
+    <li>Không cho null key/value.</li>
+    <li><code>size()</code> là ước lượng (dùng <code>mappingCount()</code> chính xác hơn).</li>
+    <li>Chi phí memory cao hơn HashMap thường.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="summary">11. Bảng tóm tắt memory behavior</h2>
+
+<h3>ArrayList</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>get(i)</code></td><td>Tính địa chỉ <code>base + i*size</code>, đọc trực tiếp</td><td><span class="pill o1">O(1)</span></td></tr>
+    <tr><td><code>set(i, x)</code></td><td>Ghi đè ô nhớ</td><td><span class="pill o1">O(1)</span></td></tr>
+    <tr><td><code>add(e)</code></td><td>Ghi vào <code>elementData[size++]</code></td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td><code>add(i, e)</code></td><td>Dịch phải từ index → size, ghi vào index</td><td><span class="pill on">O(n)</span></td></tr>
+    <tr><td><code>remove(i)</code></td><td>Dịch trái, null hóa ô cuối</td><td><span class="pill on">O(n)</span></td></tr>
+    <tr><td>resize</td><td>Cấp mảng mới x1.5, copy toàn bộ</td><td><span class="pill on">O(n)</span></td></tr>
+  </tbody>
+</table>
+
+<h3>LinkedList</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>get(i)</code></td><td>Duyệt node từ first hoặc last</td><td><span class="pill on">O(n)</span></td></tr>
+    <tr><td><code>add(e)</code></td><td>Tạo node mới, nối vào tail</td><td><span class="pill o1">O(1)</span></td></tr>
+    <tr><td><code>add(i, e)</code></td><td>Tìm node i-1 (O(n)) + tạo node + nối con trỏ (O(1))</td><td><span class="pill on">O(n)</span></td></tr>
+    <tr><td><code>remove(i)</code></td><td>Tìm node i (O(n)) + nối con trỏ (O(1))</td><td><span class="pill on">O(n)</span></td></tr>
+    <tr><td><code>addFirst / addLast</code></td><td>Nối vào first / last</td><td><span class="pill o1">O(1)</span></td></tr>
+  </tbody>
+</table>
+
+<h3>HashMap / HashSet</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>put / add</code></td><td>Hash → bucket → CAS/duyệt list → chèn</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td><code>get / contains</code></td><td>Hash → bucket → duyệt list so hash + equals</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td><code>remove</code></td><td>Hash → bucket → nối con trỏ prev.next = next</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td>resize</td><td>Cấp mảng x2, rehash từng entry</td><td><span class="pill on">O(n)</span></td></tr>
+    <tr><td>collision nặng</td><td>Bucket thành linked list hoặc tree</td><td><span class="pill olog">O(log n)</span></td></tr>
+  </tbody>
+</table>
+
+<h3>TreeMap / TreeSet</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>put / add</code></td><td>Đi xuống cây theo so sánh, chèn leaf, rebalance</td><td><span class="pill olog">O(log n)</span></td></tr>
+    <tr><td><code>get</code></td><td>Đi xuống cây theo so sánh</td><td><span class="pill olog">O(log n)</span></td></tr>
+    <tr><td><code>remove</code></td><td>Tìm node + xóa + rebalance (xoay)</td><td><span class="pill olog">O(log n)</span></td></tr>
+    <tr><td><code>firstKey / lastKey</code></td><td>Đi đến trái nhất / phải nhất</td><td><span class="pill olog">O(log n)</span></td></tr>
+  </tbody>
+</table>
+
+<h3>ArrayDeque</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>addFirst / addLast</code></td><td>Ghi vào head-1 / tail, có thể wrap modulo</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td><code>pollFirst / pollLast</code></td><td>Lấy ở head/tail, null hóa ô, di chuyển index</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td>resize</td><td>Cấp mảng x2, copy theo thứ tự</td><td><span class="pill on">O(n)</span></td></tr>
+  </tbody>
+</table>
+
+<h3>PriorityQueue</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>offer</code></td><td>Chèn cuối mảng + sift up</td><td><span class="pill olog">O(log n)</span></td></tr>
+    <tr><td><code>poll</code></td><td>Lấy root + đưa node cuối lên + sift down</td><td><span class="pill olog">O(log n)</span></td></tr>
+    <tr><td><code>peek</code></td><td>Đọc <code>queue[0]</code></td><td><span class="pill o1">O(1)</span></td></tr>
+  </tbody>
+</table>
+
+<h3>ConcurrentHashMap</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Memory làm gì</th><th>Big-O</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>put</code></td><td>CAS nếu bucket rỗng; synchronized bucket nếu có node</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td><code>get</code></td><td>Đọc volatile, không lock</td><td><span class="pill o1">O(1)*</span></td></tr>
+    <tr><td><code>size / mappingCount</code></td><td>Duyệt counter cells (striped), tổng hợp</td><td><span class="pill o1">O(1) ~ O(k)</span></td></tr>
+  </tbody>
+</table>
+
+<div class="quote">
+  <strong>Nguyên tắc vàng:</strong> Big-O chỉ là tổng kết. Muốn hiểu sâu — và trả lời phỏng vấn thuyết phục — hãy mô tả được
+  <strong>bộ nhớ đang làm gì</strong>: đọc trực tiếp hay duyệt? Dịch chuyển hay nối con trỏ? Cấp phát mới hay ghi đè?
+</div>
+
+<div class="footer">
+  Note ôn phỏng vấn Backend · Java Collections Memory &amp; Operations<br>
+  File: <code>java-collections-memory.html</code>
+</div>
+
+</main>
+</div>
+
+</body>
+</html>
