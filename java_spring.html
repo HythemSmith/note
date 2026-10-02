@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn phỏng vấn Java Spring Boot - Junior/Middle</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg-elev: #1e293b;
+    --bg-elev-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --heading: #a5b4fc;
+    --accent: #22d3ee;
+    --accent-2: #818cf8;
+    --code-bg: #0b1220;
+    --code-text: #7dd3fc;
+    --summary: #f1f5f9;
+    --answer: #cbd5e1;
+    --shadow: 0 4px 14px rgba(0,0,0,0.35);
+    --tip-bg: rgba(34,211,238,0.08);
+    --tip-border: #22d3ee;
+  }
+  html.light {
+    --bg: #f5f7fa;
+    --bg-elev: #ffffff;
+    --bg-elev-2: #f9fafb;
+    --border: #e5e7eb;
+    --text: #24292e;
+    --text-dim: #6b7280;
+    --heading: #4f46e5;
+    --accent: #06b6d4;
+    --accent-2: #4f46e5;
+    --code-bg: #eef2ff;
+    --code-text: #4338ca;
+    --summary: #1f2937;
+    --answer: #374151;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --tip-bg: rgba(6,182,212,0.08);
+    --tip-border: #06b6d4;
+  }
+  * { box-sizing: border-box; }
+  html, body { transition: background 0.25s, color 0.25s; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  header {
+    background: linear-gradient(135deg, #1e1b4b, #0f766e);
+    color: #f8fafc;
+    padding: 44px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(129,140,248,0.25), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(34,211,238,0.2), transparent 45%);
+    pointer-events: none;
+  }
+  header h1 { margin: 0 0 8px; font-size: 28px; position: relative; z-index: 1; }
+  header p { margin: 0; opacity: 0.9; position: relative; z-index: 1; font-size: 15px; }
+
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 100;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #f8fafc;
+    width: 42px; height: 42px;
+    border-radius: 50%; font-size: 18px;
+    cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .theme-toggle:hover { transform: scale(1.08); background: rgba(255,255,255,0.2); }
+
+  .container { max-width: 1050px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .toc {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { margin-top: 0; font-size: 18px; color: var(--heading); }
+  .toc ul { columns: 2; list-style: none; padding-left: 0; margin: 0; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--accent); text-decoration: none; font-size: 14px; transition: color 0.15s, padding-left 0.15s; }
+  .toc a:hover { color: var(--accent-2); padding-left: 4px; }
+
+  section {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    color: var(--heading);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-size: 20px;
+  }
+
+  details {
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev-2);
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin: 14px 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  details[open] {
+    background: linear-gradient(90deg, rgba(34,211,238,0.06), transparent 60%);
+    border-left-color: var(--accent-2);
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--summary);
+    list-style: none;
+    position: relative;
+    padding-left: 24px;
+    font-size: 15px;
+  }
+  details summary::before {
+    content: "▶";
+    position: absolute; left: 0; top: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    transition: transform 0.2s;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details summary::-webkit-details-marker { display: none; }
+
+  .answer {
+    margin-top: 14px;
+    color: var(--answer);
+    font-size: 14.5px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+
+  .answer code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 90%;
+    font-family: "Consolas", "Monaco", "Menlo", monospace;
+    border: 1px solid var(--border);
+  }
+  .answer pre {
+    background: #0b1220;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+    border: 1px solid #334155;
+    margin: 10px 0;
+  }
+  html.light .answer pre { background: #1e293b; border-color: #1e293b; }
+  .answer pre code { background: transparent; color: inherit; padding: 0; border: none; }
+  .answer ul, .answer ol { padding-left: 22px; margin: 8px 0; }
+  .answer li { margin: 5px 0; }
+  .answer strong { color: var(--summary); }
+  .answer em { color: var(--accent); font-style: normal; }
+  .answer p { margin: 8px 0; }
+
+  .tip {
+    background: var(--tip-bg);
+    border-left: 3px solid var(--tip-border);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 12px 0 4px;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .tip::before {
+    content: "💡 Phỏng vấn: ";
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .controls {
+    text-align: right;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .controls button:hover { background: var(--bg-elev-2); border-color: var(--accent); transform: translateY(-1px); }
+
+  button.top {
+    position: fixed; right: 20px; bottom: 20px;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: white;
+    border: none; border-radius: 50%;
+    width: 48px; height: 48px;
+    font-size: 20px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.5);
+    transition: transform 0.2s;
+    z-index: 99;
+  }
+  button.top:hover { transform: scale(1.08); }
+
+  /* Glossary */
+  .gloss-item {
+    padding: 10px 14px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .gloss-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .gloss-item strong { color: var(--accent); }
+  .gloss-item em { color: var(--accent-2); font-style: normal; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
+
+  @media(max-width: 600px) {
+    .toc ul { columns: 1; }
+    header h1 { font-size: 22px; }
+    header { padding: 32px 16px; }
+    section { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="Chuyển Dark/Light">🌙</button>
+
+<header>
+  <h1>📘 Ôn phỏng vấn Java Spring Boot</h1>
+  <p>Junior – Middle · 98 câu hỏi + đáp án chi tiết + Glossary</p>
+</header>
+
+<div class="container">
+
+  <div class="toc">
+    <h2>📑 Mục lục</h2>
+    <ul>
+      <li><a href="#glossary">📖 Từ viết tắt (Glossary)</a></li>
+      <li><a href="#s1">1. Java Core &amp; OOP</a></li>
+      <li><a href="#s2">2. Spring Core</a></li>
+      <li><a href="#s3">3. Spring Boot</a></li>
+      <li><a href="#s4">4. JPA / Hibernate / Database</a></li>
+      <li><a href="#s5">5. Microservices &amp; DevOps</a></li>
+      <li><a href="#s6">6. Thực hành / code</a></li>
+      <li><a href="#s7">7. Hành vi / tình huống</a></li>
+    </ul>
+  </div>
+
+  <div class="controls">
+    <button onclick="toggleAll(true)">📂 Mở tất cả</button>
+    <button onclick="toggleAll(false)">📁 Đóng tất cả</button>
+  </div>
+
+  <!-- ============ GLOSSARY ============ -->
+<section id="glossary">
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);padding-bottom:10px;margin-bottom:10px;">
+    <h2 style="color:var(--heading);margin:0;font-size:20px;border:none;padding:0;">📖 Từ viết tắt (Glossary)</h2>
+    <button id="glossaryToggle" onclick="toggleGlossary()"
+      style="background:var(--bg-elev-2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap;">
+      🔽 Thu gọn
+    </button>
+  </div>
+
+  <div id="glossaryBody">
+    <input id="glossarySearch" type="text" placeholder="🔍 Tìm từ viết tắt... (ví dụ: JVM, DTO, CI/CD)"
+      style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-elev-2);color:var(--text);font-size:14px;margin:12px 0 16px;outline:none;">
+    <div id="glossaryList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">
+      <div class="gloss-item" data-k="jdk java development kit"><strong>JDK</strong> — Java Development Kit · Bộ công cụ <em>phát triển</em> Java</div>
+      <div class="gloss-item" data-k="jre java runtime environment"><strong>JRE</strong> — Java Runtime Environment · Môi trường <em>chạy</em> Java</div>
+      <div class="gloss-item" data-k="jvm java virtual machine"><strong>JVM</strong> — Java Virtual Machine · Máy ảo chạy bytecode</div>
+      <div class="gloss-item" data-k="gc garbage collection"><strong>GC</strong> — Garbage Collection · Bộ thu gom rác</div>
+      <div class="gloss-item" data-k="npe nullpointerexception"><strong>NPE</strong> — NullPointerException · Lỗi truy cập null</div>
+      <div class="gloss-item" data-k="oom outofmemoryerror"><strong>OOM</strong> — OutOfMemoryError · Lỗi hết bộ nhớ</div>
+      <div class="gloss-item" data-k="lts long-term support"><strong>LTS</strong> — Long-Term Support · Phiên bản hỗ trợ dài hạn (8, 11, 17, 21)</div>
+      <div class="gloss-item" data-k="pojo plain old java object"><strong>POJO</strong> — Plain Old Java Object · Class Java thuần</div>
+      <div class="gloss-item" data-k="jsr java specification request"><strong>JSR</strong> — Java Specification Request · Đề xuất chuẩn Java</div>
+      <div class="gloss-item" data-k="cas compare and swap"><strong>CAS</strong> — Compare-And-Swap · Đồng bộ không lock</div>
+      <div class="gloss-item" data-k="pecs producer extends consumer super"><strong>PECS</strong> — Producer Extends, Consumer Super · Nguyên tắc wildcard</div>
+      <div class="gloss-item" data-k="ide integrated development environment"><strong>IDE</strong> — Integrated Development Environment · IntelliJ, Eclipse, VS Code</div>
+      <div class="gloss-item" data-k="oop object oriented programming"><strong>OOP</strong> — Object-Oriented Programming · Lập trình hướng đối tượng</div>
+      <div class="gloss-item" data-k="di dependency injection"><strong>DI</strong> — Dependency Injection · Tiêm phụ thuộc</div>
+      <div class="gloss-item" data-k="ioc inversion of control"><strong>IoC</strong> — Inversion of Control · Đảo ngược điều khiển</div>
+      <div class="gloss-item" data-k="aop aspect oriented programming"><strong>AOP</strong> — Aspect-Oriented Programming · Lập trình hướng khía cạnh</div>
+      <div class="gloss-item" data-k="dto data transfer object"><strong>DTO</strong> — Data Transfer Object · Object truyền dữ liệu</div>
+      <div class="gloss-item" data-k="dao data access object"><strong>DAO</strong> — Data Access Object · Object truy cập DB</div>
+      <div class="gloss-item" data-k="ddd domain driven design"><strong>DDD</strong> — Domain-Driven Design · Thiết kế hướng domain</div>
+      <div class="gloss-item" data-k="api application programming interface"><strong>API</strong> — Application Programming Interface · Giao diện lập trình</div>
+      <div class="gloss-item" data-k="rest representational state transfer"><strong>REST</strong> — Representational State Transfer · Kiến trúc API</div>
+      <div class="gloss-item" data-k="http hypertext transfer protocol"><strong>HTTP</strong> — HyperText Transfer Protocol · Giao thức web</div>
+      <div class="gloss-item" data-k="https http secure"><strong>HTTPS</strong> — HTTP Secure · HTTP có mã hóa</div>
+      <div class="gloss-item" data-k="json javascript object notation"><strong>JSON</strong> — JavaScript Object Notation · Dữ liệu key-value</div>
+      <div class="gloss-item" data-k="xml extensible markup language"><strong>XML</strong> — eXtensible Markup Language · Dữ liệu dạng thẻ</div>
+      <div class="gloss-item" data-k="yaml yaml aint markup language"><strong>YAML</strong> — YAML Ain't Markup Language · Config phân cấp</div>
+      <div class="gloss-item" data-k="crud create read update delete"><strong>CRUD</strong> — Create, Read, Update, Delete · 4 thao tác dữ liệu</div>
+      <div class="gloss-item" data-k="cors cross origin resource sharing"><strong>CORS</strong> — Cross-Origin Resource Sharing · Cho phép request khác domain</div>
+      <div class="gloss-item" data-k="csrf cross site request forgery"><strong>CSRF</strong> — Cross-Site Request Forgery · Tấn công giả mạo request</div>
+      <div class="gloss-item" data-k="jwt json web token"><strong>JWT</strong> — JSON Web Token · Token xác thực dạng JSON</div>
+      <div class="gloss-item" data-k="sla service level agreement"><strong>SLA</strong> — Service-Level Agreement · Cam kết mức dịch vụ</div>
+      <div class="gloss-item" data-k="rps tps requests transactions per second"><strong>RPS / TPS</strong> — Requests / Transactions Per Second · Số request/giây</div>
+      <div class="gloss-item" data-k="p99 99th percentile"><strong>p99</strong> — 99th percentile · 99% request nhanh hơn giá trị này</div>
+      <div class="gloss-item" data-k="db database"><strong>DB</strong> — Database · Cơ sở dữ liệu</div>
+      <div class="gloss-item" data-k="rdbms relational database management system"><strong>RDBMS</strong> — Relational DBMS · Hệ quản trị CSDL quan hệ</div>
+      <div class="gloss-item" data-k="sql structured query language"><strong>SQL</strong> — Structured Query Language · Ngôn ngữ truy vấn</div>
+      <div class="gloss-item" data-k="nosql not only sql"><strong>NoSQL</strong> — Not Only SQL · CSDL phi quan hệ</div>
+      <div class="gloss-item" data-k="acid atomicity consistency isolation durability"><strong>ACID</strong> — Atomicity, Consistency, Isolation, Durability · 4 tính chất transaction</div>
+      <div class="gloss-item" data-k="base basically available soft state eventual consistency"><strong>BASE</strong> — Basically Available, Soft state, Eventual consistency · Mô hình NoSQL</div>
+      <div class="gloss-item" data-k="pk primary key"><strong>PK</strong> — Primary Key · Khóa chính</div>
+      <div class="gloss-item" data-k="fk foreign key"><strong>FK</strong> — Foreign Key · Khóa ngoại</div>
+      <div class="gloss-item" data-k="ddl data definition language"><strong>DDL</strong> — Data Definition Language · CREATE, ALTER, DROP</div>
+      <div class="gloss-item" data-k="dml data manipulation language"><strong>DML</strong> — Data Manipulation Language · INSERT, UPDATE, DELETE</div>
+      <div class="gloss-item" data-k="jpa java persistence api"><strong>JPA</strong> — Java Persistence API · Chuẩn ORM của Java</div>
+      <div class="gloss-item" data-k="orm object relational mapping"><strong>ORM</strong> — Object-Relational Mapping · Ánh xạ object ↔ bảng</div>
+      <div class="gloss-item" data-k="jpql java persistence query language"><strong>JPQL</strong> — Java Persistence Query Language · Query của JPA</div>
+      <div class="gloss-item" data-k="hql hibernate query language"><strong>HQL</strong> — Hibernate Query Language · Query của Hibernate</div>
+      <div class="gloss-item" data-k="ttl time to live"><strong>TTL</strong> — Time To Live · Thời gian sống của cache</div>
+      <div class="gloss-item" data-k="mvc model view controller"><strong>MVC</strong> — Model-View-Controller · Mô hình kiến trúc web</div>
+      <div class="gloss-item" data-k="bom bill of materials"><strong>BOM</strong> — Bill of Materials · Danh sách dependency quản version</div>
+      <div class="gloss-item" data-k="cglib code generation library"><strong>CGLIB</strong> — Code Generation Library · Sinh proxy cho class</div>
+      <div class="gloss-item" data-k="jdbc java database connectivity"><strong>JDBC</strong> — Java Database Connectivity · API kết nối DB</div>
+      <div class="gloss-item" data-k="hikaricp connection pool"><strong>HikariCP</strong> — Hikari Connection Pool · Connection pool nhanh</div>
+      <div class="gloss-item" data-k="mapstruct mapping"><strong>MapStruct</strong> — Thư viện sinh code mapping Entity ↔ DTO</div>
+      <div class="gloss-item" data-k="junit test framework"><strong>JUnit</strong> — Framework test phổ biến của Java</div>
+      <div class="gloss-item" data-k="mockito mock"><strong>Mockito</strong> — Thư viện mock object</div>
+      <div class="gloss-item" data-k="mockmvc mock mvc"><strong>MockMvc</strong> — Công cụ test controller Spring MVC</div>
+      <div class="gloss-item" data-k="tdd test driven development"><strong>TDD</strong> — Test-Driven Development · Viết test trước</div>
+      <div class="gloss-item" data-k="e2e end to end"><strong>E2E</strong> — End-to-End · Test toàn hệ thống</div>
+      <div class="gloss-item" data-k="poc proof of concept"><strong>POC</strong> — Proof of Concept · Bản thử nghiệm</div>
+      <div class="gloss-item" data-k="ci cd continuous integration delivery"><strong>CI/CD</strong> — Continuous Integration / Continuous Delivery · Tích hợp &amp; triển khai liên tục</div>
+      <div class="gloss-item" data-k="vm virtual machine"><strong>VM</strong> — Virtual Machine · Máy ảo</div>
+      <div class="gloss-item" data-k="aws amazon web services"><strong>AWS</strong> — Amazon Web Services · Cloud của Amazon</div>
+      <div class="gloss-item" data-k="gcp google cloud platform"><strong>GCP</strong> — Google Cloud Platform · Cloud của Google</div>
+      <div class="gloss-item" data-k="ec2 elastic compute cloud"><strong>EC2</strong> — Elastic Compute Cloud · VM của AWS</div>
+      <div class="gloss-item" data-k="s3 simple storage service"><strong>S3</strong> — Simple Storage Service · Lưu trữ object của AWS</div>
+      <div class="gloss-item" data-k="rds relational database service"><strong>RDS</strong> — Relational Database Service · DB managed của AWS</div>
+      <div class="gloss-item" data-k="ecs eks container"><strong>ECS / EKS</strong> — Elastic Container Service / Elastic Kubernetes Service</div>
+      <div class="gloss-item" data-k="k8s kubernetes"><strong>k8s</strong> — Kubernetes · Nền tảng orchestration container</div>
+      <div class="gloss-item" data-k="elk elasticsearch logstash kibana"><strong>ELK</strong> — Elasticsearch + Logstash + Kibana · Stack xử lý log</div>
+      <div class="gloss-item" data-k="kafka streaming"><strong>Kafka</strong> — Nền tảng streaming của Apache</div>
+      <div class="gloss-item" data-k="rabbitmq message broker"><strong>RabbitMQ</strong> — Message broker</div>
+      <div class="gloss-item" data-k="redis cache key value"><strong>Redis</strong> — Remote Dictionary Server · Cache in-memory</div>
+      <div class="gloss-item" data-k="cdn content delivery network"><strong>CDN</strong> — Content Delivery Network · Mạng phân phối nội dung</div>
+      <div class="gloss-item" data-k="vpc virtual private cloud"><strong>VPC</strong> — Virtual Private Cloud · Mạng riêng ảo trên cloud</div>
+      <div class="gloss-item" data-k="eureka service discovery"><strong>Eureka</strong> — Service Discovery của Netflix</div>
+      <div class="gloss-item" data-k="ribbon load balancer"><strong>Ribbon</strong> — Client-side load balancer (cũ)</div>
+      <div class="gloss-item" data-k="hystrix circuit breaker"><strong>Hystrix</strong> — Circuit breaker (cũ)</div>
+      <div class="gloss-item" data-k="resilience4j circuit breaker"><strong>Resilience4j</strong> — Circuit breaker hiện đại</div>
+      <div class="gloss-item" data-k="cqrs command query responsibility segregation"><strong>CQRS</strong> — Command Query Responsibility Segregation · Tách read/write</div>
+      <div class="gloss-item" data-k="saga distributed transaction"><strong>Saga</strong> — Pattern quản lý distributed transaction</div>
+      <div class="gloss-item" data-k="cap consistency availability partition"><strong>CAP</strong> — Consistency, Availability, Partition tolerance · Định lý CAP</div>
+      <div class="gloss-item" data-k="bcrypt hash password"><strong>BCrypt</strong> — Thuật toán hash password có salt</div>
+      <div class="gloss-item" data-k="md5 sha hash"><strong>MD5 / SHA</strong> — Thuật toán hash (không dùng cho password)</div>
+      <div class="gloss-item" data-k="ssl tls encryption"><strong>SSL / TLS</strong> — Giao thức mã hóa</div>
+      <div class="gloss-item" data-k="rbac role based access control"><strong>RBAC</strong> — Role-Based Access Control · Phân quyền theo vai trò</div>
+      <div class="gloss-item" data-k="2fa mfa authentication"><strong>2FA / MFA</strong> — Two/Multi-Factor Authentication · Xác thực đa yếu tố</div>
+    </div>
+    <p id="glossaryEmpty" style="display:none;color:var(--text-dim);text-align:center;padding:20px;">Không tìm thấy từ viết tắt nào khớp.</p>
+      </div>
+  </section>
+
+  <!-- ============ 1. JAVA CORE ============ -->
+  <section id="s1">
+    <h2>1. Java Core &amp; OOP</h2>
+
+    <details>
+      <summary>1. JDK, JRE, JVM khác nhau thế nào?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>JVM (Java Virtual Machine)</strong>: máy ảo chạy bytecode (<code>.class</code>). Chịu trách nhiệm: load class, verify bytecode, thực thi, quản lý bộ nhớ (Heap/Stack), Garbage Collection. JVM là đặc tả — mỗi HĐH có implementation riêng (HotSpot, OpenJ9). Nhờ JVM mà Java "write once, run anywhere".</li>
+          <li><strong>JRE (Java Runtime Environment)</strong> = JVM + thư viện chuẩn (rt.jar, java.base) + file cấu hình. Chỉ đủ để <em>chạy</em> ứng dụng Java, không biên dịch được.</li>
+          <li><strong>JDK (Java Development Kit)</strong> = JRE + công cụ dev: <code>javac</code> (compiler), <code>jar</code>, <code>javadoc</code>, <code>jdb</code> (debugger), <code>jps</code>, <code>jstat</code>. Cần JDK để <em>phát triển</em>.</li>
+        </ul>
+        <p>Mối quan hệ: <strong>JDK ⊃ JRE ⊃ JVM</strong>.</p>
+        <div class="tip">Đừng nhầm: máy chỉ cần JRE để chạy app; dev cần JDK. Từ Java 11, Oracle không còn phát hành JRE riêng — JDK đã bao gồm.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>2. OOP có mấy tính chất? Cho ví dụ.</summary>
+      <div class="answer">
+        <p><strong>4 tính chất</strong>:</p>
+        <ol>
+          <li><strong>Encapsulation (Đóng gói)</strong>: che giấu state, chỉ expose qua method. Ví dụ <code>private double balance;</code> + <code>getBalance()</code> / <code>deposit()</code>. Lợi ích: kiểm soát truy cập, dễ bảo trì.</li>
+          <li><strong>Inheritance (Kế thừa)</strong>: class con tái sử dụng code class cha. Ví dụ <code>Dog extends Animal</code>. Lợi ích: DRY, mở rộng dễ.</li>
+          <li><strong>Polymorphism (Đa hình)</strong>: cùng method, nhiều hành vi. Gồm <em>compile-time</em> (overloading) và <em>runtime</em> (overriding). Ví dụ <code>Animal a = new Dog(); a.sound();</code> → gọi <code>Dog.sound()</code>.</li>
+          <li><strong>Abstraction (Trừu tượng)</strong>: ẩn chi tiết cài đặt, chỉ lộ interface. Ví dụ <code>interface PaymentService { void pay(); }</code> — client chỉ biết <code>pay()</code>, không quan tâm VNPay/MoMo bên dưới.</li>
+        </ol>
+        <div class="tip">Phỏng vấn hay hỏi kèm: "Cho ví dụ thực tế trong dự án em?" — nên chuẩn bị 1 ví dụ cụ thể (ví dụ: tầng Service dùng interface để đa hình giữa nhiều implementation).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>3. Abstract class vs Interface? Khi nào dùng?</summary>
+      <div class="answer">
+        <p><strong>Abstract class</strong>:</p>
+        <ul>
+          <li>Có thể chứa field (state), constructor, method có/không có thân.</li>
+          <li>Class con dùng <code>extends</code>, chỉ kế thừa <strong>1</strong> class.</li>
+          <li>Dùng khi các class con <em>chia sẻ code + state chung</em> và có quan hệ "is-a" rõ ràng (ví dụ <code>AbstractShape</code> có <code>color</code> + <code>draw()</code> abstract).</li>
+        </ul>
+        <p><strong>Interface</strong>:</p>
+        <ul>
+          <li>Java 8+: có <code>default</code> và <code>static</code> method; Java 9+: <code>private</code> method.</li>
+          <li>Field mặc định là <code>public static final</code>.</li>
+          <li>Class dùng <code>implements</code>, có thể implement nhiều interface → đa kế thừa kiểu.</li>
+          <li>Dùng khi muốn định nghĩa <em>hợp đồng hành vi</em>, cho phép nhiều class không liên quan cùng implement (ví dụ <code>Comparable</code>, <code>Serializable</code>).</li>
+        </ul>
+        <p><strong>Quy tắc chọn</strong>: Nếu cần state/constructor/versioning → abstract class. Nếu chỉ định nghĩa capability → interface. Trong Spring, hầu hết Service/Repository đều dùng interface để dễ mock test.</p>
+        <div class="tip">Java 8 ra đời default method làm interface gần giống abstract class, nhưng khác biệt cốt lõi vẫn là: <strong>state</strong> và <strong>đa kế thừa</strong>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>4. Overloading vs Overriding?</summary>
+      <div class="answer">
+        <p><strong>Overloading (compile-time / static polymorphism)</strong>:</p>
+        <ul>
+          <li>Cùng tên method, khác <em>signature</em> (số lượng, kiểu, thứ tự tham số).</li>
+          <li>Có thể cùng class hoặc class con.</li>
+          <li>Return type <em>không</em> tính vào signature → không thể overload chỉ bằng return type.</li>
+          <li>Ví dụ: <code>add(int a, int b)</code> và <code>add(double a, double b)</code>.</li>
+        </ul>
+        <p><strong>Overriding (runtime / dynamic polymorphism)</strong>:</p>
+        <ul>
+          <li>Class con viết lại method của cha với <em>cùng signature</em>.</li>
+          <li>Quy tắc: access modifier không được thu hẹp, không throws checked exception rộng hơn, return type có thể là covariant (kiểu con).</li>
+          <li>Dùng <code>@Override</code> để compiler kiểm tra.</li>
+        </ul>
+        <p>Overriding quyết định lúc <strong>runtime</strong> (dynamic dispatch), overloading quyết định lúc <strong>compile-time</strong>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>5. static, final, finally, finalize khác nhau?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>static</code></strong>: thuộc về class chứ không phải instance. Có thể áp dụng cho: field, method, block, nested class. Static method không truy cập được non-static member. Static block chạy 1 lần khi class load.</li>
+          <li><strong><code>final</code></strong>: biến không gán lại được; method không cho override; class không cho kế thừa (ví dụ <code>String</code>, <code>Integer</code>).</li>
+          <li><strong><code>finally</code></strong>: block trong try-catch, <em>luôn chạy</em> dù có exception hay không (trừ khi JVM bị kill / <code>System.exit()</code>). Dùng để giải phóng resource. Từ Java 7 có <em>try-with-resources</em> thay thế.</li>
+          <li><strong><code>finalize()</code></strong>: method được GC gọi trước khi thu hồi object. <strong>Deprecated từ Java 9</strong>, bỏ hẳn Java 18. Không nên dùng vì không đảm bảo thời điểm gọi, ảnh hưởng performance.</li>
+        </ul>
+        <div class="tip">Phỏng vấn hay hỏi: "finally có luôn chạy không?" → Có, trừ khi JVM exit hoặc thread bị kill. Nếu trong try có <code>return</code>, finally vẫn chạy trước khi return.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>6. == vs equals()? Contract equals/hashCode?</summary>
+      <div class="answer">
+        <p><strong><code>==</code></strong>: với primitive so sánh <em>giá trị</em>; với object so sánh <em>địa chỉ vùng nhớ</em> (reference).</p>
+        <p><strong><code>equals()</code></strong>: mặc định của <code>Object</code> cũng so sánh reference, nhưng các class như <code>String</code>, <code>Integer</code> đã override để so sánh nội dung. Muốn so sánh đúng cho class tự định nghĩa → phải override.</p>
+        <p><strong>Contract</strong> giữa <code>equals()</code> và <code>hashCode()</code>:</p>
+        <ol>
+          <li>Nếu <code>a.equals(b)</code> là <code>true</code> → <code>a.hashCode() == b.hashCode()</code> <em>bắt buộc</em>.</li>
+          <li>Ngược lại không bắt buộc: hashCode bằng nhau chưa chắc equals (do collision).</li>
+          <li>Nếu không tuân thủ → <code>HashMap</code>, <code>HashSet</code> sẽ hoạt động sai (không tìm thấy key).</li>
+        </ol>
+        <pre><code>@Override public boolean equals(Object o) {
+  if (this == o) return true;
+  if (!(o instanceof User u)) return false;
+  return Objects.equals(id, u.id) &amp;&amp; Objects.equals(email, u.email);
+}
+@Override public int hashCode() { return Objects.hash(id, email); }</code></pre>
+        <div class="tip">Phỏng vấn kinh điển: "Nếu override equals mà không override hashCode thì sao?" → HashMap/HashSet có thể mất key (vì bucket khác nhau).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>7. Immutable class là gì? Cách tạo?</summary>
+      <div class="answer">
+        <p><strong>Immutable class</strong> = object không thể thay đổi state sau khi tạo. Mọi thao tác "sửa" đều trả về object mới.</p>
+        <p><strong>Cách tạo</strong>:</p>
+        <ol>
+          <li>Khai báo class <code>final</code> (không cho kế thừa — tránh subclass phá vỡ tính immutable).</li>
+          <li>Tất cả field <code>private final</code>.</li>
+          <li>Không có setter.</li>
+          <li>Khởi tạo giá trị qua constructor, <em>deep copy</em> với field mutable (List, Date, array).</li>
+          <li>Getter trả về defensive copy với field mutable.</li>
+        </ol>
+        <pre><code>public final class Money {
+  private final BigDecimal amount;
+  private final List&lt;String&gt; tags;
+
+  public Money(BigDecimal amount, List&lt;String&gt; tags) {
+    this.amount = amount;
+    this.tags = List.copyOf(tags); // defensive copy
+  }
+  public List&lt;String&gt; getTags() { return tags; } // List.copyOf đã immutable
+}</code></pre>
+        <p><strong>Lợi ích</strong>: thread-safe tự nhiên (không cần synchronize), dễ cache, dễ làm key của HashMap, dễ reasoning.</p>
+        <p>Ví dụ class có sẵn: <code>String</code>, <code>Integer</code>, <code>LocalDate</code>, <code>BigDecimal</code>. Java 16+ có <code>record</code> giúp tạo nhanh immutable class.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>8. String vs StringBuilder vs StringBuffer?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>String</code></strong>: immutable. Mọi phép nối (<code>+</code>) tạo object mới. Với vòng lặp lớn → tạo nhiều object → GC pressure. Có String Pool để tái sử dụng literal.</li>
+          <li><strong><code>StringBuilder</code></strong>: mutable, <strong>không thread-safe</strong>, nhanh nhất. Dùng khi thao tác trong 1 thread (phổ biến nhất).</li>
+          <li><strong><code>StringBuffer</code></strong>: mutable, <strong>thread-safe</strong> (mọi method <code>synchronized</code>), chậm hơn StringBuilder. Chỉ dùng khi thực sự đa luồng.</li>
+        </ul>
+        <pre><code>// String trong vòng lặp → chậm
+String s = "";
+for (int i = 0; i &lt; 10000; i++) s += i; // tạo 10000 object
+
+// StringBuilder → nhanh
+StringBuilder sb = new StringBuilder();
+for (int i = 0; i &lt; 10000; i++) sb.append(i);</code></pre>
+        <p><strong>String Pool</strong>: literal như <code>"abc"</code> được lưu trong pool. <code>"abc" == "abc"</code> → <code>true</code>. Nhưng <code>new String("abc") == "abc"</code> → <code>false</code>.</p>
+        <div class="tip">Câu hỏi liên quan: "Vì sao String immutable?" → Để an toàn khi dùng làm key HashMap, thread-safe, cache được, bảo mật (password, URL), và tối ưu String Pool.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>9. ArrayList vs LinkedList? HashMap vs HashSet?</summary>
+      <div class="answer">
+        <p><strong>ArrayList vs LinkedList</strong>: ArrayList dùng mảng động — <code>get(i)</code> O(1), thêm/xóa giữa O(n). LinkedList dùng doubly linked list — <code>get(i)</code> O(n), thêm/xóa đầu O(1), tốn bộ nhớ hơn (2 pointer/node). <strong>90% trường hợp dùng ArrayList</strong>; LinkedList chỉ hữu ích khi thao tác ở đầu hoặc dùng làm Deque/Queue.</p>
+        <p><strong>HashMap vs HashSet</strong>:</p>
+        <ul>
+          <li><code>HashMap&lt;K,V&gt;</code>: lưu key-value. Key unique, value có thể trùng.</li>
+          <li><code>HashSet&lt;E&gt;</code>: chỉ lưu value, không trùng. <strong>Bên trong dùng <code>HashMap</code></strong> với value là dummy object <code>PRESENT</code>.</li>
+          <li>Vì vậy <code>HashSet.add(e)</code> = <code>map.put(e, PRESENT)</code>, <code>contains(e)</code> = <code>map.containsKey(e)</code>.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>10. HashMap hoạt động như thế nào?</summary>
+      <div class="answer">
+        <p>Cấu trúc: <strong>mảng bucket</strong> (<code>Node&lt;K,V&gt;[] table</code>). Mỗi bucket là linked list; từ Java 8, nếu bucket &gt; 8 phần tử → chuyển thành <strong>red-black tree</strong> (O(log n) thay vì O(n)).</p>
+        <p><strong>Các bước <code>put(k,v)</code></strong>:</p>
+        <ol>
+          <li>Tính <code>hash = (h = k.hashCode()) ^ (h &gt;&gt;&gt; 16)</code> — trộn bit cao xuống thấp để phân tán đều.</li>
+          <li><code>index = hash &amp; (n - 1)</code> với n là capacity (lũy thừa 2) — nhanh hơn modulo.</li>
+          <li>Duyệt bucket: nếu key đã tồn tại (equals) → ghi đè value.</li>
+          <li>Nếu chưa có → thêm node mới vào đầu/cuối list.</li>
+          <li>Nếu <code>size &gt; capacity * loadFactor</code> → <strong>resize</strong> gấp đôi (rehash toàn bộ).</li>
+        </ol>
+        <p><strong>Tham số mặc định</strong>: capacity = 16, loadFactor = 0.75. Ngưỡng resize = 12.</p>
+        <p><strong>Collision handling</strong>: chaining (linked list). Nếu &gt; 8 → treeify. Nếu &lt; 6 → untreeify.</p>
+        <div class="tip">Vì sao capacity phải lũy thừa 2? Vì <code>hash &amp; (n-1)</code> tương đương <code>hash % n</code> nhưng nhanh hơn nhiều, và chỉ đúng khi n là lũy thừa 2.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>11. HashMap vs Hashtable vs ConcurrentHashMap?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>HashMap</strong>: không thread-safe. Cho phép <em>1 null key</em> và <em>nhiều null value</em>. Nhanh nhất.</li>
+          <li><strong>Hashtable</strong>: legacy (từ Java 1.0). Mọi method <code>synchronized</code> → thread-safe nhưng chậm. <strong>Không cho null key/value</strong>. Hầu như không dùng nữa.</li>
+          <li><strong>ConcurrentHashMap</strong>: thread-safe nhưng hiệu năng cao. Java 7 dùng segmented lock (16 segment); Java 8+ dùng <strong>CAS + synchronized trên từng bucket</strong>. Cho phép đọc song song, ghi lock cục bộ → nhanh hơn Hashtable nhiều. <strong>Không cho null key/value</strong> (tránh ambiguity khi get trả null).</li>
+        </ul>
+        <pre><code>Map&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();
+map.computeIfAbsent("a", k -&gt; 1); // atomic</code></pre>
+        <div class="tip">Điểm cộng khi phỏng vấn: nói được "Java 8 thay segment lock bằng CAS + synchronized trên bucket, nên đọc gần như lock-free".</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>12. Generics? Wildcard ? extends / ? super?</summary>
+      <div class="answer">
+        <p><strong>Generics</strong> cho phép type-safe lúc compile, tránh cast. Ví dụ <code>List&lt;String&gt;</code> chỉ chứa String.</p>
+        <p><strong>Type Erasure</strong>: generic bị xóa lúc runtime → <code>List&lt;String&gt;</code> và <code>List&lt;Integer&gt;</code> đều là <code>List</code>. Vì vậy <em>không thể</em> <code>new T()</code> hay <code>T.class</code> trực tiếp.</p>
+        <p><strong>Wildcard</strong>:</p>
+        <ul>
+          <li><code>? extends T</code>: <em>producer</em> — chỉ đọc được (không add, trừ <code>null</code>). Ví dụ <code>List&lt;? extends Number&gt;</code> đọc được <code>Number</code>.</li>
+          <li><code>? super T</code>: <em>consumer</em> — chỉ ghi được. Ví dụ <code>List&lt;? super Integer&gt;</code> add được Integer.</li>
+          <li><code>?</code> (unbounded): chỉ đọc được <code>Object</code>.</li>
+        </ul>
+        <p><strong>PECS</strong>: <em>Producer Extends, Consumer Super</em>.</p>
+        <pre><code>static &lt;T&gt; void copy(List&lt;? extends T&gt; src, List&lt;? super T&gt; dst) {
+  for (T t : src) dst.add(t);
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>13. Checked vs Unchecked exception? try-with-resources?</summary>
+      <div class="answer">
+        <p><strong>Checked exception</strong>: kế thừa <code>Exception</code> (không phải RuntimeException). Ví dụ: <code>IOException</code>, <code>SQLException</code>. Compiler <em>bắt buộc</em> phải try-catch hoặc khai báo <code>throws</code>. Dùng khi caller có thể recover (retry, thông báo user).</p>
+        <p><strong>Unchecked exception</strong>: kế thừa <code>RuntimeException</code>. Ví dụ: <code>NullPointerException</code>, <code>IllegalArgumentException</code>. Không bắt buộc xử lý. Thường là lỗi lập trình, không recover được.</p>
+        <p><strong>try-with-resources</strong> (Java 7+): tự động đóng resource implements <code>AutoCloseable</code>.</p>
+        <pre><code>try (BufferedReader br = new BufferedReader(new FileReader("f.txt"))) {
+  return br.readLine();
+} // br.close() tự gọi, kể cả khi có exception</code></pre>
+        <p><strong>Multi-catch</strong> (Java 7+): <code>catch (IOException | SQLException e) { ... }</code>.</p>
+        <div class="tip">Trong Spring, hầu hết exception trong service nên là unchecked (RuntimeException) để <code>@Transactional</code> rollback mặc định, và dùng <code>@RestControllerAdvice</code> để xử lý tập trung.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>14. Java 8 có gì mới?</summary>
+      <div class="answer">
+        <p>Bản release lớn nhất của Java, đưa vào functional programming:</p>
+        <ul>
+          <li><strong>Lambda expression</strong>: <code>(a, b) -&gt; a + b</code> — viết gọn anonymous class.</li>
+          <li><strong>Functional interface</strong>: interface có đúng 1 abstract method, có <code>@FunctionalInterface</code>. Ví dụ: <code>Function</code>, <code>Predicate</code>, <code>Supplier</code>, <code>Consumer</code>.</li>
+          <li><strong>Stream API</strong>: xử lý collection theo pipeline: <code>filter</code>, <code>map</code>, <code>reduce</code>, <code>collect</code>, <code>flatMap</code>. Hỗ trợ <em>parallelStream</em>.</li>
+          <li><strong>Optional</strong>: tránh NullPointerException bằng cách biểu diễn "có thể null".</li>
+          <li><strong>Default &amp; static method</strong> trong interface.</li>
+          <li><strong>Method reference</strong>: <code>String::length</code>, <code>System.out::println</code>.</li>
+          <li><strong>java.time API</strong>: <code>LocalDate</code>, <code>LocalDateTime</code>, <code>ZonedDateTime</code>, <code>Duration</code>, <code>Period</code> — immutable, thread-safe (thay thế Date/Calendar cũ).</li>
+          <li><strong>Metaspace</strong> thay PermGen.</li>
+        </ul>
+        <div class="tip">Phỏng vấn hay yêu cầu ví dụ Stream: cho list User, lọc tuổi &gt; 18, map sang tên, sort, collect thành List.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>15. Java 11/17 có gì đáng chú ý?</summary>
+      <div class="answer">
+        <p><strong>Java 11 (LTS 2018)</strong>:</p>
+        <ul>
+          <li><code>var</code> dùng được trong lambda: <code>(var a, var b) -&gt; a + b</code>.</li>
+          <li><strong>HTTP Client</strong> mới (<code>java.net.http</code>) hỗ trợ async, HTTP/2, WebSocket.</li>
+          <li>Bỏ Java EE và CORBA modules.</li>
+          <li>Method <code>String</code> mới: <code>isBlank()</code>, <code>lines()</code>, <code>strip()</code>, <code>repeat()</code>.</li>
+          <li>Chạy file .java trực tiếp không cần compile: <code>java Hello.java</code>.</li>
+        </ul>
+        <p><strong>Java 17 (LTS 2021)</strong>:</p>
+        <ul>
+          <li><strong>Records</strong>: <code>record Point(int x, int y) {}</code> — tự sinh constructor, getter, equals, hashCode, toString. Dùng cho DTO/immutable data.</li>
+          <li><strong>Sealed classes</strong>: <code>sealed interface Shape permits Circle, Square {}</code> — kiểm soát class nào được kế thừa.</li>
+          <li><strong>Pattern matching instanceof</strong>: <code>if (o instanceof User u) { u.getName(); }</code> — không cần cast.</li>
+          <li><strong>Text block</strong>: <code>"""..."""</code> — viết multi-line string gọn hơn.</li>
+          <li><strong>Switch expression</strong>: <code>var x = switch(day) { case MON -&gt; 1; ... };</code>.</li>
+          <li>Bỏ Nashorn, Applet API, Security Manager (deprecated).</li>
+        </ul>
+        <div class="tip">Spring Boot 3.x <strong>bắt buộc Java 17+</strong>. Nếu công ty dùng Boot 3, chắc chắn sẽ bị hỏi về record, sealed class.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>16. Thread, Runnable, Callable?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>Thread</code></strong>: class đại diện 1 luồng. Có 2 cách tạo: <code>extends Thread</code> hoặc <code>implements Runnable</code>. Ưu tiên Runnable vì không chiếm slot kế thừa.</li>
+          <li><strong><code>Runnable</code></strong>: <code>void run()</code>. Không trả về kết quả, không throws checked exception.</li>
+          <li><strong><code>Callable&lt;V&gt;</code></strong>: <code>V call() throws Exception</code>. Trả về kết quả, có thể throws. Dùng với <code>ExecutorService.submit()</code> → trả về <code>Future&lt;V&gt;</code>.</li>
+        </ul>
+        <pre><code>ExecutorService pool = Executors.newFixedThreadPool(4);
+Future&lt;Integer&gt; f = pool.submit(() -&gt; 1 + 1); // Callable
+Integer result = f.get(); // block chờ kết quả</code></pre>
+        <p><strong>Thread lifecycle</strong>: NEW → RUNNABLE → (BLOCKED / WAITING / TIMED_WAITING) → TERMINATED.</p>
+        <div class="tip">Thực tế ít khi tạo Thread trực tiếp. Dùng <code>ExecutorService</code>, <code>CompletableFuture</code>, hoặc <code>@Async</code> của Spring.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>17. synchronized vs volatile vs Atomic?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>synchronized</code></strong>: khóa (monitor lock). Đảm bảo cả <em>mutual exclusion</em> (chỉ 1 thread vào tại một thời điểm) và <em>visibility</em>. Có thể áp dụng cho method hoặc block. Nhược điểm: chậm, có thể gây deadlock.</li>
+          <li><strong><code>volatile</code></strong>: chỉ đảm bảo <em>visibility</em> — mọi write được flush xuống main memory, mọi read lấy từ main memory. <strong>Không</strong> đảm bảo atomic. Phù hợp cho flag boolean, trạng thái đơn giản.</li>
+          <li><strong>Atomic classes</strong> (<code>AtomicInteger</code>, <code>AtomicLong</code>, <code>AtomicReference</code>): dùng <strong>CAS</strong> (Compare-And-Swap) — không lock, nhanh hơn synchronized. Đảm bảo atomic cho single variable.</li>
+        </ul>
+        <pre><code>// Sai: race condition
+if (count &lt; 10) count++;
+
+// Đúng với Atomic
+atomicCount.incrementAndGet(); // atomic</code></pre>
+        <div class="tip">Điểm cộng: nói được volatile không đảm bảo atomic cho <code>i++</code> (vì là 3 phép: read-modify-write).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>18. ExecutorService, CompletableFuture?</summary>
+      <div class="answer">
+        <p><strong>ExecutorService</strong>: quản lý thread pool, tách việc tạo task và chạy task.</p>
+        <ul>
+          <li><code>Executors.newFixedThreadPool(n)</code>: pool cố định.</li>
+          <li><code>Executors.newCachedThreadPool()</code>: tạo thread khi cần, tái sử dụng.</li>
+          <li><code>Executors.newScheduledThreadPool(n)</code>: cho task định kỳ.</li>
+          <li><code>submit()</code> trả <code>Future</code>, <code>invokeAll()</code> chờ tất cả.</li>
+        </ul>
+        <p><strong>CompletableFuture</strong> (Java 8+): pipeline async, không block.</p>
+        <pre><code>CompletableFuture.supplyAsync(() -&gt; callApiA())
+  .thenApply(data -&gt; transform(data))
+  .thenCompose(x -&gt; callApiB(x))
+  .exceptionally(ex -&gt; fallback())
+  .thenAccept(System.out::println);
+
+// Chạy song song và gộp
+CompletableFuture.allOf(f1, f2, f3).join();</code></pre>
+        <p>Các method hay dùng: <code>thenApply</code> (map), <code>thenCompose</code> (flatMap), <code>thenCombine</code> (gộp 2), <code>allOf</code>, <code>anyOf</code>, <code>exceptionally</code>, <code>handle</code>.</p>
+        <div class="tip">Trong Spring, tương đương là <code>@Async</code> trả về <code>CompletableFuture</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>19. Deadlock là gì? Cách phòng tránh?</summary>
+      <div class="answer">
+        <p><strong>Deadlock</strong>: 2+ thread chờ nhau giải phóng lock → tất cả bị treo mãi. Điều kiện Coffman (cần cả 4):</p>
+        <ol>
+          <li>Mutual exclusion: tài nguyên chỉ 1 thread dùng.</li>
+          <li>Hold and wait: thread giữ lock và chờ lock khác.</li>
+          <li>No preemption: không ai tước lock được.</li>
+          <li>Circular wait: chu trình chờ.</li>
+        </ol>
+        <p><strong>Phòng tránh</strong>:</p>
+        <ul>
+          <li>Lock theo <strong>thứ tự cố định</strong> (phá circular wait).</li>
+          <li>Dùng <code>tryLock(timeout)</code> thay vì <code>lock()</code> — nếu fail thì release và retry.</li>
+          <li>Giảm thời gian giữ lock, tránh nested lock.</li>
+          <li>Dùng <code>java.util.concurrent</code> (ConcurrentHashMap, Atomic) thay vì tự synchronize.</li>
+          <li>Phát hiện bằng <code>jstack</code> hoặc <code>jconsole</code> (báo "Found one Java-level deadlock").</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>20. JVM memory gồm những vùng nào?</summary>
+      <div class="answer">
+        <p><strong>Heap</strong> (chia sẻ giữa thread, GC quản lý):</p>
+        <ul>
+          <li><em>Young Gen</em>: Eden + 2 Survivor (S0, S1). Object mới sinh ra ở Eden.</li>
+          <li><em>Old Gen (Tenured)</em>: object sống lâu, sau nhiều lần Minor GC.</li>
+          <li>Minor GC (Young), Major/Full GC (Old).</li>
+        </ul>
+        <p><strong>Non-Heap</strong>:</p>
+        <ul>
+          <li><em>Stack</em> (per-thread): frame method, biến local, toán hạng. Tràn → <code>StackOverflowError</code> (đệ quy vô hạn).</li>
+          <li><em>Metaspace</em> (Java 8+, thay PermGen): metadata class, method, hằng số.</li>
+          <li><em>PC Register</em>: địa chỉ instruction hiện tại.</li>
+          <li><em>Native Method Stack</em>: cho code native (JNI).</li>
+        </ul>
+        <p>Nếu Heap đầy không GC được → <code>OutOfMemoryError: Java heap space</code>.</p>
+        <div class="tip">Tuning phổ biến: <code>-Xms</code> (heap ban đầu), <code>-Xmx</code> (heap tối đa), <code>-Xss</code> (stack size), <code>-XX:MetaspaceSize</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>21. Memory leak trong Java?</summary>
+      <div class="answer">
+        <p>Xảy ra khi object không còn dùng nhưng vẫn được tham chiếu → GC không thu hồi → heap tăng dần → <code>OutOfMemoryError</code>.</p>
+        <p><strong>Nguyên nhân phổ biến</strong>:</p>
+        <ul>
+          <li><strong>Static collection</strong>: <code>static List&lt;X&gt;</code> thêm mãi không xóa.</li>
+          <li><strong>Listener/Callback không gỡ</strong>: đăng ký event listener nhưng không remove.</li>
+          <li><strong>ThreadLocal không remove</strong>: trong thread pool, ThreadLocal giữ value suốt đời thread.</li>
+          <li><strong>Cache không giới hạn</strong>: <code>HashMap</code> làm cache không có eviction → nên dùng Caffeine/Guava với maxSize.</li>
+          <li><strong>Unclosed resources</strong>: Connection, InputStream không đóng.</li>
+          <li><strong>Inner class không static</strong> giữ reference outer class.</li>
+        </ul>
+        <p><strong>Cách phát hiện</strong>: heap dump (<code>jmap -dump</code>), phân tích bằng Eclipse MAT / VisualVM, theo dõi GC log.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>22. Serialization, transient?</summary>
+      <div class="answer">
+        <p><strong>Serialization</strong>: chuyển object → byte stream để lưu file, gửi mạng, cache (Redis), session clustering.</p>
+        <ul>
+          <li>Class phải <code>implements Serializable</code>.</li>
+          <li><code>ObjectOutputStream.writeObject()</code> và <code>ObjectInputStream.readObject()</code>.</li>
+          <li><strong>serialVersionUID</strong>: nên khai báo để kiểm soát version. Nếu không, JVM tự sinh — thay đổi class nhỏ cũng có thể gây <code>InvalidClassException</code>.</li>
+        </ul>
+        <p><strong><code>transient</code></strong>: đánh dấu field <em>không</em> được serialize. Ví dụ password, connection, derived field. Khi deserialize, field này sẽ là default value (null, 0).</p>
+        <pre><code>public class User implements Serializable {
+  private static final long serialVersionUID = 1L;
+  private String username;
+  private transient String password; // không serialize
+}</code></pre>
+        <div class="tip">Trong Spring Boot, DTO thường <em>không</em> cần Serializable trừ khi dùng session/cache. Nhưng entity JPA <em>nên</em> implement Serializable theo spec.</div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 2. SPRING CORE ============ -->
+  <section id="s2">
+    <h2>2. Spring Core</h2>
+
+    <details>
+      <summary>23. Spring là gì? Ưu điểm?</summary>
+      <div class="answer">
+        <p>Spring là framework Java mã nguồn mở ra đời 2003, giải quyết vấn đề phức tạp của Java EE. Nó cung cấp <strong>hạ tầng</strong> để xây dựng ứng dụng: IoC container, DI, AOP, transaction, MVC, data access, security.</p>
+        <p><strong>Ưu điểm</strong>:</p>
+        <ul>
+          <li><strong>Loose coupling</strong> nhờ DI — dễ test, dễ thay thế implementation.</li>
+          <li><strong>POJO-based</strong>: không cần kế thừa class đặc biệt, code sạch.</li>
+          <li><strong>Modular</strong>: dùng module nào cần module đó (spring-core, spring-web, spring-data...).</li>
+          <li><strong>AOP</strong> giúp tách cross-cutting concern (logging, transaction, security).</li>
+          <li><strong>Hệ sinh thái lớn</strong>: Spring Boot, Spring Cloud, Spring Security, Spring Data...</li>
+          <li><strong>Cộng đồng khổng lồ</strong>, tài liệu phong phú, dễ tuyển dụng.</li>
+        </ul>
+        <div class="tip">Đừng nói "Spring là framework để làm web" — sai. Spring core là IoC container; web chỉ là 1 module.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>24. IoC và DI là gì?</summary>
+      <div class="answer">
+        <p><strong>IoC (Inversion of Control)</strong>: "đảo ngược quyền điều khiển". Thay vì code tự tạo object (<code>new UserService()</code>), framework sẽ tạo và quản lý. Đây là <em>nguyên lý</em>; DI là <em>cách thực hiện</em>.</p>
+        <p><strong>DI (Dependency Injection)</strong>: tiêm dependency vào object. 3 kiểu:</p>
+        <ol>
+          <li><strong>Constructor injection</strong> (khuyến nghị): field <code>final</code>, đảm bảo dependency không null, dễ test. Nếu chỉ có 1 constructor, không cần <code>@Autowired</code>.</li>
+          <li><strong>Setter injection</strong>: cho dependency optional, có thể thay đổi sau.</li>
+          <li><strong>Field injection</strong>: dùng <code>@Autowired</code> trên field — <em>không khuyến nghị</em> vì khó test, che giấu dependency.</li>
+        </ol>
+        <pre><code>@Service
+@RequiredArgsConstructor // Lombok → tự sinh constructor
+public class UserService {
+  private final UserRepository repo;   // constructor injection
+  private final EmailService email;
+}</code></pre>
+        <div class="tip">Phỏng vấn hay hỏi: "Vì sao constructor injection tốt hơn field injection?" → Vì field final (immutable), fail fast nếu thiếu bean, không cần reflection khi test, thể hiện rõ dependency.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>25. Bean scope trong Spring?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>singleton</strong> (mặc định): 1 instance duy nhất cho mỗi IoC container. <em>Lưu ý</em>: không nhầm với Singleton pattern GoF (per-JVM). Đây là per-container.</li>
+          <li><strong>prototype</strong>: tạo instance mới mỗi lần <code>getBean()</code> hoặc inject. Spring <em>không</em> quản lý vòng đời destroy của prototype.</li>
+          <li><strong>request</strong>: 1 instance cho mỗi HTTP request (chỉ web).</li>
+          <li><strong>session</strong>: 1 instance cho mỗi HTTP session.</li>
+          <li><strong>application</strong>: 1 instance cho ServletContext.</li>
+          <li><strong>websocket</strong>: cho WebSocket session.</li>
+        </ul>
+        <p>Đặt scope: <code>@Scope("prototype")</code> hoặc <code>@RequestScope</code>, <code>@SessionScope</code>.</p>
+        <div class="tip">Cảnh báo kinh điển: inject <em>prototype bean</em> vào <em>singleton bean</em> → prototype chỉ tạo 1 lần. Giải pháp: dùng <code>ObjectProvider</code>, <code>@Lookup</code>, hoặc <code>ApplicationContext.getBean()</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>26. Bean lifecycle?</summary>
+      <div class="answer">
+        <p>Vòng đời của một Spring bean (do <code>BeanFactory</code> quản lý):</p>
+        <ol>
+          <li><strong>Instantiation</strong>: gọi constructor.</li>
+          <li><strong>Populate properties</strong>: inject dependency.</li>
+          <li><strong>Aware interfaces</strong>: <code>BeanNameAware</code>, <code>BeanFactoryAware</code>, <code>ApplicationContextAware</code>.</li>
+          <li><strong>BeanPostProcessor.postProcessBeforeInitialization</strong>.</li>
+          <li><strong>@PostConstruct</strong> (JSR-250).</li>
+          <li><strong>InitializingBean.afterPropertiesSet()</strong>.</li>
+          <li><strong>init-method</strong> (XML hoặc <code>@Bean(initMethod="...")</code>).</li>
+          <li><strong>BeanPostProcessor.postProcessAfterInitialization</strong> → đây là chỗ AOP proxy được tạo.</li>
+          <li>Bean sẵn sàng dùng.</li>
+          <li>Khi container shutdown: <strong>@PreDestroy</strong> → <strong>DisposableBean.destroy()</strong> → <strong>destroy-method</strong>.</li>
+        </ol>
+        <div class="tip">Thứ tự quan trọng: <code>@PostConstruct</code> chạy <strong>trước</strong> <code>afterPropertiesSet()</code>. Còn AOP proxy chỉ được tạo ở bước 8 — nghĩa là nếu bạn tự gọi method của chính mình trong <code>@PostConstruct</code>, annotation <code>@Transactional</code> sẽ <em>không</em> có tác dụng.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>27. @Component vs @Service vs @Repository vs @Controller?</summary>
+      <div class="answer">
+        <p>Về mặt kỹ thuật, cả 4 đều là <strong>specialization của <code>@Component</code></strong> — đều được component scan tìm và tạo bean. Khác nhau ở <em>ngữ nghĩa</em> và <em>xử lý bổ sung</em>:</p>
+        <ul>
+          <li><strong><code>@Component</code></strong>: bean chung, không rõ tầng.</li>
+          <li><strong><code>@Service</code></strong>: tầng business logic. Không có behavior đặc biệt, chỉ mang tính semantic.</li>
+          <li><strong><code>@Repository</code></strong>: tầng DAO. <em>Có behavior bổ sung</em>: Spring tự động chuyển đổi exception của JPA/JDBC (như <code>SQLException</code>) sang <code>DataAccessException</code> (unchecked).</li>
+          <li><strong><code>@Controller</code></strong>: MVC controller, hỗ trợ <code>@RequestMapping</code>. Được <code>DispatcherServlet</code> detect.</li>
+        </ul>
+        <p>Ngoài ra <code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code>.</p>
+        <div class="tip">Câu hỏi mở rộng: "Nếu đổi <code>@Service</code> thành <code>@Component</code> có chạy không?" → Có, vì cả 2 đều là <code>@Component</code>. Nhưng đổi <code>@Repository</code> thành <code>@Component</code> → <em>mất exception translation</em>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>28. @Autowired vs @Qualifier vs @Primary vs @Resource?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>@Autowired</code></strong>: inject theo <em>type</em>. Nếu có nhiều bean cùng type → lỗi <code>NoUniqueBeanDefinitionException</code>. Có thuộc tính <code>required=false</code> cho phép null.</li>
+          <li><strong><code>@Qualifier("beanName")</code></strong>: chỉ định bean cụ thể khi có nhiều cùng type. Thường đi kèm <code>@Autowired</code>.</li>
+          <li><strong><code>@Primary</code></strong>: đánh dấu 1 bean là ưu tiên khi có nhiều bean cùng type. Nếu vẫn còn ambiguous → dùng <code>@Qualifier</code>.</li>
+          <li><strong><code>@Resource(name="...")</code></strong>: chuẩn JSR-250, inject theo <em>name</em> trước, nếu không có mới theo type. Thuộc Java EE, Spring hỗ trợ.</li>
+          <li>Ngoài ra: <code>@Inject</code> (JSR-330) tương đương <code>@Autowired</code>.</li>
+        </ul>
+        <pre><code>@Service
+public class PaymentService {
+  @Autowired @Qualifier("vnPayGateway")
+  private PaymentGateway gateway;
+}
+
+@Primary @Component
+public class MomoGateway implements PaymentGateway {}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>29. @Configuration vs @Component? @Bean?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>@Component</code></strong>: class thường, được scan và tạo bean. Nhưng nếu trong class có method <code>@Bean</code> gọi nhau, mỗi lần gọi có thể tạo instance mới.</li>
+          <li><strong><code>@Configuration</code></strong>: <em>đặc biệt</em> — Spring dùng <strong>CGLIB proxy</strong> để đảm bảo method <code>@Bean</code> gọi lẫn nhau luôn trả về cùng 1 bean (singleton).</li>
+          <li><strong><code>@Bean</code></strong>: khai báo bean thủ công cho class <em>không</em> có annotation Spring (thư viện bên thứ 3, JDK class).</li>
+        </ul>
+        <pre><code>@Configuration
+public class AppConfig {
+  @Bean
+  public ObjectMapper objectMapper() { return new ObjectMapper(); }
+
+  @Bean
+  public RestTemplate restTemplate(ObjectMapper om) { // inject bean trên
+    RestTemplate rt = new RestTemplate();
+    rt.setMessageConverters(...);
+    return rt;
+  }
+}</code></pre>
+        <p>Có thể dùng <code>@Configuration(proxyBeanMethods = false)</code> để tắt CGLIB proxy — nhanh hơn nếu không cần đảm bảo singleton giữa các method <code>@Bean</code>. Spring Boot 2+ dùng cách này cho auto-config.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>30. AOP là gì?</summary>
+      <div class="answer">
+        <p><strong>AOP (Aspect-Oriented Programming)</strong>: tách các <em>cross-cutting concern</em> (logging, transaction, security, cache) ra khỏi business logic.</p>
+        <p><strong>Khái niệm</strong>:</p>
+        <ul>
+          <li><strong>Aspect</strong>: module chứa logic cross-cutting.</li>
+          <li><strong>JoinPoint</strong>: điểm có thể chèn advice — trong Spring chỉ hỗ trợ <em>method execution</em>.</li>
+          <li><strong>Pointcut</strong>: biểu thức chọn joinpoint (ví dụ: <code>execution(* com.example.service.*.*(..))</code>).</li>
+          <li><strong>Advice</strong>: hành động tại joinpoint: <code>@Before</code>, <code>@AfterReturning</code>, <code>@AfterThrowing</code>, <code>@After</code>, <code>@Around</code> (mạnh nhất — có thể thay đổi return, catch exception).</li>
+          <li><strong>Weaving</strong>: Spring dùng <em>proxy-based</em> (JDK dynamic proxy cho interface, CGLIB cho class).</li>
+        </ul>
+        <pre><code>@Aspect @Component
+public class LoggingAspect {
+  @Around("execution(* com.example.service.*.*(..))")
+  public Object log(ProceedingJoinPoint pjp) throws Throwable {
+    long start = System.currentTimeMillis();
+    Object result = pjp.proceed();
+    System.out.println(pjp.getSignature() + " took " + (System.currentTimeMillis() - start) + "ms");
+    return result;
+  }
+}</code></pre>
+        <div class="tip">Đây là nền tảng của <code>@Transactional</code>, <code>@Cacheable</code>, <code>@Async</code>, Spring Security. Hiểu AOP = hiểu vì sao <code>@Transactional</code> <em>không</em> hoạt động khi gọi internal method.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>31. Spring MVC flow?</summary>
+      <div class="answer">
+        <p>Luồng request trong Spring MVC:</p>
+        <ol>
+          <li><strong>Client</strong> gửi HTTP request.</li>
+          <li><strong>DispatcherServlet</strong> (Front Controller) nhận, tra cứu <strong>HandlerMapping</strong> để tìm Controller phù hợp.</li>
+          <li>Nếu có <strong>Interceptor</strong> → chạy <code>preHandle</code>.</li>
+          <li><strong>HandlerAdapter</strong> gọi method controller. Trong quá trình: convert request param, bind <code>@RequestBody</code>, validate <code>@Valid</code>.</li>
+          <li><strong>Controller</strong> gọi Service, xử lý, trả về <code>ModelAndView</code> (view) hoặc object (REST).</li>
+          <li>Interceptor <code>postHandle</code> → <code>afterCompletion</code>.</li>
+          <li>Với REST: <code>HttpMessageConverter</code> (Jackson) chuyển object → JSON.</li>
+          <li>Với MVC: <strong>ViewResolver</strong> tìm view (JSP, Thymeleaf) → render.</li>
+          <li>Response trả về client.</li>
+        </ol>
+        <div class="tip">Điểm phỏng vấn: DispatcherServlet là <em>Front Controller</em>, được Spring Boot auto-config qua <code>DispatcherServletAutoConfiguration</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>32. @Controller vs @RestController?</summary>
+      <div class="answer">
+        <p><code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code> ở cấp class.</p>
+        <ul>
+          <li><strong><code>@Controller</code></strong>: method trả về <em>view name</em>, ViewResolver sẽ render (JSP, Thymeleaf). Muốn trả JSON thì phải thêm <code>@ResponseBody</code> trên từng method.</li>
+          <li><strong><code>@RestController</code></strong>: mọi method trả về JSON/XML trực tiếp. Dùng cho REST API.</li>
+        </ul>
+        <p>Bên dưới, <code>@ResponseBody</code> khiến Spring dùng <code>HttpMessageConverter</code> (Jackson) để convert thay vì ViewResolver.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>33. Annotation REST thường dùng?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>@RequestMapping</code></strong>: mapping URL (dùng cho cả class). Có thể chỉ định method, consumes, produces.</li>
+          <li><strong><code>@GetMapping</code>, <code>@PostMapping</code>, <code>@PutMapping</code>, <code>@PatchMapping</code>, <code>@DeleteMapping</code></strong>: shortcut của <code>@RequestMapping(method=...)</code>.</li>
+          <li><strong><code>@PathVariable</code></strong>: lấy biến từ URL path: <code>/users/{id}</code>.</li>
+          <li><strong><code>@RequestParam</code></strong>: query param: <code>?page=0&amp;size=10</code>.</li>
+          <li><strong><code>@RequestBody</code></strong>: bind JSON body thành object.</li>
+          <li><strong><code>@ResponseBody</code></strong>: trả object → JSON.</li>
+          <li><strong><code>@ResponseStatus</code></strong>: set HTTP status code trả về.</li>
+          <li><strong><code>@ResponseEntity</code></strong>: trả về body + status + headers linh hoạt.</li>
+        </ul>
+        <pre><code>@GetMapping("/users/{id}")
+public ResponseEntity&lt;UserDto&gt; get(@PathVariable Long id,
+                                    @RequestParam(defaultValue = "vi") String lang) {
+  return ResponseEntity.ok(service.findById(id));
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>34. Xử lý exception toàn cục?</summary>
+      <div class="answer">
+        <p>Dùng <code>@RestControllerAdvice</code> (kết hợp <code>@ControllerAdvice</code> + <code>@ResponseBody</code>) để bắt exception toàn cục.</p>
+        <pre><code>@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ErrorResponse notFound(ResourceNotFoundException ex) {
+    return new ErrorResponse("NOT_FOUND", ex.getMessage());
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse validation(MethodArgumentNotValidException ex) {
+    String msg = ex.getBindingResult().getFieldErrors().stream()
+        .map(e -&gt; e.getField() + ": " + e.getDefaultMessage())
+        .collect(Collectors.joining(", "));
+    return new ErrorResponse("VALIDATION_ERROR", msg);
+  }
+
+  @ExceptionHandler(Exception.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  public ErrorResponse fallback(Exception ex) {
+    return new ErrorResponse("INTERNAL_ERROR", "Unexpected error");
+  }
+}</code></pre>
+        <p>Thứ tự ưu tiên: handler cụ thể &gt; handler cha (ví dụ <code>Exception.class</code> là fallback).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>35. Validation với @Valid?</summary>
+      <div class="answer">
+        <p>Spring Boot hỗ trợ Bean Validation (JSR-380) qua Hibernate Validator. Cần dependency <code>spring-boot-starter-validation</code>.</p>
+        <pre><code>public class UserRequest {
+  @NotBlank(message = "Name required")
+  @Size(min = 2, max = 50)
+  private String name;
+
+  @Email @NotBlank
+  private String email;
+
+  @Min(18) @Max(120)
+  private int age;
+
+  @Pattern(regexp = "^\\+?[0-9]{10,15}$")
+  private String phone;
+}
+
+@PostMapping
+public ResponseEntity&lt;UserDto&gt; create(@Valid @RequestBody UserRequest req) { ... }</code></pre>
+        <p>Các annotation phổ biến: <code>@NotNull</code>, <code>@NotBlank</code> (khác với <code>@NotEmpty</code> — chỉ check space), <code>@Size</code>, <code>@Min</code>, <code>@Max</code>, <code>@Email</code>, <code>@Pattern</code>, <code>@Positive</code>, <code>@Past</code>, <code>@Future</code>.</p>
+        <p>Custom validator: implement <code>ConstraintValidator&lt;A, T&gt;</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>36. Filter vs Interceptor vs AOP?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Filter</strong>: thuộc Servlet container (Tomcat). Chạy <em>trước</em> DispatcherServlet, xử lý request/response thô. Dùng cho: CORS, encoding, logging request, authentication cơ bản. Đăng ký qua <code>@WebFilter</code> hoặc <code>FilterRegistrationBean</code>.</li>
+          <li><strong>Interceptor</strong>: thuộc Spring MVC. Chạy <em>sau</em> DispatcherServlet, <em>trước/sau</em> Controller. Có <code>preHandle</code>, <code>postHandle</code>, <code>afterCompletion</code>. Có thể truy cập <code>HandlerMethod</code>. Đăng ký qua <code>WebMvcConfigurer.addInterceptors</code>.</li>
+          <li><strong>AOP</strong>: ở tầng method, dùng proxy. Chạy bên trong Service/Repository. Không có khái niệm HTTP request/response. Dùng cho: transaction, logging business, security.</li>
+        </ul>
+        <p><strong>Thứ tự</strong>: Filter → DispatcherServlet → Interceptor.preHandle → AOP around → Controller → AOP → Interceptor.postHandle → Filter.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>37. Authentication vs Authorization?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Authentication</strong> (xác thực): "Bạn là ai?" — kiểm tra username/password, token, session. Kết quả: danh tính (<code>Principal</code>). Nếu fail → 401 Unauthorized.</li>
+          <li><strong>Authorization</strong> (phân quyền): "Bạn được làm gì?" — kiểm tra role/permission. Nếu fail → 403 Forbidden.</li>
+        </ul>
+        <p>Trong Spring Security:</p>
+        <ul>
+          <li>Authentication: <code>AuthenticationManager</code>, <code>UserDetailsService</code>, <code>AuthenticationProvider</code>.</li>
+          <li>Authorization: <code>authorizeHttpRequests</code>, <code>@PreAuthorize</code>, <code>@Secured</code>, <code>@RolesAllowed</code>.</li>
+        </ul>
+        <div class="tip">401 = chưa xác thực; 403 = đã xác thực nhưng không có quyền. Nhiều bạn nhầm 2 cái này.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>38. JWT là gì? Luồng xác thực?</summary>
+      <div class="answer">
+        <p><strong>JWT (JSON Web Token)</strong> = chuỗi gồm 3 phần, cách nhau bởi dấu <code>.</code>:</p>
+        <ul>
+          <li><strong>Header</strong> (base64): <code>{"alg":"HS256","typ":"JWT"}</code>.</li>
+          <li><strong>Payload</strong> (base64): claims — <code>sub</code> (subject), <code>exp</code> (expiration), <code>iat</code>, custom claims (role, userId).</li>
+          <li><strong>Signature</strong>: HMACSHA256(base64(header) + "." + base64(payload), secret) — đảm bảo token không bị sửa.</li>
+        </ul>
+        <p><strong>Lưu ý</strong>: payload chỉ <em>base64</em>, không mã hóa → không lưu thông tin nhạy cảm.</p>
+        <p><strong>Luồng xác thực</strong>:</p>
+        <ol>
+          <li>Client POST <code>/login</code> với username/password.</li>
+          <li>Server verify → tạo JWT (access token + refresh token), trả về client.</li>
+          <li>Client lưu token (memory/localStorage/cookie httpOnly).</li>
+          <li>Mỗi request gửi header <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+          <li>Server filter (JwtFilter) verify signature + exp → set <code>SecurityContext</code>.</li>
+          <li>Nếu hợp lệ → cho vào controller; ngược lại → 401.</li>
+          <li>Khi access token hết hạn, client dùng refresh token để lấy token mới.</li>
+        </ol>
+        <div class="tip">Ưu điểm JWT: stateless, scale ngang dễ. Nhược điểm: <em>không</em> revoke được dễ dàng (phải blacklist hoặc dùng refresh token rotation).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>39. BCryptPasswordEncoder?</summary>
+      <div class="answer">
+        <p>BCrypt là thuật toán hash mật khẩu có 2 đặc điểm quan trọng:</p>
+        <ul>
+          <li><strong>Salt tự động</strong>: mỗi lần hash sinh salt ngẫu nhiên → cùng password cho hash khác nhau. Chống rainbow table.</li>
+          <li><strong>Chậm có chủ đích</strong>: cost factor (mặc định 10) — hash 2^10 vòng. Chống brute force.</li>
+        </ul>
+        <pre><code>@Bean PasswordEncoder passwordEncoder() {
+  return new BCryptPasswordEncoder(12); // cost 12, chậm hơn nhưng an toàn hơn
+}
+
+// Khi đăng ký:
+String hash = encoder.encode("rawPassword");
+
+// Khi login:
+boolean ok = encoder.matches("rawPassword", hash);</code></pre>
+        <p>So sánh: MD5/SHA-1 <em>không</em> dùng cho password (nhanh, không salt). Argon2 mạnh hơn BCrypt nhưng BCrypt vẫn là lựa chọn phổ biến.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 3. SPRING BOOT ============ -->
+  <section id="s3">
+    <h2>3. Spring Boot</h2>
+
+    <details>
+      <summary>40. Spring Boot là gì? Khác Spring MVC?</summary>
+      <div class="answer">
+        <p><strong>Spring Boot</strong> là lớp trên Spring, giải quyết vấn đề "configuration hell" của Spring truyền thống. Mục tiêu: <em>convention over configuration</em> — chạy app chỉ với 1 file <code>main</code>.</p>
+        <p><strong>Đặc điểm</strong>:</p>
+        <ul>
+          <li><strong>Auto-configuration</strong>: tự cấu hình bean dựa trên classpath.</li>
+          <li><strong>Starter dependencies</strong>: nhóm dependency theo tính năng.</li>
+          <li><strong>Embedded server</strong>: Tomcat/Jetty sẵn trong jar → chạy bằng <code>java -jar</code>.</li>
+          <li><strong>Production-ready</strong>: Actuator, metrics, health check.</li>
+          <li><strong>Không cần XML</strong>: cấu hình hoàn toàn bằng annotation + properties.</li>
+        </ul>
+        <p><strong>Khác Spring MVC</strong>: Spring MVC chỉ là module web của Spring, cần cấu hình thủ công (<code>web.xml</code>, <code>DispatcherServlet</code>, ViewResolver...). Spring Boot tự động hóa hết.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>41. @SpringBootApplication gồm gì?</summary>
+      <div class="answer">
+        <p><code>@SpringBootApplication</code> là meta-annotation gồm 3 annotation:</p>
+        <ol>
+          <li><strong><code>@SpringBootConfiguration</code></strong>: kế thừa <code>@Configuration</code>, đánh dấu class là config chính.</li>
+          <li><strong><code>@EnableAutoConfiguration</code></strong>: bật auto-configuration — Spring Boot quét classpath và tự cấu hình bean.</li>
+          <li><strong><code>@ComponentScan</code></strong>: scan các <code>@Component</code>, <code>@Service</code>... trong package hiện tại và sub-package.</li>
+        </ol>
+        <pre><code>@SpringBootApplication
+public class Application {
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
+}</code></pre>
+        <div class="tip">Vì <code>@ComponentScan</code> mặc định quét package chứa class main, nên class <code>Application</code> phải ở <em>package gốc</em> (root), các package con nằm dưới.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>42. Auto-configuration hoạt động thế nào?</summary>
+      <div class="answer">
+        <p>Cơ chế:</p>
+        <ol>
+          <li><code>@EnableAutoConfiguration</code> import <code>AutoConfigurationImportSelector</code>.</li>
+          <li>Selector đọc file <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> (Boot 2.7+/3.x) hoặc <code>spring.factories</code> (Boot 2.6 trở về trước) — chứa danh sách auto-config class.</li>
+          <li>Mỗi auto-config class có các annotation điều kiện: <code>@ConditionalOnClass</code>, <code>@ConditionalOnMissingBean</code>, <code>@ConditionalOnProperty</code>, <code>@ConditionalOnWebApplication</code>.</li>
+          <li>Các auto-config thoả điều kiện sẽ tạo bean (DataSource, EntityManager, DispatcherServlet...).</li>
+        </ol>
+        <p>Ví dụ: có <code>spring-boot-starter-data-jpa</code> + có <code>DataSource</code> trong config → <code>JpaAutoConfiguration</code> tự tạo <code>EntityManagerFactory</code>, <code>TransactionManager</code>.</p>
+        <p>Debug: chạy với <code>--debug</code> để xem báo cáo auto-config (positive/negative matches).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>43. Starter dependency?</summary>
+      <div class="answer">
+        <p>Starter là POM tổng hợp, kéo theo nhiều dependency liên quan, đảm bảo version tương thích.</p>
+        <p><strong>Phổ biến</strong>:</p>
+        <ul>
+          <li><code>spring-boot-starter-web</code>: Spring MVC + Tomcat + Jackson.</li>
+          <li><code>spring-boot-starter-data-jpa</code>: JPA + Hibernate + HikariCP.</li>
+          <li><code>spring-boot-starter-security</code>: Spring Security.</li>
+          <li><code>spring-boot-starter-validation</code>: Hibernate Validator.</li>
+          <li><code>spring-boot-starter-actuator</code>: health, metrics, info.</li>
+          <li><code>spring-boot-starter-test</code>: JUnit 5, Mockito, AssertJ.</li>
+          <li><code>spring-boot-starter-cache</code>: cache abstraction.</li>
+          <li><code>spring-boot-starter-data-redis</code>: Redis (Lettuce).</li>
+          <li><code>spring-boot-starter-amqp</code>: RabbitMQ.</li>
+          <li><code>spring-boot-starter-webflux</code>: reactive web (Netty).</li>
+        </ul>
+        <div class="tip">Đừng quên nói về <strong>spring-boot-dependencies</strong> (BOM) quản lý version — bạn không cần khai báo version cho từng starter.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>44. Embedded server là gì?</summary>
+      <div class="answer">
+        <p>Spring Boot nhúng sẵn server (Tomcat mặc định) vào trong jar. Không cần deploy WAR lên server ngoài.</p>
+        <ul>
+          <li>Chạy: <code>java -jar myapp.jar</code> → server khởi động, app chạy trên port 8080.</li>
+          <li>Đổi server: loại <code>spring-boot-starter-tomcat</code>, thêm <code>spring-boot-starter-jetty</code> hoặc <code>spring-boot-starter-undertow</code>.</li>
+          <li>Cấu hình: <code>server.port=8081</code>, <code>server.servlet.context-path=/api</code>, <code>server.ssl.enabled=true</code>.</li>
+          <li>Tắt hoàn toàn web: <code>spring.main.web-application-type=none</code>.</li>
+        </ul>
+        <div class="tip">Deploy lên môi trường có server sẵn (như nhúng vào WildFly)? Đổi packaging thành <code>war</code>, extends <code>SpringBootServletInitializer</code>. Nhưng microservices thường chạy jar.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>45. application.properties vs yml? Profile?</summary>
+      <div class="answer">
+        <p>Cả hai tương đương về chức năng, chỉ khác cú pháp. YAML có cấu trúc phân cấp, dễ đọc khi config nhiều.</p>
+        <pre><code># application.properties
+spring.datasource.url=jdbc:mysql://localhost:3306/db
+spring.datasource.username=root
+
+# application.yml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/db
+    username: root</code></pre>
+        <p><strong>Profile</strong>: chia config theo môi trường.</p>
+        <ul>
+          <li><code>application.yml</code> — config chung.</li>
+          <li><code>application-dev.yml</code>, <code>application-prod.yml</code> — override theo profile.</li>
+          <li>Chạy: <code>java -jar app.jar --spring.profiles.active=prod</code> hoặc set env var <code>SPRING_PROFILES_ACTIVE=prod</code>.</li>
+          <li>Trong code: <code>@Profile("dev")</code> trên class/method bean để chỉ load theo profile.</li>
+        </ul>
+        <p><strong>Thứ tự ưu tiên</strong> (cao → thấp): command line args → env var → application-{profile}.yml → application.yml → default.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>46. Actuator là gì?</summary>
+      <div class="answer">
+        <p><strong>Actuator</strong> cung cấp các endpoint HTTP để giám sát và quản lý app production:</p>
+        <ul>
+          <li><code>/actuator/health</code>: trạng thái (UP/DOWN) — dùng cho load balancer, k8s probe.</li>
+          <li><code>/actuator/info</code>: thông tin build (version, git commit).</li>
+          <li><code>/actuator/metrics</code>: metrics (JVM, HTTP, DB pool).</li>
+          <li><code>/actuator/env</code>, <code>/actuator/configprops</code>: config hiện tại.</li>
+          <li><code>/actuator/beans</code>: danh sách bean.</li>
+          <li><code>/actuator/loggers</code>: xem/đổi log level runtime.</li>
+          <li><code>/actuator/threaddump</code>, <code>/actuator/heapdump</code>: debug.</li>
+        </ul>
+        <p>Mặc định chỉ <code>health</code> và <code>info</code> được expose qua HTTP. Mở thêm:</p>
+        <pre><code>management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=always</code></pre>
+        <div class="tip">Phỏng vấn: "Bảo mật Actuator thế nào?" → Restrict access bằng Spring Security, đặt trên management port riêng <code>management.server.port</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>47. DevTools?</summary>
+      <div class="answer">
+        <p><strong>Spring Boot DevTools</strong> giúp tăng tốc development:</p>
+        <ul>
+          <li><strong>Automatic restart</strong>: khi code thay đổi, app tự restart (nhanh hơn restart thủ công nhờ 2 classloader: base + restart).</li>
+          <li><strong>LiveReload</strong>: browser tự refresh khi có thay đổi (cần extension LiveReload).</li>
+          <li><strong>Tắt template cache</strong>: Thymeleaf/Freemarker render ngay khi sửa.</li>
+          <li><strong>Cấu hình mặc định cho dev</strong>: bật debug log, web logging.</li>
+        </ul>
+        <p>Chỉ dùng khi dev: DevTools tự động disable khi đóng gói production jar (vì <code>restart</code> class bị xóa).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>48. Cấu trúc REST CRUD?</summary>
+      <div class="answer">
+        <p><strong>Cấu trúc phân lớp chuẩn</strong>:</p>
+        <ul>
+          <li><strong>Controller</strong>: nhận HTTP request, validate, map sang DTO. Không chứa business logic.</li>
+          <li><strong>Service</strong>: business logic, transaction, gọi Repository.</li>
+          <li><strong>Repository</strong>: truy cập DB (JpaRepository).</li>
+          <li><strong>Entity</strong>: đại diện bảng DB. <em>Không</em> expose ra API.</li>
+          <li><strong>DTO</strong>: request/response object. Tách biệt với entity.</li>
+          <li><strong>Mapper</strong>: convert Entity ↔ DTO (MapStruct, ModelMapper, hoặc thủ công).</li>
+          <li><strong>Exception handler</strong>: <code>@RestControllerAdvice</code>.</li>
+        </ul>
+        <pre><code>@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+  private final UserService service;
+
+  @GetMapping
+  public List&lt;UserDto&gt; all() { return service.findAll(); }
+
+  @GetMapping("/{id}")
+  public UserDto one(@PathVariable Long id) { return service.findById(id); }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public UserDto create(@Valid @RequestBody UserRequest req) { return service.create(req); }
+
+  @PutMapping("/{id}")
+  public UserDto update(@PathVariable Long id, @Valid @RequestBody UserRequest req) {
+    return service.update(id, req);
+  }
+
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id) { service.delete(id); }
+}</code></pre>
+        <div class="tip">Điểm cộng: nhắc đến việc dùng DTO thay vì expose entity — tránh lộ DB schema, tránh vòng lặp JSON, dễ versioning.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>49. Logging trong Spring Boot?</summary>
+      <div class="answer">
+        <p>Spring Boot dùng <strong>SLF4J</strong> làm facade + <strong>Logback</strong> làm implementation mặc định.</p>
+        <pre><code>private static final Logger log = LoggerFactory.getLogger(UserService.class);
+// Hoặc Lombok:
+@Slf4j
+public class UserService { ... }</code></pre>
+        <p><strong>Level</strong> (thấp → cao): TRACE, DEBUG, INFO, WARN, ERROR.</p>
+        <p><strong>Cấu hình trong application.yml</strong>:</p>
+        <pre><code>logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.hibernate.SQL: DEBUG
+  file:
+    name: logs/app.log</code></pre>
+        <p>Custom <code>logback-spring.xml</code> cho rolling file, JSON log, appender khác nhau theo profile.</p>
+        <div class="tip">Best practice: dùng parameterized logging <code>log.debug("User {} login", username)</code> thay vì nối chuỗi <code>"User " + username + " login"</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>50. @Scheduled?</summary>
+      <div class="answer">
+        <p>Chạy method định kỳ. Cần bật <code>@EnableScheduling</code> ở class config.</p>
+        <pre><code>@Component
+public class JobScheduler {
+  @Scheduled(fixedRate = 60000) // mỗi 60s, tính từ lúc bắt đầu
+  public void job1() {}
+
+  @Scheduled(fixedDelay = 60000) // 60s sau khi job trước xong
+  public void job2() {}
+
+  @Scheduled(cron = "0 0 2 * * *") // 2h sáng mỗi ngày
+  public void cleanup() {}
+}</code></pre>
+        <p><strong>Cron</strong> 6 field: <code>second minute hour day-of-month month day-of-week</code>.</p>
+        <ul>
+          <li><code>*</code>: mọi giá trị.</li>
+          <li><code>?</code>: không xác định.</li>
+          <li><code>*/5</code>: mỗi 5 đơn vị.</li>
+          <li><code>MON-FRI</code>: khoảng.</li>
+        </ul>
+        <p><strong>Multi-instance</strong>: nếu deploy nhiều instance, job sẽ chạy <em>trùng</em> trên mọi instance. Giải pháp: dùng <strong>ShedLock</strong>, Quartz cluster, hoặc external scheduler.</p>
+        <div class="tip">Mặc định <code>@Scheduled</code> chạy trên 1 thread đơn → job chậm block job sau. Cấu hình pool: <code>spring.task.scheduling.pool.size=5</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>51. @Async?</summary>
+      <div class="answer">
+        <p>Chạy method trên thread khác, trả về ngay cho caller. Cần <code>@EnableAsync</code>.</p>
+        <pre><code>@Configuration
+@EnableAsync
+public class AsyncConfig {
+  @Bean(name = "taskExecutor")
+  public Executor taskExecutor() {
+    ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
+    exec.setCorePoolSize(5);
+    exec.setMaxPoolSize(20);
+    exec.setQueueCapacity(100);
+    exec.setThreadNamePrefix("async-");
+    exec.initialize();
+    return exec;
+  }
+}
+
+@Service
+public class EmailService {
+  @Async("taskExecutor")
+  public CompletableFuture&lt;Void&gt; sendEmail(String to) {
+    // chạy background
+    return CompletableFuture.completedFuture(null);
+  }
+}</code></pre>
+        <p><strong>Lưu ý</strong>: method phải <code>public</code>, không gọi từ chính class đó. Return type: <code>void</code> hoặc <code>CompletableFuture&lt;T&gt;</code>. Exception trong async method <em>không</em> tự propagate — cần <code>AsyncUncaughtExceptionHandler</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>52. Cache với @Cacheable?</summary>
+      <div class="answer">
+        <p>Spring Cache abstraction. Bật <code>@EnableCaching</code>, dùng các annotation:</p>
+        <ul>
+          <li><strong><code>@Cacheable</code></strong>: nếu có trong cache → trả về; nếu không → chạy method, lưu cache.</li>
+          <li><strong><code>@CachePut</code></strong>: luôn chạy method và cập nhật cache (dùng cho update).</li>
+          <li><strong><code>@CacheEvict</code></strong>: xóa cache (dùng cho delete, hoặc <code>allEntries=true</code> xóa hết).</li>
+          <li><strong><code>@Caching</code></strong>: gộp nhiều operation.</li>
+        </ul>
+        <pre><code>@Cacheable(value = "users", key = "#id")
+public UserDto findById(Long id) { ... }
+
+@CacheEvict(value = "users", key = "#id")
+public void update(Long id, UserRequest req) { ... }</code></pre>
+        <p><strong>Provider</strong>: ConcurrentMapCache (default, dev), Caffeine (in-memory, tốt cho 1 instance), Redis (distributed).</p>
+        <pre><code>spring.cache.type=redis
+spring.redis.host=localhost</code></pre>
+        <div class="tip">Cảnh báo: <code>@Cacheable</code> cũng bị ảnh hưởng bởi self-invocation. Và nhớ TTL cho Redis cache — nếu không, cache cũ sẽ tồn tại mãi.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>53. Upload file?</summary>
+      <div class="answer">
+        <pre><code>@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity&lt;String&gt; upload(@RequestParam("file") MultipartFile file) throws IOException {
+  if (file.isEmpty()) throw new BadRequestException("File empty");
+
+  String contentType = file.getContentType();
+  if (!List.of("image/png", "image/jpeg").contains(contentType))
+    throw new BadRequestException("Only PNG/JPEG allowed");
+
+  String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+  Path path = Path.of("uploads", fileName);
+  Files.createDirectories(path.getParent());
+  file.transferTo(path);
+
+  return ResponseEntity.ok("/files/" + fileName);
+}</code></pre>
+        <p>Cấu hình giới hạn trong <code>application.yml</code>:</p>
+        <pre><code>spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB</code></pre>
+        <p><strong>Production</strong>: không lưu file vào filesystem server — dùng S3/MinIO (object storage). Dùng presigned URL để client upload trực tiếp.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>54. CORS? CSRF?</summary>
+      <div class="answer">
+        <p><strong>CORS (Cross-Origin Resource Sharing)</strong>: browser chặn request cross-origin mặc định. Server phải trả header <code>Access-Control-Allow-Origin</code> để cho phép.</p>
+        <pre><code>@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+  @Override public void addCorsMappings(CorsRegistry reg) {
+    reg.addMapping("/api/**")
+       .allowedOrigins("https://myapp.com")
+       .allowedMethods("GET","POST","PUT","DELETE")
+       .allowCredentials(true);
+  }
+}</code></pre>
+        <p><strong>CSRF (Cross-Site Request Forgery)</strong>: kẻ tấn công lừa user đã login thực hiện request ngoài ý muốn.</p>
+        <ul>
+          <li>Với app dùng <strong>session/cookie</strong>: nên bật CSRF protection.</li>
+          <li>Với REST API dùng <strong>JWT trong header</strong> <code>Authorization</code>: tắt CSRF vì attacker không đọc được token từ domain khác.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>55. Testing trong Spring Boot?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong><code>@SpringBootTest</code></strong>: load full application context. Dùng cho integration test.</li>
+          <li><strong><code>@WebMvcTest(UserController.class)</code></strong>: chỉ load web layer, mock các service <code>@MockBean</code>. Nhẹ, nhanh.</li>
+          <li><strong><code>@DataJpaTest</code></strong>: chỉ load JPA layer, dùng H2 in-memory.</li>
+          <li><strong><code>@MockBean</code></strong>: thay bean trong context bằng mock.</li>
+          <li><strong>MockMvc</strong>: mô phỏng HTTP request không cần server thật.</li>
+          <li><strong>Mockito</strong>: mock dependency (<code>@Mock</code>, <code>@InjectMocks</code>).</li>
+        </ul>
+        <pre><code>@WebMvcTest(UserController.class)
+class UserControllerTest {
+  @Autowired MockMvc mvc;
+  @MockBean UserService service;
+
+  @Test
+  void get_shouldReturnUser() throws Exception {
+    when(service.findById(1L)).thenReturn(new UserDto(1L, "Alice"));
+    mvc.perform(get("/api/users/1"))
+       .andExpect(status().isOk())
+       .andExpect(jsonPath("$.name").value("Alice"));
+  }
+}</code></pre>
+        <div class="tip">Test pyramid: nhiều unit test (nhanh), vừa integration test, ít E2E test.</div>
+      </div>
+    </details>
+  </section>
+    <!-- ============ 4. JPA ============ -->
+  <section id="s4">
+    <h2>4. JPA / Hibernate / Database</h2>
+
+    <details>
+      <summary>56. JPA vs Hibernate vs JDBC?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>JDBC</strong>: API Java chuẩn để kết nối DB. Viết SQL thủ công, tự quản lý <code>Connection</code>, <code>PreparedStatement</code>, <code>ResultSet</code>. Nhiều boilerplate.</li>
+          <li><strong>JPA (Java Persistence API)</strong>: <em>specification</em> (chuẩn) cho ORM — định nghĩa annotation, interface, cách map object ↔ table. Không phải implementation.</li>
+          <li><strong>Hibernate</strong>: implementation phổ biến nhất của JPA. Cũng có API riêng (Session, Criteria) ngoài JPA.</li>
+          <li>Ngoài ra có <em>EclipseLink</em>, <em>OpenJPA</em> cũng implement JPA.</li>
+        </ul>
+        <p>JPA giúp: không cần viết SQL cho CRUD, map object tự động, cache, lazy loading, transaction. Nhưng: ẩn chi tiết (dễ sinh query kém), khó tối ưu cho query phức tạp.</p>
+        <div class="tip">Khi cần performance cao hoặc query cực phức tạp → cân nhắc JDBC (JdbcTemplate) hoặc native query.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>57. JpaRepository vs CrudRepository vs PagingAndSorting?</summary>
+      <div class="answer">
+        <p>Cả 3 là interface của Spring Data JPA, kế thừa nhau theo thứ tự:</p>
+        <ul>
+          <li><strong><code>CrudRepository&lt;T, ID&gt;</code></strong>: CRUD cơ bản — <code>save</code>, <code>saveAll</code>, <code>findById</code>, <code>findAll</code>, <code>delete</code>, <code>count</code>, <code>existsById</code>.</li>
+          <li><strong><code>PagingAndSortingRepository</code></strong>: thêm <code>findAll(Pageable)</code>, <code>findAll(Sort)</code>.</li>
+          <li><strong><code>JpaRepository&lt;T, ID&gt;</code></strong>: thêm <code>flush()</code>, <code>saveAndFlush()</code>, <code>deleteAllInBatch()</code>, <code>getById()</code>, <code>getOne()</code>. Dùng phổ biến nhất.</li>
+        </ul>
+        <p><code>JpaRepository</code> cũng kế thừa 2 cái trên. Trong thực tế, chỉ cần dùng <code>JpaRepository</code>.</p>
+        <div class="tip">Từ Spring Data 3.x, <code>PagingAndSortingRepository</code> không còn extends <code>CrudRepository</code> nữa (do trùng lặp), nhưng <code>JpaRepository</code> vẫn kế thừa cả 2.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>58. Query method? @Query JPQL vs native?</summary>
+      <div class="answer">
+        <p><strong>Query method</strong>: Spring Data tự sinh query từ tên method. Quy tắc: <code>findBy + Field + Operator + And/Or + Field</code>.</p>
+        <pre><code>List&lt;User&gt; findByName(String name);
+List&lt;User&gt; findByNameAndAge(String name, int age);
+List&lt;User&gt; findByAgeGreaterThan(int age);
+Optional&lt;User&gt; findByEmailIgnoreCase(String email);
+long countByStatus(Status status);
+List&lt;User&gt; findTop10ByOrderByCreatedAtDesc();</code></pre>
+        <p><strong>@Query JPQL</strong>: truy vấn trên entity (không phải table).</p>
+        <pre><code>@Query("SELECT u FROM User u WHERE u.email = :email AND u.status = :status")
+Optional&lt;User&gt; findActiveByEmail(@Param("email") String e, @Param("status") Status s);
+
+@Modifying @Transactional
+@Query("UPDATE User u SET u.status = :status WHERE u.id IN :ids")
+int updateStatus(@Param("ids") List&lt;Long&gt; ids, @Param("status") Status s);</code></pre>
+        <p><strong>Native query</strong>: SQL thật, chạy trực tiếp DB.</p>
+        <pre><code>@Query(value = "SELECT * FROM users WHERE LOWER(name) LIKE LOWER(CONCAT('%', :kw, '%'))",
+       nativeQuery = true)
+List&lt;User&gt; search(@Param("kw") String kw);</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>59. Persistence context?</summary>
+      <div class="answer">
+        <p><strong>Persistence Context</strong> là "cache tầng 1" của <code>EntityManager</code>, quản lý tập entity trong 1 transaction.</p>
+        <p><strong>4 trạng thái của entity</strong>:</p>
+        <ul>
+          <li><strong>Transient (new)</strong>: mới <code>new User()</code>, chưa liên kết với EntityManager.</li>
+          <li><strong>Managed (persistent)</strong>: đang trong persistence context. Thay đổi field → tự động sync xuống DB khi flush (dirty checking).</li>
+          <li><strong>Detached</strong>: từng managed nhưng context đã đóng.</li>
+          <li><strong>Removed</strong>: đã đánh dấu xóa, sẽ xóa khi flush.</li>
+        </ul>
+        <p><strong>Lợi ích</strong>:</p>
+        <ul>
+          <li><strong>Identity map</strong>: 1 row trong DB chỉ map 1 object → <code>em.find(User.class, 1L)</code> 2 lần trong cùng transaction chỉ query 1 lần.</li>
+          <li><strong>Dirty checking</strong>: thay đổi field managed entity → tự UPDATE khi commit.</li>
+          <li><strong>Write-behind</strong>: gom nhiều thay đổi, flush 1 lần.</li>
+        </ul>
+        <div class="tip">Đây là lý do <code>@Transactional</code> quan trọng — không có transaction, mỗi thao tác là 1 session mới, mất tính năng cache và dirty checking.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>60. @GeneratedValue strategies?</summary>
+      <div class="answer">
+        <p>Chiến lược sinh khóa chính:</p>
+        <ul>
+          <li><strong>IDENTITY</strong>: DB auto-increment (MySQL, SQL Server). Đơn giản nhưng <em>không</em> hỗ trợ batch insert.</li>
+          <li><strong>SEQUENCE</strong>: dùng sequence của DB (PostgreSQL, Oracle). Hỗ trợ batch insert tốt.</li>
+          <li><strong>TABLE</strong>: bảng riêng sinh ID. Portable nhưng chậm.</li>
+          <li><strong>AUTO</strong>: Hibernate chọn dựa trên dialect.</li>
+        </ul>
+        <pre><code>@Id
+@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+@SequenceGenerator(name = "user_seq", sequenceName = "users_id_seq", allocationSize = 50)
+private Long id;</code></pre>
+        <p><strong>Khuyến nghị</strong>: dùng SEQUENCE với <code>allocationSize</code> = 50 (giảm round-trip DB). Với MySQL 8+ vẫn dùng IDENTITY là chấp nhận được.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>61. Mapping quan hệ?</summary>
+      <div class="answer">
+        <p>Các annotation quan hệ:</p>
+        <ul>
+          <li><strong><code>@OneToMany</code> / <code>@ManyToOne</code></strong>: quan hệ 1-N. Phổ biến nhất.</li>
+          <li><strong><code>@OneToOne</code></strong>: 1-1, ví dụ User ↔ Profile.</li>
+          <li><strong><code>@ManyToMany</code></strong>: N-N, cần bảng trung gian. Ít dùng vì khó kiểm soát.</li>
+        </ul>
+        <pre><code>@Entity
+public class User {
+  @Id @GeneratedValue Long id;
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List&lt;Order&gt; orders = new ArrayList&lt;&gt;();
+}
+
+@Entity
+public class Order {
+  @Id @GeneratedValue Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
+}</code></pre>
+        <p><strong>Quan trọng</strong>:</p>
+        <ul>
+          <li><code>mappedBy</code> chỉ ra phía nào <em>không</em> sở hữu FK — luôn đặt ở phía <code>@OneToMany</code>.</li>
+          <li>Phía <code>@ManyToOne</code> mới là owner, có <code>@JoinColumn</code>.</li>
+          <li><code>cascade</code>: thao tác trên cha → ảnh hưởng con.</li>
+          <li><code>orphanRemoval = true</code>: xóa con khỏi collection cha → xóa con khỏi DB.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>62. Cascade types? LAZY vs EAGER?</summary>
+      <div class="answer">
+        <p><strong>Cascade</strong>: định nghĩa propagation của các operation từ entity cha sang con.</p>
+        <ul>
+          <li><code>PERSIST</code>: khi persist cha → persist con.</li>
+          <li><code>MERGE</code>: khi merge cha → merge con.</li>
+          <li><code>REMOVE</code>: khi xóa cha → xóa con.</li>
+          <li><code>REFRESH</code>, <code>DETACH</code>, <code>ALL</code>.</li>
+        </ul>
+        <p>Khuyến nghị: chỉ dùng cascade khi quan hệ thực sự "cha-con" (composite).</p>
+        <p><strong>FetchType</strong>:</p>
+        <ul>
+          <li><strong><code>LAZY</code></strong>: load khi truy cập (proxy). Mặc định cho <code>@OneToMany</code>, <code>@ManyToMany</code>.</li>
+          <li><strong><code>EAGER</code></strong>: load ngay khi load cha. Mặc định cho <code>@ManyToOne</code>, <code>@OneToOne</code>.</li>
+        </ul>
+        <p><strong>Khuyến nghị</strong>: đặt <code>LAZY</code> cho tất cả quan hệ, và dùng <code>JOIN FETCH</code> / <code>@EntityGraph</code> khi cần.</p>
+        <div class="tip">Lazy loading chỉ hoạt động khi EntityManager còn mở (trong transaction). Nếu truy cập lazy field ngoài transaction → <code>LazyInitializationException</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>63. N+1 query là gì?</summary>
+      <div class="answer">
+        <p><strong>N+1</strong>: khi bạn query N entity cha, mỗi lần truy cập quan hệ con lại phát sinh 1 query mới → tổng 1 + N query.</p>
+        <pre><code>List&lt;User&gt; users = userRepo.findAll(); // 1 query
+for (User u : users) {
+  System.out.println(u.getOrders().size()); // mỗi lần 1 query → N query
+}</code></pre>
+        <p><strong>Cách phát hiện</strong>: bật log SQL của Hibernate:</p>
+        <pre><code>spring.jpa.show-sql=true
+logging.level.org.hibernate.SQL=DEBUG</code></pre>
+        <p><strong>Cách fix</strong>:</p>
+        <ol>
+          <li><strong>JOIN FETCH</strong> trong JPQL: <code>@Query("SELECT u FROM User u JOIN FETCH u.orders WHERE u.id = :id")</code>.</li>
+          <li><strong><code>@EntityGraph(attributePaths = "orders")</code></strong>.</li>
+          <li><strong><code>@BatchSize(size = 20)</code></strong>: Hibernate batch-in nhiều ID trong 1 query.</li>
+          <li><strong>Projection / DTO query</strong>: chỉ select field cần thiết.</li>
+        </ol>
+        <div class="tip">Nếu dùng <code>JOIN FETCH</code> với <code>@OneToMany</code> → phải <code>DISTINCT</code> để tránh duplicate cha.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>64. @Transactional?</summary>
+      <div class="answer">
+        <p><strong>Cách hoạt động</strong>: Spring dùng AOP proxy bao quanh method. Khi vào → <code>begin</code>, khi ra → <code>commit</code>, khi exception → <code>rollback</code>.</p>
+        <p><strong>Propagation</strong> (lan truyền transaction):</p>
+        <ul>
+          <li><strong>REQUIRED</strong> (mặc định): dùng transaction hiện có, nếu không có thì tạo mới.</li>
+          <li><strong>REQUIRES_NEW</strong>: luôn tạo transaction mới, tạm dừng transaction hiện tại.</li>
+          <li><strong>NESTED</strong>: transaction con với savepoint.</li>
+          <li><strong>MANDATORY</strong>: bắt buộc phải có transaction sẵn.</li>
+          <li><strong>NEVER</strong>, <strong>SUPPORTS</strong>, <strong>NOT_SUPPORTED</strong>.</li>
+        </ul>
+        <p><strong>Isolation</strong>: READ_UNCOMMITTED, READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE.</p>
+        <p><strong>Rollback</strong>: mặc định chỉ rollback với <code>RuntimeException</code> và <code>Error</code>. Muốn rollback với checked exception → <code>@Transactional(rollbackFor = Exception.class)</code>.</p>
+        <p><strong>readOnly = true</strong>: tối ưu — Hibernate skip dirty checking. Nên dùng cho query method.</p>
+        <div class="tip">Pitfall lớn: <strong>self-invocation</strong>. Gọi method <code>@Transactional</code> từ chính class đó (<code>this.method()</code>) sẽ <em>không</em> qua proxy → không có transaction. Fix: tách ra class khác, hoặc dùng <code>AopContext.currentProxy()</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>65. Optimistic vs Pessimistic lock?</summary>
+      <div class="answer">
+        <p><strong>Optimistic lock</strong>: giả định ít conflict. Dùng <code>@Version</code>:</p>
+        <pre><code>@Entity
+public class Product {
+  @Id Long id;
+  private int quantity;
+  @Version private Long version;
+}</code></pre>
+        <p>Mỗi UPDATE thêm <code>WHERE version = ?</code>, đồng thời tăng version. Nếu version đã thay đổi → <code>OptimisticLockException</code> → ứng dụng phải retry hoặc báo lỗi.</p>
+        <p><strong>Pessimistic lock</strong>: khóa DB ngay khi đọc:</p>
+        <pre><code>@Lock(LockModeType.PESSIMISTIC_WRITE)
+@Query("SELECT p FROM Product p WHERE p.id = :id")
+Product findByIdForUpdate(Long id);
+// sinh SQL: SELECT ... FOR UPDATE</code></pre>
+        <p>Lock giữ đến hết transaction. Thread khác chờ lock.</p>
+        <p><strong>Chọn khi nào</strong>:</p>
+        <ul>
+          <li>Optimistic: ít conflict, transaction ngắn, web app đa số.</li>
+          <li>Pessimistic: conflict cao (bán vé, trừ kho liên tục).</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>66. Connection pool? HikariCP?</summary>
+      <div class="answer">
+        <p><strong>Connection pool</strong>: giữ sẵn N connection, tái sử dụng. Tránh overhead tạo connection mới mỗi request (mất 50-100ms).</p>
+        <p><strong>HikariCP</strong> là pool mặc định của Spring Boot 2+, nhanh nhất hiện nay.</p>
+        <pre><code>spring.datasource.hikari:
+  maximum-pool-size: 10
+  minimum-idle: 5
+  connection-timeout: 30000
+  idle-timeout: 600000
+  max-lifetime: 1800000</code></pre>
+        <p><strong>Công thức chọn pool size</strong> (từ Hikari docs): <code>connections = ((core_count * 2) + effective_spindle_count)</code>. Ví dụ 4 core → ~10 connection. Không phải càng lớn càng tốt.</p>
+        <p><strong>Cảnh báo</strong>: nếu app block lâu (query chậm), connection bị giữ → request khác chờ → timeout. Monitor pool usage qua Actuator (<code>/actuator/metrics/hikaricp.connections.active</code>).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>67. Pagination, sorting?</summary>
+      <div class="answer">
+        <pre><code>// Page (có total count)
+Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+Page&lt;User&gt; page = userRepo.findAll(pageable);
+
+page.getContent();       // list
+page.getTotalElements(); // tổng số
+page.getTotalPages();    // số trang
+
+// Slice (không count — hiệu quả hơn)
+Slice&lt;User&gt; slice = userRepo.findByStatus(Status.ACTIVE, pageable);
+slice.hasNext();</code></pre>
+        <p><strong>Controller</strong>:</p>
+        <pre><code>@GetMapping
+public Page&lt;UserDto&gt; list(
+    @PageableDefault(size = 10, sort = "id", direction = DESC) Pageable pageable) {
+  return userService.findAll(pageable);
+}</code></pre>
+        <p>Spring Boot tự bind <code>?page=0&amp;size=10&amp;sort=id,desc</code> vào <code>Pageable</code>.</p>
+        <div class="tip">Với dataset lớn, <code>Page</code> dùng <code>COUNT(*)</code> có thể chậm. Dùng <code>Slice</code> hoặc keyset pagination (WHERE id &gt; lastId LIMIT n).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>68. ACID? Isolation levels?</summary>
+      <div class="answer">
+        <p><strong>ACID</strong>:</p>
+        <ul>
+          <li><strong>Atomicity</strong>: transaction all-or-nothing.</li>
+          <li><strong>Consistency</strong>: dữ liệu từ trạng thái hợp lệ này sang trạng thái hợp lệ khác.</li>
+          <li><strong>Isolation</strong>: transaction không thấy thay đổi chưa commit của transaction khác.</li>
+          <li><strong>Durability</strong>: sau khi commit, dữ liệu tồn tại kể cả khi crash.</li>
+        </ul>
+        <p><strong>Isolation levels</strong> (thấp → cao):</p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr><th style="text-align:left;padding:6px;border-bottom:1px solid #334155;">Level</th><th style="text-align:left;padding:6px;border-bottom:1px solid #334155;">Dirty Read</th><th style="text-align:left;padding:6px;border-bottom:1px solid #334155;">Non-Repeatable</th><th style="text-align:left;padding:6px;border-bottom:1px solid #334155;">Phantom</th></tr>
+          <tr><td style="padding:6px;">READ_UNCOMMITTED</td><td style="padding:6px;">✓</td><td style="padding:6px;">✓</td><td style="padding:6px;">✓</td></tr>
+          <tr><td style="padding:6px;">READ_COMMITTED</td><td style="padding:6px;">✗</td><td style="padding:6px;">✓</td><td style="padding:6px;">✓</td></tr>
+          <tr><td style="padding:6px;">REPEATABLE_READ</td><td style="padding:6px;">✗</td><td style="padding:6px;">✗</td><td style="padding:6px;">✓</td></tr>
+          <tr><td style="padding:6px;">SERIALIZABLE</td><td style="padding:6px;">✗</td><td style="padding:6px;">✗</td><td style="padding:6px;">✗</td></tr>
+        </table>
+        <p><strong>Ví dụ</strong>:</p>
+        <ul>
+          <li><em>Dirty read</em>: đọc dữ liệu chưa commit của transaction khác.</li>
+          <li><em>Non-repeatable</em>: đọc cùng row 2 lần được 2 giá trị khác nhau.</li>
+          <li><em>Phantom</em>: query lần 1 có N row, lần 2 có N+1.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>69. SQL vs NoSQL?</summary>
+      <div class="answer">
+        <p><strong>SQL (RDBMS)</strong>: MySQL, PostgreSQL, Oracle, SQL Server.</p>
+        <ul>
+          <li>Schema cố định, ACID đầy đủ, JOIN mạnh, transaction.</li>
+          <li>Vertical scale (tăng CPU/RAM) hoặc read replica.</li>
+          <li>Dùng khi: dữ liệu có cấu trúc, quan hệ, cần consistency cao (banking, ERP).</li>
+        </ul>
+        <p><strong>NoSQL</strong>:</p>
+        <ul>
+          <li><strong>Document</strong>: MongoDB — JSON document, flexible schema.</li>
+          <li><strong>Key-value</strong>: Redis — cache, session.</li>
+          <li><strong>Column-family</strong>: Cassandra, HBase — write-heavy, time-series.</li>
+          <li><strong>Graph</strong>: Neo4j — quan hệ phức tạp.</li>
+        </ul>
+        <p>Đặc điểm: schema linh hoạt, horizontal scale, thường eventual consistency (BASE).</p>
+        <p><strong>Chọn</strong>: Cần transaction ACID, quan hệ phức tạp → SQL. Cần scale lớn, write-heavy, schema thay đổi → NoSQL.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 5. MICROSERVICES ============ -->
+  <section id="s5">
+    <h2>5. Microservices &amp; DevOps</h2>
+
+    <details>
+      <summary>70. Monolith vs Microservices?</summary>
+      <div class="answer">
+        <p><strong>Monolith</strong>:</p>
+        <ul>
+          <li>1 codebase, 1 deployment unit.</li>
+          <li>Ưu: đơn giản, dễ debug, transaction ACID dễ, deploy 1 lần.</li>
+          <li>Nhược: scale toàn bộ app, coupling cao, 1 bug có thể sập cả hệ, deploy chậm khi lớn.</li>
+        </ul>
+        <p><strong>Microservices</strong>:</p>
+        <ul>
+          <li>Nhiều service độc lập, mỗi service 1 DB riêng, giao tiếp qua API/message.</li>
+          <li>Ưu: scale độc lập, deploy độc lập, mỗi team tự chủ tech stack.</li>
+          <li>Nhược: phức tạp vận hành, distributed transaction (Saga), monitoring, debugging khó.</li>
+        </ul>
+        <p><strong>Nguyên tắc thiết kế</strong>: chia theo business capability (DDD bounded context), không chia theo layer. Ví dụ: User Service, Order Service, Payment Service.</p>
+        <div class="tip">Với dự án nhỏ/team nhỏ → bắt đầu bằng modular monolith. Chỉ tách microservices khi thực sự cần scale team/service.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>71. RESTful API? HTTP status codes?</summary>
+      <div class="answer">
+        <p><strong>REST</strong> (Representational State Transfer) — kiến trúc với các đặc điểm:</p>
+        <ul>
+          <li><strong>Stateless</strong>: server không lưu state client; mỗi request độc lập.</li>
+          <li><strong>Resource-based</strong>: URL là danh từ số nhiều (<code>/users</code>, <code>/orders/123</code>).</li>
+          <li><strong>HTTP verbs</strong>: GET (đọc), POST (tạo), PUT (thay thế toàn bộ), PATCH (cập nhật một phần), DELETE (xóa).</li>
+          <li><strong>Idempotent</strong>: GET/PUT/DELETE idempotent; POST thì không.</li>
+        </ul>
+        <p><strong>Status codes</strong>:</p>
+        <ul>
+          <li><strong>2xx</strong>: 200 OK, 201 Created, 204 No Content.</li>
+          <li><strong>3xx</strong>: 301 Moved, 304 Not Modified.</li>
+          <li><strong>4xx</strong>: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable Entity, 429 Too Many Requests.</li>
+          <li><strong>5xx</strong>: 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout.</li>
+        </ul>
+        <div class="tip">Đừng nhầm 401 vs 403: 401 = chưa authentication; 403 = đã authentication nhưng thiếu quyền.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>72. API Gateway, Service Discovery, Config Server?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>API Gateway</strong> (Spring Cloud Gateway, Kong, Nginx): điểm vào duy nhất cho client. Nhiệm vụ: routing, authentication, rate limiting, CORS, load balancing. Client chỉ cần biết gateway.</li>
+          <li><strong>Service Discovery</strong> (Eureka, Consul, k8s Service): service tự động đăng ký địa chỉ khi khởi động; client lookup để gọi.</li>
+          <li><strong>Config Server</strong> (Spring Cloud Config, Consul KV): quản lý config tập trung (thường từ Git).</li>
+          <li><strong>Load Balancer</strong>: phân tải giữa các instance (Ribbon, Spring Cloud LoadBalancer, k8s Service).</li>
+        </ul>
+        <p><strong>Spring Cloud</strong> cung cấp tích hợp cho tất cả. Với Kubernetes, Service Discovery + ConfigMap/Secret đã có sẵn → ít dùng Eureka hơn.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>73. Circuit Breaker?</summary>
+      <div class="answer">
+        <p><strong>Vấn đề</strong>: nếu service A gọi service B đang chậm/down, A sẽ chờ timeout → thread pool cạn → A cũng down → cascade failure.</p>
+        <p><strong>Circuit Breaker</strong> giải quyết bằng 3 trạng thái:</p>
+        <ul>
+          <li><strong>CLOSED</strong>: bình thường, cho request qua. Đếm failure.</li>
+          <li><strong>OPEN</strong>: khi failure vượt ngưỡng → block hết request, trả fallback ngay. Sau timeout → HALF_OPEN.</li>
+          <li><strong>HALF_OPEN</strong>: cho 1 số request thử. Thành công → CLOSED; fail → OPEN lại.</li>
+        </ul>
+        <pre><code>@CircuitBreaker(name = "inventory", fallbackMethod = "fallback")
+public Inventory checkInventory(Long productId) {
+  return inventoryClient.get(productId);
+}</code></pre>
+        <p><strong>Resilience4j</strong> là thư viện hiện đại (thay Hystrix đã ngừng phát triển).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>74. Kafka vs RabbitMQ?</summary>
+      <div class="answer">
+        <p><strong>Kafka</strong>:</p>
+        <ul>
+          <li>Distributed log, partition-based, thứ tự trong partition.</li>
+          <li>Message được lưu trên disk có thể replay.</li>
+          <li>Throughput rất cao (hàng triệu msg/s).</li>
+          <li>Pull model — consumer chủ động pull.</li>
+          <li>Dùng cho: event streaming, log aggregation, event sourcing.</li>
+        </ul>
+        <p><strong>RabbitMQ</strong>:</p>
+        <ul>
+          <li>Message broker truyền thống, push model.</li>
+          <li>Routing linh hoạt: direct, topic, fanout, headers.</li>
+          <li>Message bị xóa sau khi consumer ack (không replay).</li>
+          <li>Dùng cho: task queue, RPC, microservice async đơn giản.</li>
+        </ul>
+        <p><strong>Chọn</strong>: cần streaming/replay/throughput → Kafka. Cần routing phức tạp, task queue đơn giản → RabbitMQ.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>75. Distributed transaction? Saga?</summary>
+      <div class="answer">
+        <p><strong>Vấn đề</strong>: microservices mỗi service có DB riêng → không thể dùng 1 transaction ACID xuyên service.</p>
+        <p><strong>Saga pattern</strong>: chia business transaction thành nhiều local transaction. Mỗi bước thành công → next. Nếu bước N fail → chạy <em>compensating transaction</em> cho N-1 bước trước đó.</p>
+        <p>2 cách triển khai:</p>
+        <ul>
+          <li><strong>Choreography</strong>: các service phát event, service khác lắng nghe. Không có trung tâm điều phối. Đơn giản cho flow nhỏ.</li>
+          <li><strong>Orchestration</strong>: có 1 orchestrator (Temporal, Camunda) điều phối. Rõ ràng, dễ debug.</li>
+        </ul>
+        <p>Ví dụ: Order → Payment → Inventory. Nếu Inventory fail → Payment phải refund, Order cancel.</p>
+        <div class="tip">Saga đảm bảo <em>eventual consistency</em>, không phải ACID. Cần thiết kế idempotent cho retry.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>76. Docker?</summary>
+      <div class="answer">
+        <p><strong>Docker</strong> đóng gói app + dependency vào container — chạy nhất quán trên mọi môi trường.</p>
+        <ul>
+          <li>Khác VM: container chia sẻ kernel HĐH, nhẹ hơn, khởi động nhanh.</li>
+          <li><strong>Image</strong>: template read-only. <strong>Container</strong>: instance của image.</li>
+        </ul>
+        <p><strong>Dockerfile</strong> cho Spring Boot (multi-stage build):</p>
+        <pre><code>FROM maven:3.9-eclipse-temurin-17 AS build
+COPY . /app
+WORKDIR /app
+RUN mvn package -DskipTests
+
+FROM eclipse-temurin:17-jre-alpine
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app.jar"]</code></pre>
+        <p><strong>docker-compose</strong>: chạy nhiều container (app + MySQL + Redis) trong 1 file YAML.</p>
+        <p><strong>Best practice</strong>: image nhỏ (alpine), không chạy root, healthcheck, layer caching.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>77. CI/CD?</summary>
+      <div class="answer">
+        <p><strong>CI (Continuous Integration)</strong>: mỗi push code → tự động build, test, static analysis. Mục tiêu: phát hiện lỗi sớm.</p>
+        <p><strong>CD</strong>: có 2 nghĩa:</p>
+        <ul>
+          <li><strong>Continuous Delivery</strong>: tự động deploy lên staging, production deploy cần approve.</li>
+          <li><strong>Continuous Deployment</strong>: tự động deploy đến production không cần approve.</li>
+        </ul>
+        <p><strong>Pipeline mẫu</strong> (GitLab CI): build → test → package → deploy.</p>
+        <p>Tools: Jenkins, GitLab CI, GitHub Actions, CircleCI, ArgoCD (GitOps).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>78. Monitoring: Prometheus, Grafana, ELK?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Prometheus</strong>: thu thập <em>metrics</em> theo mô hình pull — định kỳ scrape endpoint <code>/actuator/prometheus</code>.</li>
+          <li><strong>Grafana</strong>: visual hóa metrics thành dashboard. Alerting.</li>
+          <li><strong>ELK Stack</strong>: xử lý <em>log</em> — Elasticsearch (lưu), Logstash/Filebeat (thu thập), Kibana (query).</li>
+          <li><strong>Distributed tracing</strong>: Jaeger, Zipkin, OpenTelemetry — theo dõi request xuyên services.</li>
+        </ul>
+        <p><strong>3 pillars of observability</strong>: Metrics, Logs, Traces.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>79. Cloud cơ bản?</summary>
+      <div class="answer">
+        <p><strong>AWS</strong> (phổ biến nhất):</p>
+        <ul>
+          <li>Compute: EC2 (VM), Lambda (serverless), ECS/EKS (container).</li>
+          <li>Storage: S3 (object), EBS (block).</li>
+          <li>DB: RDS (managed SQL), DynamoDB (NoSQL), ElastiCache (Redis).</li>
+          <li>Message: SQS, SNS, Kinesis.</li>
+          <li>Networking: VPC, Route 53, CloudFront (CDN).</li>
+        </ul>
+        <p><strong>GCP</strong>: Compute Engine, Cloud Run, GKE, Cloud Storage, BigQuery.</p>
+        <p><strong>Azure</strong>: VM, AKS, Blob Storage, Azure SQL, Cosmos DB.</p>
+        <p><strong>Deploy Spring Boot</strong> phổ biến: Docker + ECS/EKS, Elastic Beanstalk, Lambda + Spring Cloud Function.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 6. THỰC HÀNH ============ -->
+  <section id="s6">
+    <h2>6. Thực hành / code</h2>
+
+    <details>
+      <summary>80. REST API CRUD cho entity User?</summary>
+      <div class="answer">
+        <pre><code>// Entity
+@Entity @Table(name = "users")
+@Getter @Setter @NoArgsConstructor
+public class User {
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+  @Column(nullable = false, unique = true)
+  private String email;
+  private String name;
+  @Enumerated(EnumType.STRING)
+  private Status status;
+  private LocalDateTime createdAt;
+}
+
+// DTO
+public record UserRequest(@NotBlank String name, @Email @NotBlank String email) {}
+public record UserDto(Long id, String name, String email, Status status) {}
+
+// Repository
+public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+  Optional&lt;User&gt; findByEmail(String email);
+  boolean existsByEmail(String email);
+}
+
+// Service
+@Service @RequiredArgsConstructor @Transactional(readOnly = true)
+public class UserService {
+  private final UserRepository repo;
+
+  public List&lt;UserDto&gt; findAll() {
+    return repo.findAll().stream().map(UserMapper::toDto).toList();
+  }
+  public UserDto findById(Long id) {
+    return repo.findById(id).map(UserMapper::toDto)
+        .orElseThrow(() -&gt; new ResourceNotFoundException("User", id));
+  }
+  @Transactional
+  public UserDto create(UserRequest req) {
+    if (repo.existsByEmail(req.email()))
+      throw new DuplicateException("Email exists");
+    User u = new User();
+    u.setName(req.name()); u.setEmail(req.email());
+    u.setStatus(Status.ACTIVE); u.setCreatedAt(LocalDateTime.now());
+    return UserMapper.toDto(repo.save(u));
+  }
+  @Transactional
+  public UserDto update(Long id, UserRequest req) {
+    User u = repo.findById(id).orElseThrow(() -&gt; new ResourceNotFoundException("User", id));
+    u.setName(req.name()); u.setEmail(req.email());
+    return UserMapper.toDto(u); // dirty checking
+  }
+  @Transactional
+  public void delete(Long id) {
+    if (!repo.existsById(id)) throw new ResourceNotFoundException("User", id);
+    repo.deleteById(id);
+  }
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>81. Unit test Service với Mockito?</summary>
+      <div class="answer">
+        <pre><code>@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+  @Mock UserRepository repo;
+  @InjectMocks UserService service;
+
+  @Test
+  void findById_shouldReturnUser() {
+    User u = new User(); u.setId(1L); u.setName("Alice");
+    when(repo.findById(1L)).thenReturn(Optional.of(u));
+
+    UserDto dto = service.findById(1L);
+
+    assertThat(dto.name()).isEqualTo("Alice");
+    verify(repo).findById(1L);
+  }
+
+  @Test
+  void findById_shouldThrow_whenNotFound() {
+    when(repo.findById(99L)).thenReturn(Optional.empty());
+    assertThrows(ResourceNotFoundException.class, () -&gt; service.findById(99L));
+  }
+
+  @Test
+  void create_shouldThrow_whenEmailExists() {
+    when(repo.existsByEmail("a@b.com")).thenReturn(true);
+    assertThrows(DuplicateException.class,
+        () -&gt; service.create(new UserRequest("Alice", "a@b.com")));
+    verify(repo, never()).save(any());
+  }
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>82. Global exception handler?</summary>
+      <div class="answer">
+        <pre><code>@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ErrorResponse notFound(ResourceNotFoundException ex) {
+    return new ErrorResponse("NOT_FOUND", ex.getMessage());
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse validation(MethodArgumentNotValidException ex) {
+    Map&lt;String,String&gt; errors = ex.getBindingResult().getFieldErrors().stream()
+        .collect(Collectors.toMap(FieldError::getField,
+                                  FieldError::getDefaultMessage,
+                                  (a, b) -&gt; a));
+    return new ErrorResponse("VALIDATION_ERROR", "Validation failed", errors);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ErrorResponse conflict(DataIntegrityViolationException ex) {
+    return new ErrorResponse("CONFLICT", "Duplicate or constraint violation");
+  }
+
+  @ExceptionHandler(Exception.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  public ErrorResponse fallback(Exception ex) {
+    log.error("Unexpected error", ex);
+    return new ErrorResponse("INTERNAL_ERROR", "Unexpected error occurred");
+  }
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>83. Validate request body?</summary>
+      <div class="answer">
+        <pre><code>public record CreateUserRequest(
+  @NotBlank(message = "Tên không được trống")
+  @Size(min = 2, max = 50, message = "Tên 2-50 ký tự")
+  String name,
+
+  @NotBlank @Email(message = "Email không hợp lệ")
+  String email,
+
+  @NotNull @Min(value = 18, message = "Phải từ 18 tuổi")
+  @Max(120)
+  Integer age,
+
+  @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "SĐT không hợp lệ")
+  String phone
+) {}
+
+@PostMapping("/users")
+@ResponseStatus(CREATED)
+public UserDto create(@Valid @RequestBody CreateUserRequest req) {
+  return service.create(req);
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>84. API phân trang + sort + filter?</summary>
+      <div class="answer">
+        <pre><code>@GetMapping
+public Page&lt;UserDto&gt; search(
+    @RequestParam(required = false) String keyword,
+    @RequestParam(required = false) Status status,
+    @PageableDefault(size = 20, sort = "createdAt", direction = DESC) Pageable pageable) {
+
+  return userService.search(keyword, status, pageable).map(UserMapper::toDto);
+}
+
+// Service dùng Specification
+public Page&lt;User&gt; search(String kw, Status st, Pageable p) {
+  Specification&lt;User&gt; spec = Specification.where(null);
+  if (StringUtils.hasText(kw))
+    spec = spec.and((root, q, cb) -&gt; cb.like(cb.lower(root.get("name")), "%" + kw.toLowerCase() + "%"));
+  if (st != null)
+    spec = spec.and((root, q, cb) -&gt; cb.equal(root.get("status"), st));
+  return repo.findAll(spec, p);
+}</code></pre>
+        <p>Client: <code>GET /api/users?keyword=alice&amp;status=ACTIVE&amp;page=0&amp;size=20&amp;sort=name,asc</code></p>
+      </div>
+    </details>
+
+    <details>
+      <summary>85. Query tìm kiếm nhiều tiêu chí?</summary>
+      <div class="answer">
+        <p><strong>Cách 1: Specification</strong> (type-safe, dễ combine):</p>
+        <pre><code>public class UserSpecs {
+  public static Specification&lt;User&gt; nameLike(String name) {
+    return (root, q, cb) -&gt; name == null ? null
+        : cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+  }
+}
+
+Specification&lt;User&gt; spec = UserSpecs.nameLike(name).and(UserSpecs.ageBetween(min, max));
+repo.findAll(spec);</code></pre>
+        <p><strong>Cách 2: QueryDSL</strong> (mạnh hơn, generate Q-class):</p>
+        <pre><code>BooleanBuilder where = new BooleanBuilder();
+if (name != null) where.and(QUser.user.name.contains(name));
+repository.findAll(where);</code></pre>
+        <div class="tip">Với tiêu chí cố định &lt; 3 → query method. Với nhiều tiêu chí động → Specification/QueryDSL.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>86. Cấu hình Spring Security + JWT?</summary>
+      <div class="answer">
+        <pre><code>@Configuration @EnableWebSecurity @RequiredArgsConstructor
+public class SecurityConfig {
+  private final JwtAuthenticationFilter jwtFilter;
+
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+      .csrf(AbstractHttpConfigurer::disable)
+      .cors(Customizer.withDefaults())
+      .sessionManagement(s -&gt; s.sessionCreationPolicy(STATELESS))
+      .authorizeHttpRequests(a -&gt; a
+        .requestMatchers("/api/auth/**", "/actuator/health").permitAll()
+        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+        .anyRequest().authenticated())
+      .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+  }
+
+  @Bean public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+}
+
+// JwtFilter
+@Component @RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+  private final JwtService jwtService;
+  private final UserDetailsService uds;
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
+                                  FilterChain chain) throws IOException, ServletException {
+    String header = req.getHeader("Authorization");
+    if (header == null || !header.startsWith("Bearer ")) {
+      chain.doFilter(req, res); return;
+    }
+    String token = header.substring(7);
+    try {
+      String username = jwtService.extractUsername(token);
+      if (username != null &amp;&amp; SecurityContextHolder.getContext().getAuthentication() == null) {
+        UserDetails user = uds.loadUserByUsername(username);
+        if (jwtService.isValid(token, user)) {
+          UsernamePasswordAuthenticationToken auth =
+              new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+          SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+      }
+    } catch (JwtException e) { /* 401 */ }
+    chain.doFilter(req, res);
+  }
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>87. Scheduled job xóa dữ liệu cũ?</summary>
+      <div class="answer">
+        <pre><code>@Component @RequiredArgsConstructor @Slf4j
+public class CleanupJob {
+  private final OrderRepository orderRepo;
+
+  @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Ho_Chi_Minh")
+  public void cleanupOldOrders() {
+    LocalDateTime cutoff = LocalDateTime.now().minusMonths(6);
+    try {
+      int deleted = orderRepo.deleteByCreatedAtBefore(cutoff);
+      log.info("Cleaned up {} orders older than {}", deleted, cutoff);
+    } catch (Exception e) {
+      log.error("Cleanup failed", e);
+    }
+  }
+}
+
+// Repository
+@Modifying
+@Transactional
+@Query("DELETE FROM Order o WHERE o.createdAt &lt; :cutoff")
+int deleteByCreatedAtBefore(@Param("cutoff") LocalDateTime cutoff);</code></pre>
+        <p><strong>Multi-instance</strong>: dùng ShedLock để chỉ 1 instance chạy.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>88. Upload file?</summary>
+      <div class="answer">
+        <pre><code>@PostMapping(value = "/upload", consumes = MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity&lt;FileResponse&gt; upload(
+    @RequestParam("file") MultipartFile file,
+    @RequestParam(required = false) String folder) throws IOException {
+
+  if (file.isEmpty())
+    throw new BadRequestException("File rỗng");
+  if (file.getSize() &gt; 5 * 1024 * 1024)
+    throw new BadRequestException("File &gt; 5MB");
+
+  String contentType = file.getContentType();
+  Set&lt;String&gt; allowed = Set.of("image/png", "image/jpeg", "application/pdf");
+  if (!allowed.contains(contentType))
+    throw new BadRequestException("Loại file không được hỗ trợ");
+
+  String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
+  String fileName = UUID.randomUUID() + "." + ext;
+  Path target = Paths.get("uploads", folder != null ? folder : "default").resolve(fileName);
+  Files.createDirectories(target.getParent());
+  file.transferTo(target.toAbsolutePath());
+
+  return ResponseEntity.ok(new FileResponse(fileName, "/files/" + fileName));
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>89. Tối ưu N+1 query?</summary>
+      <div class="answer">
+        <p><strong>Cách 1: JOIN FETCH</strong>:</p>
+        <pre><code>@Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.orders WHERE u.status = :s")
+List&lt;User&gt; findWithOrders(@Param("s") Status s);</code></pre>
+        <p><strong>Cách 2: @EntityGraph</strong>:</p>
+        <pre><code>@EntityGraph(attributePaths = {"orders", "orders.items"})
+@Query("SELECT u FROM User u WHERE u.id = :id")
+Optional&lt;User&gt; findDetailById(Long id);</code></pre>
+        <p><strong>Cách 3: @BatchSize</strong>:</p>
+        <pre><code>@BatchSize(size = 20)
+@OneToMany(mappedBy = "user")
+private List&lt;Order&gt; orders;
+// global: spring.jpa.properties.hibernate.default_batch_fetch_size=20</code></pre>
+        <p><strong>Cách 4: Projection/DTO</strong> — chỉ select field cần:</p>
+        <pre><code>@Query("SELECT new com.ex.UserSummaryDto(u.id, u.name, COUNT(o)) " +
+       "FROM User u LEFT JOIN u.orders o GROUP BY u.id, u.name")
+List&lt;UserSummaryDto&gt; findSummaries();</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>90. Custom annotation/validator?</summary>
+      <div class="answer">
+        <pre><code>@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = PhoneValidator.class)
+public @interface ValidPhone {
+  String message() default "Số điện thoại không hợp lệ";
+  Class&lt;?&gt;[] groups() default {};
+  Class&lt;? extends Payload&gt;[] payload() default {};
+}
+
+public class PhoneValidator implements ConstraintValidator&lt;ValidPhone, String&gt; {
+  private static final Pattern P = Pattern.compile("^\\+?[0-9]{10,15}$");
+
+  @Override
+  public boolean isValid(String value, ConstraintValidatorContext ctx) {
+    if (value == null) return true;
+    return P.matcher(value).matches();
+  }
+}
+
+// Dùng
+public record UserRequest(
+  @NotBlank String name,
+  @ValidPhone String phone
+) {}</code></pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 7. HÀNH VI ============ -->
+  <section id="s7">
+    <h2>7. Hành vi / tình huống</h2>
+
+    <details>
+      <summary>91. Giới thiệu bản thân?</summary>
+      <div class="answer">
+        <p>Ngắn gọn 2-3 phút, cấu trúc 3 phần:</p>
+        <ol>
+          <li><strong>Hiện tại (30s)</strong>: "Em tên X, có Y năm kinh nghiệm Java backend, hiện đang làm ở công ty Z. Stack chính: Java 17, Spring Boot, MySQL, Redis, Docker."</li>
+          <li><strong>Quá khứ (1-2 phút)</strong>: "Dự án gần nhất em làm là hệ thống ABC — em phụ trách module XYZ, dùng Spring Boot + Kafka để xử lý ~1M event/ngày. Em đã optimize N+1 query giúp API giảm latency từ 800ms → 120ms..."</li>
+          <li><strong>Tương lai (30s)</strong>: "Em muốn phát triển sâu về microservices và system design. Em thấy vị trí này phù hợp vì team đang làm X, Y."</li>
+        </ol>
+        <p><strong>Nên tránh</strong>: đọc CV, kể lể quá dài, không có số liệu cụ thể, nói xấu công ty cũ.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>92. Dự án tâm đắc nhất?</summary>
+      <div class="answer">
+        <p><strong>Dùng STAR</strong>:</p>
+        <ul>
+          <li><strong>Situation</strong>: bối cảnh dự án, team size, tech stack, vấn đề business.</li>
+          <li><strong>Task</strong>: nhiệm vụ cụ thể của bạn.</li>
+          <li><strong>Action</strong>: bạn đã làm gì — technical details.</li>
+          <li><strong>Result</strong>: kết quả <em>đo lường được</em> — performance, user, revenue, bug giảm.</li>
+        </ul>
+        <p>Ví dụ: "Hệ thống order bị chậm khi flash sale (S). Em được giao tối ưu API đặt hàng (T). Em dùng Redis cache sản phẩm, queue request qua Kafka, dùng pessimistic lock cho inventory (A). Kết quả: chịu được 5k request/s thay vì 500, không còn oversell (R)."</p>
+        <div class="tip">Nhấn mạnh vào <em>đóng góp cá nhân</em>, không phải "team em làm". Nêu cả khó khăn và cách giải quyết.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>93. Khó khăn lớn nhất &amp; cách giải quyết?</summary>
+      <div class="answer">
+        <p>Kể 1 tình huống thật, theo cấu trúc:</p>
+        <ol>
+          <li><strong>Vấn đề cụ thể</strong>: ví dụ production API bị timeout, DB connection pool cạn.</li>
+          <li><strong>Phân tích</strong>: dùng gì để debug? (log, metrics, thread dump, heap dump).</li>
+          <li><strong>Nguyên nhân gốc</strong>: ví dụ N+1 query + không có index → mỗi request 5s → pool cạn.</li>
+          <li><strong>Giải pháp</strong>: thêm index, fix N+1, tăng pool size tạm thời, thêm cache.</li>
+          <li><strong>Bài học</strong>: setup alerting sớm, review query khi code, load test trước release.</li>
+        </ol>
+        <p>Tránh: "Em không gặp khó khăn gì" hoặc kể chuyện không liên quan tech.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>94. Xung đột trong nhóm?</summary>
+      <div class="answer">
+        <p>Thể hiện sự trưởng thành:</p>
+        <ul>
+          <li><strong>Lắng nghe trước</strong>: hiểu quan điểm đối phương.</li>
+          <li><strong>Tập trung vào vấn đề, không vào con người</strong>: "Cách X có vấn đề về performance" thay vì "Anh X làm sai".</li>
+          <li><strong>Đưa dữ liệu</strong>: benchmark, document, POC để quyết định khách quan.</li>
+          <li><strong>Tìm điểm chung</strong>: giải pháp hybrid nếu có thể.</li>
+          <li><strong>Escalate đúng lúc</strong>: nếu không thống nhất được và blocking, nhờ team lead quyết.</li>
+          <li><strong>Không giữ thù</strong>: quyết định xong thì support nhau.</li>
+        </ul>
+        <p>Ví dụ: tranh luận dùng Kafka hay RabbitMQ — thay vì cãi lý thuyết, làm POC nhỏ với 2 cái, so sánh throughput/latency, chọn cái phù hợp use case.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>95. Học công nghệ mới như thế nào?</summary>
+      <div class="answer">
+        <p>Quy trình của mình:</p>
+        <ol>
+          <li><strong>Đọc doc chính thức</strong> (không chỉ tutorial YouTube) để hiểu concept cốt lõi.</li>
+          <li><strong>Làm mini project</strong> — code 1 app nhỏ để thực hành end-to-end.</li>
+          <li><strong>Đọc source code</strong> nếu cần hiểu sâu.</li>
+          <li><strong>Áp dụng vào công việc</strong> khi có cơ hội.</li>
+          <li><strong>Viết note / blog / chia sẻ team</strong> — dạy lại là cách học hiệu quả nhất.</li>
+        </ol>
+        <p>Ví dụ cụ thể: học Kafka — đọc doc, code producer/consumer, benchmark throughput, thử với 3 partition, tìm hiểu consumer group, rồi chia sẻ cho team.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>96. Tại sao chọn Spring Boot?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Năng suất</strong>: convention over configuration, auto-config, starter → setup nhanh.</li>
+          <li><strong>Hệ sinh thái</strong>: Spring Cloud, Data, Security, Batch... tích hợp tốt.</li>
+          <li><strong>Cộng đồng lớn</strong>: dễ tìm giải pháp, dễ tuyển người.</li>
+          <li><strong>Cloud-native</strong>: embedded server, Actuator, Docker-friendly, chạy tốt trên k8s.</li>
+          <li><strong>Production-proven</strong>: dùng ở Netflix, Alibaba, nhiều công ty lớn.</li>
+          <li><strong>Career path</strong>: kỹ năng Spring Boot dễ chuyển việc, nhu cầu thị trường cao.</li>
+        </ul>
+        <p>Nếu hỏi "sao không dùng Quarkus/Micronaut?": với hầu hết dự án doanh nghiệp, Spring Boot vẫn là lựa chọn an toàn, tài liệu phong phú.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>97. Kế hoạch 1–2 năm tới?</summary>
+      <div class="answer">
+        <p>Trả lời theo 3 hướng:</p>
+        <ul>
+          <li><strong>Kỹ thuật</strong>: nâng lên Middle/Senior. Học sâu system design, microservices, cloud (AWS/K8s), performance tuning.</li>
+          <li><strong>Đóng góp</strong>: chủ động thiết kế module, review code cho junior, viết technical doc, chia sẻ knowledge trong team.</li>
+          <li><strong>Cá nhân</strong>: đọc sách (Effective Java, Designing Data-Intensive Applications), tham gia cộng đồng.</li>
+        </ul>
+        <p>Tránh nói: "Em muốn làm manager" nếu apply vị trí technical, hoặc "Em muốn học X" nhưng X không liên quan vị trí.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>98. Câu hỏi cho nhà tuyển dụng?</summary>
+      <div class="answer">
+        <p>Nên hỏi 2-3 câu, thể hiện sự quan tâm thật:</p>
+        <ul>
+          <li><strong>Về công việc</strong>: "Team em sẽ làm dự án gì trong 6 tháng tới? Tech stack cụ thể ra sao?"</li>
+          <li><strong>Về quy trình</strong>: "Team đang dùng quy trình nào? Có review code, có CI/CD không?"</li>
+          <li><strong>Về phát triển</strong>: "Công ty có budget học tập, tham gia conference không? Lộ trình thăng tiến ra sao?"</li>
+          <li><strong>Về văn hóa</strong>: "Điều gì khiến anh/chị thích làm ở đây nhất? Team xử lý conflict thế nào?"</li>
+          <li><strong>Về thách thức</strong>: "Hiện tại team đang gặp khó khăn gì về technical mà em có thể giúp?"</li>
+        </ul>
+        <p><strong>Không nên hỏi ngay</strong>: lương, nghỉ phép, OT (để dành cho HR round sau).</p>
+      </div>
+    </details>
+  </section>
+
+</div>
+
+<button class="top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">↑</button>
+
+<script>
+  function toggleAll(open) {
+    document.querySelectorAll('details').forEach(d => d.open = open);
+  }
+
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeToggle');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      root.classList.add('light');
+      themeBtn.textContent = '☀️';
+    } else {
+      root.classList.remove('light');
+      themeBtn.textContent = '🌙';
+    }
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  themeBtn.addEventListener('click', () => {
+    const next = root.classList.contains('light') ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+
+  // Glossary search
+  (function() {
+    const input = document.getElementById('glossarySearch');
+    const items = document.querySelectorAll('.gloss-item');
+    const empty = document.getElementById('glossaryEmpty');
+    if (!input) return;
+
+    input.addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      let visible = 0;
+      items.forEach(el => {
+        const key = (el.dataset.k + ' ' + el.textContent).toLowerCase();
+        const match = !q || key.includes(q);
+        el.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      empty.style.display = visible === 0 ? 'block' : 'none';
+    });
+  })();
+
+
+  // Toggle thu gọn Glossary
+function toggleGlossary() {
+  const body = document.getElementById('glossaryBody');
+  const btn = document.getElementById('glossaryToggle');
+  if (!body || !btn) return;
+
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? '' : 'none';
+  btn.innerHTML = isHidden ? '🔽 Thu gọn' : '🔽 Mở rộng';
+
+  // Lưu trạng thái
+  localStorage.setItem('glossaryCollapsed', isHidden ? 'false' : 'true');
+}
+
+// Khôi phục trạng thái khi mở trang
+(function() {
+  const collapsed = localStorage.getItem('glossaryCollapsed') === 'true';
+  if (collapsed) {
+    const body = document.getElementById('glossaryBody');
+    const btn = document.getElementById('glossaryToggle');
+    if (body) body.style.display = 'none';
+    if (btn) btn.innerHTML = '🔽 Mở rộng';
+  }
+})();
+</script>
+
+</body>
+</html>

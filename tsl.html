@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>TLS - Tổng hợp kiến thức và ví dụ</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#1e293b;
+    --card2:#273449;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --accent:#38bdf8;
+    --accent2:#22c55e;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --border:#334155;
+    --purple:#a78bfa;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.7;
+    padding:0 0 60px;
+  }
+  header{
+    background:linear-gradient(135deg,#1e3a8a,#0ea5e9);
+    padding:40px 20px;
+    text-align:center;
+    border-bottom:3px solid var(--accent);
+  }
+  header h1{margin:0 0 10px;font-size:2rem}
+  header p{margin:0;color:#e0f2fe}
+  .container{max-width:960px;margin:0 auto;padding:0 20px}
+  section{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px 28px;
+    margin-top:28px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  }
+  h2{
+    color:var(--accent);
+    border-bottom:2px solid var(--border);
+    padding-bottom:8px;
+    margin-top:0;
+  }
+  h3{color:var(--accent2);margin-top:22px}
+  h4{color:var(--warn);margin-bottom:6px}
+  code,pre{
+    font-family:'JetBrains Mono','Consolas',monospace;
+    background:var(--card2);
+    border-radius:6px;
+  }
+  code{padding:2px 6px;font-size:.9em;color:#f0abfc}
+  pre{
+    padding:14px 18px;
+    overflow-x:auto;
+    border-left:3px solid var(--accent);
+    font-size:.9em;
+    color:#cbd5e1;
+  }
+  .tag{
+    display:inline-block;
+    background:var(--card2);
+    border:1px solid var(--border);
+    padding:2px 10px;
+    border-radius:20px;
+    font-size:.8em;
+    color:var(--accent);
+    margin-right:6px;
+  }
+  .note{
+    background:rgba(56,189,248,0.1);
+    border-left:4px solid var(--accent);
+    padding:12px 16px;
+    border-radius:6px;
+    margin:14px 0;
+  }
+  .warn{
+    background:rgba(245,158,11,0.1);
+    border-left:4px solid var(--warn);
+    padding:12px 16px;
+    border-radius:6px;
+    margin:14px 0;
+  }
+  .danger{
+    background:rgba(239,68,68,0.1);
+    border-left:4px solid var(--danger);
+    padding:12px 16px;
+    border-radius:6px;
+    margin:14px 0;
+  }
+  .ok{
+    background:rgba(34,197,94,0.1);
+    border-left:4px solid var(--accent2);
+    padding:12px 16px;
+    border-radius:6px;
+    margin:14px 0;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0;
+    font-size:.92em;
+  }
+  th,td{
+    border:1px solid var(--border);
+    padding:10px 12px;
+    text-align:left;
+  }
+  th{background:var(--card2);color:var(--accent)}
+  tr:nth-child(even){background:rgba(255,255,255,0.02)}
+  ol,ul{padding-left:22px}
+  li{margin:6px 0}
+  .step{
+    background:var(--card2);
+    border-left:3px solid var(--accent2);
+    padding:10px 16px;
+    border-radius:6px;
+    margin:10px 0;
+  }
+  .step strong{color:var(--accent2)}
+  .badge{
+    display:inline-block;
+    background:var(--accent);
+    color:#0f172a;
+    font-weight:bold;
+    padding:1px 8px;
+    border-radius:4px;
+    font-size:.8em;
+    margin-right:6px;
+  }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    margin-top:40px;
+    font-size:.9em;
+  }
+  .toc{
+    background:var(--card2);
+    border-radius:8px;
+    padding:14px 20px;
+    margin-top:20px;
+  }
+  .toc a{color:var(--accent);text-decoration:none;display:block;padding:3px 0}
+  .toc a:hover{text-decoration:underline}
+  .fingerprint{
+    color:var(--purple);
+    font-weight:bold;
+    letter-spacing:.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TLS – Transport Layer Security</h1>
+  <p>Tổng hợp kiến thức, cách hoạt động, ví dụ thực tế, AEAD, mTLS và Cert Thumbprint</p>
+</header>
+
+<div class="container">
+
+  <div class="toc">
+    <strong>Mục lục</strong>
+    <a href="#tls">1. TLS là gì?</a>
+    <a href="#handshake">2. Handshake TLS hoạt động thế nào?</a>
+    <a href="#record">3. Record Protocol – mã hoá dữ liệu</a>
+    <a href="#aead">4. AEAD là gì?</a>
+    <a href="#example">5. Ví dụ: đăng nhập ngân hàng qua HTTPS</a>
+    <a href="#integrity">6. TLS chống sửa dữ liệu như thế nào?</a>
+    <a href="#mtls">7. mTLS – Mutual TLS</a>
+    <a href="#thumbprint">8. Cert Thumbprint – Dấu vân tay chứng chỉ</a>
+    <a href="#compare">9. Bảng so sánh nhanh</a>
+    <a href="#notes">10. Lưu ý quan trọng</a>
+  </div>
+
+  <!-- ========================================================== -->
+  <section id="tls">
+    <h2>1. TLS là gì?</h2>
+    <p><strong>TLS</strong> (Transport Layer Security) là giao thức mật mã bảo vệ kết nối giữa hai ứng dụng qua mạng. Đây là phiên bản kế thừa của <strong>SSL</strong>, nên nhiều người vẫn gọi chung là <em>SSL/TLS</em>.</p>
+
+    <h3>Ba mục tiêu chính</h3>
+    <ul>
+      <li><span class="tag">Bí mật</span> Mã hoá dữ liệu – người ngoài không đọc được.</li>
+      <li><span class="tag">Toàn vẹn</span> Phát hiện dữ liệu bị sửa trên đường truyền.</li>
+      <li><span class="tag">Xác thực</span> Thường xác thực server, đôi khi cả client (mTLS).</li>
+    </ul>
+
+    <div class="note">
+      <strong>Vị trí trong mô hình mạng:</strong> TLS nằm giữa tầng ứng dụng và tầng giao vận.
+      Ví dụ: <code>HTTPS = HTTP + TLS</code>, chạy trên TCP (hoặc QUIC đối với HTTP/3).
+    </div>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="handshake">
+    <h2>2. Handshake TLS hoạt động thế nào?</h2>
+    <p>Handshake là quá trình client và server: thống nhất phiên bản TLS, chọn thuật toán, xác thực, trao đổi khoá và xác nhận toàn vẹn. Dưới đây là luồng hiện đại theo <strong>TLS 1.3</strong>.</p>
+
+    <div class="step">
+      <strong>Bước 1 – ClientHello</strong>
+      <p>Client gửi:</p>
+      <ul>
+        <li>Phiên bản TLS hỗ trợ (ví dụ TLS 1.3)</li>
+        <li>Danh sách cipher suite hỗ trợ</li>
+        <li><code>client random</code> – số ngẫu nhiên</li>
+        <li>Tên miền qua SNI, ví dụ <code>bank.com</code></li>
+        <li>Các nhóm elliptic curve hỗ trợ</li>
+        <li><strong>Key share</strong> – public key tạm thời của client</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <strong>Bước 2 – ServerHello</strong>
+      <p>Server chọn:</p>
+      <ul>
+        <li>Phiên bản TLS</li>
+        <li>Cipher suite</li>
+        <li><code>server random</code></li>
+        <li><strong>Key share</strong> – public key tạm thời của server</li>
+      </ul>
+      <p>Lúc này hai bên có thể tính <strong>shared secret</strong> bằng ECDHE và dẫn xuất ra handshake keys.</p>
+    </div>
+
+    <div class="step">
+      <strong>Bước 3 – Server gửi thông điệp đã mã hoá</strong>
+      <p>Trong TLS 1.3, sau ServerHello mọi thứ đều được mã hoá. Server gửi:</p>
+      <ul>
+        <li><code>EncryptedExtensions</code> – tham số mở rộng</li>
+        <li><code>Certificate</code> – chứng chỉ server</li>
+        <li><code>CertificateVerify</code> – chữ ký chứng minh sở hữu private key</li>
+        <li><code>Finished</code> – mã xác thực toàn bộ transcript handshake</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <strong>Bước 4 – Client xác thực</strong>
+      <p>Client kiểm tra:</p>
+      <ul>
+        <li>Chứng chỉ có do CA tin cậy cấp không</li>
+        <li>Tên miền có khớp không</li>
+        <li>Chứng chỉ còn hạn, không bị thu hồi</li>
+        <li>Chữ ký trong CertificateVerify hợp lệ</li>
+        <li>Finished của server đúng</li>
+      </ul>
+      <p>Nếu mọi thứ hợp lệ, client gửi <code>Finished</code> của mình.</p>
+    </div>
+
+    <div class="step">
+      <strong>Bước 5 – Tạo khoá ứng dụng</strong>
+      <p>Hai bên dùng shared secret từ ECDHE + transcript hash, qua <strong>HKDF</strong> dẫn xuất ra:</p>
+      <ul>
+        <li><strong>Handshake keys</strong> bảo vệ handshake</li>
+        <li><strong>Application keys</strong> mã hoá dữ liệu ứng dụng (HTTP, v.v.)</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <strong>Bước 6 – Truyền dữ liệu</strong>
+      <p>Dữ liệu được chia thành các record, mã hoá bằng AEAD (ví dụ AES-GCM), kèm sequence number và tag xác thực.</p>
+    </div>
+
+    <div class="warn">
+      <strong>Khác biệt với TLS 1.2:</strong>
+      <ul>
+        <li>TLS 1.2 handshake dài hơn, thường <strong>2-RTT</strong>; TLS 1.3 còn <strong>1-RTT</strong>.</li>
+        <li>TLS 1.2 có <code>ServerKeyExchange</code>, <code>ClientKeyExchange</code>, <code>ChangeCipherSpec</code>.</li>
+        <li>TLS 1.2 không mã hoá hết handshake; TLS 1.3 mã hoá gần như toàn bộ sau ServerHello.</li>
+        <li>TLS 1.3 bắt buộc dùng AEAD và có forward secrecy mặc định.</li>
+      </ul>
+    </div>
+
+    <h3>Handshake có xảy ra mỗi request không?</h3>
+    <p><strong>Không.</strong> Handshake xảy ra <strong>một lần cho mỗi kết nối TCP/QUIC</strong>, không phải mỗi HTTP request.</p>
+    <ul>
+      <li>1 kết nối TCP = 1 lần handshake TLS.</li>
+      <li>Trên kết nối đó có thể chạy nhiều request nhờ <strong>keep-alive</strong> (HTTP/1.1) hoặc <strong>multiplexing</strong> (HTTP/2, HTTP/3).</li>
+      <li>Kết nối đóng → mở lại → handshake lại (trừ khi dùng resumption).</li>
+    </ul>
+
+    <h3>Session Resumption – handshake rút gọn</h3>
+    <table>
+      <tr><th>Phiên bản</th><th>Cơ chế</th><th>Ghi chú</th></tr>
+      <tr><td>TLS 1.2</td><td>Session ID</td><td>Server lưu session, client gửi lại ID</td></tr>
+      <tr><td>TLS 1.2</td><td>Session Ticket</td><td>Server gửi ticket mã hoá, client gửi lại</td></tr>
+      <tr><td>TLS 1.3</td><td>PSK resumption</td><td>Server gửi NewSessionTicket → 0/1-RTT</td></tr>
+    </table>
+
+    <div class="warn">
+      <strong>0-RTT</strong> cho phép client gửi luôn dữ liệu trong ClientHello, tiết kiệm 1 RTT. Nhưng có rủi ro <strong>replay attack</strong>, nên chỉ dùng cho request an toàn (GET, không đổi trạng thái).
+    </div>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="record">
+    <h2>3. Record Protocol – mã hoá dữ liệu</h2>
+    <p>Sau handshake, dữ liệu ứng dụng được xử lý ở <strong>TLS Record Layer</strong>:</p>
+    <ol>
+      <li>Chia dữ liệu thành các <strong>record</strong>.</li>
+      <li>Gắn <strong>sequence number</strong> để chống phát lại và đảo thứ tự.</li>
+      <li>Mã hoá đối xứng (AES-GCM, ChaCha20-Poly1305).</li>
+      <li>Sinh <strong>authentication tag</strong> – "chữ ký" cho record.</li>
+      <li>Gửi đi dạng: <code>[header][ciphertext][tag]</code></li>
+    </ol>
+
+    <h3>Vì sao vừa dùng bất đối xứng vừa đối xứng?</h3>
+    <table>
+      <tr>
+        <th>Loại</th>
+        <th>Thuật toán</th>
+        <th>Dùng ở đâu</th>
+        <th>Tốc độ</th>
+      </tr>
+      <tr>
+        <td>Bất đối xứng</td>
+        <td>RSA, ECDHE, ECDSA</td>
+        <td>Handshake: xác thực + trao đổi khoá</td>
+        <td>Chậm</td>
+      </tr>
+      <tr>
+        <td>Đối xứng</td>
+        <td>AES, ChaCha20</td>
+        <td>Mã hoá dữ liệu thật</td>
+        <td>Rất nhanh</td>
+      </tr>
+    </table>
+    <p><em>Ngắn gọn:</em> bất đối xứng để thiết lập niềm tin và khoá; đối xứng để truyền dữ liệu hiệu quả.</p>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="aead">
+    <h2>4. AEAD là gì?</h2>
+    <p><strong>AEAD</strong> = <strong>Authenticated Encryption with Associated Data</strong> – Mã hoá có xác thực kèm dữ liệu liên kết.</p>
+
+    <h3>AEAD làm 3 việc cùng lúc</h3>
+    <ul>
+      <li><span class="tag">Mã hoá</span> Giữ bí mật dữ liệu.</li>
+      <li><span class="tag">Toàn vẹn</span> Phát hiện dữ liệu bị sửa.</li>
+      <li><span class="tag">Xác thực nguồn</span> Đảm bảo đến từ bên có khoá đúng.</li>
+    </ul>
+
+    <h3>Associated Data là gì?</h3>
+    <p>Là dữ liệu <strong>không được mã hoá nhưng vẫn được bảo vệ toàn vẹn</strong>. Ví dụ trong TLS: header record, sequence number, phiên bản giao thức. Nếu kẻ tấn công sửa header hoặc ciphertext, tag xác thực sẽ không khớp và record bị từ chối.</p>
+
+    <h3>Ví dụ AEAD trong TLS</h3>
+    <ul>
+      <li><strong>AES-GCM</strong></li>
+      <li><strong>ChaCha20-Poly1305</strong></li>
+      <li><strong>AES-CCM</strong></li>
+    </ul>
+
+    <pre>
+Record gửi đi:
+┌──────────┬────────────────────┬──────────┐
+│  Header  │    Ciphertext      │   Tag    │
+│(AAD, rõ) │  (đã mã hoá)       │ (xác thực)│
+└──────────┴────────────────────┴──────────┘
+        ▲                                  
+        └── được đưa vào AAD để bảo vệ toàn vẹn
+    </pre>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="example">
+    <h2>5. Ví dụ: đăng nhập ngân hàng qua HTTPS</h2>
+    <p>Giả sử bạn gửi form đăng nhập:</p>
+    <pre>
+POST /login
+username=alice&password=123456&amount=100000
+    </pre>
+
+    <h3>Quá trình bảo vệ</h3>
+    <ol>
+      <li>TLS handshake hoàn tất, hai bên có <strong>session key</strong> chung.</li>
+      <li>Dữ liệu HTTP được TLS Record Layer xử lý:
+        <ul>
+          <li>Chia thành các record</li>
+          <li>Gắn sequence number</li>
+          <li>Mã hoá bằng AES-GCM</li>
+          <li>Sinh authentication tag</li>
+        </ul>
+      </li>
+      <li>Gửi qua mạng dạng <code>[header][ciphertext][tag]</code>.</li>
+      <li>Kẻ tấn công chỉ thấy ciphertext + tag, không đọc được <code>password</code> hay <code>amount</code>.</li>
+    </ol>
+
+    <pre>
+Client                                          Server
+  │                                               │
+  │  ClientHello ────────────────────────────────▶│
+  │◀──────────────────────────── ServerHello      │
+  │◀──── Certificate + CertificateVerify + Fin ───│
+  │──── Finished ────────────────────────────────▶│
+  │                                               │
+  │  ══════ Kênh TLS đã thiết lập ══════          │
+  │                                               │
+  │  [header][ciphertext][tag] ──────────────────▶│
+  │     POST /login (đã mã hoá)                   │
+    </pre>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="integrity">
+    <h2>6. TLS chống sửa dữ liệu như thế nào?</h2>
+    <p>Điểm cốt lõi: TLS dùng <strong>AEAD</strong> – vừa mã hoá vừa tạo tag xác thực.</p>
+
+    <h3>Kịch bản tấn công</h3>
+    <p>Kẻ tấn công chặn gói và sửa:</p>
+    <pre>
+amount=100000   →   amount=900000
+    </pre>
+
+    <h4>Điều gì xảy ra?</h4>
+    <ul>
+      <li>Hắn sửa được ciphertext, nhưng <strong>không có session key</strong>.</li>
+      <li>Không thể tạo lại <strong>authentication tag</strong> hợp lệ.</li>
+      <li>Server dùng session key để kiểm tra tag → <strong>không khớp</strong>.</li>
+      <li>Server báo lỗi kiểu <code>bad_record_mac</code>, huỷ record, có thể đóng kết nối.</li>
+    </ul>
+
+    <div class="ok">
+      <strong>Kết luận:</strong> Sửa được ciphertext, nhưng <em>không làm giả được tag</em>. Vì vậy dữ liệu bị sửa sẽ bị phát hiện và không được chấp nhận.
+    </div>
+
+    <h3>Các yếu tố khác giúp chống sửa</h3>
+    <ul>
+      <li><strong>Sequence number</strong>: chống phát lại và đảo thứ tự record.</li>
+      <li><strong>Finished message</strong>: xác nhận toàn bộ handshake không bị sửa.</li>
+      <li><strong>TLS 1.3</strong>: chỉ dùng AEAD, bỏ CBC + MAC dễ lỗi.</li>
+      <li><strong>Khoá phiên</strong> chỉ client và server biết → attacker không thể tạo tag hợp lệ.</li>
+    </ul>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="mtls">
+    <h2>7. mTLS – Mutual TLS</h2>
+    <p><strong>mTLS</strong> là TLS xác thực <strong>hai chiều</strong>: client xác thực server, và server cũng xác thực client.</p>
+
+    <h3>So với TLS thường (one-way TLS)</h3>
+    <table>
+      <tr>
+        <th>Đặc điểm</th>
+        <th>TLS thường</th>
+        <th>mTLS</th>
+      </tr>
+      <tr>
+        <td>Client xác thực server</td>
+        <td>✅</td>
+        <td>✅</td>
+      </tr>
+      <tr>
+        <td>Server xác thực client</td>
+        <td>❌</td>
+        <td>✅</td>
+      </tr>
+      <tr>
+        <td>Client có certificate</td>
+        <td>❌</td>
+        <td>✅</td>
+      </tr>
+      <tr>
+        <td>Client ký CertificateVerify</td>
+        <td>❌</td>
+        <td>✅</td>
+      </tr>
+      <tr>
+        <td>Ứng dụng điển hình</td>
+        <td>HTTPS công cộng</td>
+        <td>Service-to-service, VPN, Zero Trust, IoT</td>
+      </tr>
+    </table>
+
+    <h3>mTLS thực sự xác thực bằng gì?</h3>
+    <p>Không chỉ là "validate qua private key và public key". Xác thực gồm nhiều lớp:</p>
+    <ul>
+      <li><strong>Certificate có do CA tin cậy ký không?</strong></li>
+      <li><strong>Tên miền / identity có đúng không?</strong></li>
+      <li><strong>Còn hạn, không bị thu hồi?</strong></li>
+      <li><strong>Chuỗi chứng chỉ hợp lệ?</strong></li>
+      <li><strong>Chữ ký trong handshake hợp lệ?</strong> (dùng public key để xác minh chữ ký do private key tạo ra)</li>
+    </ul>
+
+    <div class="note">
+      <strong>Điểm cần nhớ:</strong> Private key <em>không bao giờ được gửi đi</em>. Bên kia không "validate bằng private key" trực tiếp, mà kiểm tra <strong>chữ ký</strong> do private key tạo ra, dùng public key trong certificate để xác minh.
+    </div>
+
+    <h3>Handshake mTLS khác gì?</h3>
+    <ol>
+      <li>ClientHello</li>
+      <li>ServerHello + Certificate + CertificateVerify + Finished</li>
+      <li><strong>Server gửi CertificateRequest</strong> – yêu cầu client gửi cert</li>
+      <li><strong>Client gửi Certificate</strong> của mình</li>
+      <li><strong>Client gửi CertificateVerify</strong> – ký bằng private key của client</li>
+      <li>Client gửi Finished</li>
+      <li>Server xác thực cert + chữ ký của client</li>
+      <li>Hai bên tạo application keys và truyền dữ liệu</li>
+    </ol>
+
+    <pre>
+Client                                          Server
+  │  ClientHello ────────────────────────────────▶│
+  │◀───────── ServerHello + Certificate + ...     │
+  │◀───────── CertificateRequest ────────────────│
+  │──── Certificate (client) ────────────────────▶│
+  │──── CertificateVerify (ký bằng priv key) ────▶│
+  │──── Finished ────────────────────────────────▶│
+  │                                               │
+  │  ══════ Xác thực 2 chiều hoàn tất ══════      │
+    </pre>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="thumbprint">
+    <h2>8. Cert Thumbprint – Dấu vân tay chứng chỉ</h2>
+    <p><strong>Cert thumbprint</strong> (còn gọi là <em>certificate fingerprint</em>) là <strong>giá trị băm (hash)</strong> của toàn bộ nội dung chứng chỉ số – dùng như một <strong>"dấu vân tay"</strong> định danh duy nhất cho chứng chỉ đó.</p>
+
+    <h3>Công thức</h3>
+    <pre>
+Thumbprint = Hash(toàn bộ certificate ở dạng DER)
+    </pre>
+    <p>Kết quả là một chuỗi hex, ví dụ:</p>
+    <pre>
+SHA-1:   A1:B2:C3:D4:E5:F6:...                (20 byte)
+SHA-256: <span class="fingerprint">3F:8A:2B:91:...:7C</span>              (32 byte)
+    </pre>
+
+    <h3>Cách tính</h3>
+    <ol>
+      <li>Lấy <strong>toàn bộ certificate</strong> (không chỉ public key) ở dạng nhị phân <strong>DER</strong>.</li>
+      <li>Băm bằng thuật toán hash như <strong>SHA-1</strong> hoặc <strong>SHA-256</strong>.</li>
+      <li>Kết quả hex chính là thumbprint.</li>
+    </ol>
+
+    <pre>
+# Xem thumbprint của cert
+openssl x509 -in cert.pem -noout -fingerprint -sha256
+
+# Output:
+SHA256 Fingerprint=<span class="fingerprint">3F:8A:2B:91:...:7C</span>
+    </pre>
+
+    <h3>Dùng để làm gì?</h3>
+
+    <h4>1. So sánh / định danh chứng chỉ</h4>
+    <ul>
+      <li>Hai chứng chỉ giống nhau → cùng thumbprint.</li>
+      <li>Chỉ cần so chuỗi hash ngắn thay vì so toàn bộ cert.</li>
+    </ul>
+
+    <h4>2. Certificate Pinning</h4>
+    <p>Ứng dụng mobile hoặc client "ghim" (pin) thumbprint của cert server. Nếu cert thay đổi (kể cả do CA hợp lệ cấp mới), kết nối bị từ chối.</p>
+    <pre>
+Expected: SHA256=3F:8A:2B:...
+Received: SHA256=9D:1C:4E:...
+→ Từ chối kết nối
+    </pre>
+
+    <h4>3. Whitelist / Blacklist</h4>
+    <ul>
+      <li>Chỉ cho phép cert có thumbprint nằm trong danh sách.</li>
+      <li>Chặn cert đã biết là độc hại (revoked).</li>
+    </ul>
+
+    <h4>4. Kiểm tra trong hệ điều hành / trình duyệt</h4>
+    <ul>
+      <li>Windows Certificate Store hiển thị thumbprint để quản lý cert.</li>
+      <li>Dùng trong PowerShell, Group Policy để chỉ định cert cụ thể.</li>
+    </ul>
+
+    <h4>5. mTLS nâng cao</h4>
+    <p>Một số hệ thống xác thực client <strong>chỉ dựa vào thumbprint</strong> thay vì validate toàn bộ chuỗi CA — nhanh nhưng kém linh hoạt.</p>
+
+    <h3>Thumbprint KHÁC gì public key?</h3>
+    <table>
+      <tr>
+        <th></th>
+        <th>Public key</th>
+        <th>Thumbprint</th>
+      </tr>
+      <tr>
+        <td>Là gì</td>
+        <td>Khoá công khai trong cert</td>
+        <td>Hash của <strong>toàn bộ cert</strong></td>
+      </tr>
+      <tr>
+        <td>Thay đổi khi</td>
+        <td>Chỉ khi đổi khoá</td>
+        <td>Khi <strong>bất kỳ trường nào</strong> trong cert đổi</td>
+      </tr>
+      <tr>
+        <td>Dùng để</td>
+        <td>Mã hoá / xác minh chữ ký</td>
+        <td>Định danh cert</td>
+      </tr>
+    </table>
+    <p>Ví dụ: cùng public key nhưng đổi ngày hết hạn → <strong>public key giữ nguyên, thumbprint đổi</strong>.</p>
+
+    <h3>Ví dụ thực tế</h3>
+    <p>Khi bạn cài cert trên IIS:</p>
+    <pre>
+Friendly name: My Web Cert
+Thumbprint:    <span class="fingerprint">3F8A2B91...7C</span>
+    </pre>
+    <p>Bind HTTPS vào cert bằng thumbprint:</p>
+    <pre>
+netsh http add sslcert ipport=0.0.0.0:443 \
+  certhash=<span class="fingerprint">3F8A2B91...7C</span> appid={...}
+    </pre>
+    <p>Hệ thống dùng thumbprint để biết <strong>chính xác cert nào</strong> cần dùng, vì trong store có thể có nhiều cert cùng tên.</p>
+
+    <div class="warn">
+      <strong>Lưu ý quan trọng về thumbprint:</strong>
+      <ul>
+        <li><strong>SHA-1 thumbprint không còn an toàn</strong> – có thể bị collision. Nên dùng <strong>SHA-256</strong>.</li>
+        <li>Thumbprint <strong>không phải là chữ ký</strong> – nó chỉ là hash, ai cũng tính được. Không dùng nó để chứng minh danh tính, chỉ để <strong>so khớp / định danh</strong>.</li>
+        <li>Thumbprint chỉ đảm bảo <strong>cert không bị sửa</strong>, không đảm bảo cert do CA tin cậy cấp.</li>
+        <li>Trong pinning, nên pin <strong>public key hash (SPKI)</strong> thay vì pin toàn bộ cert — vì cert thường xuyên được renew, còn public key có thể giữ nguyên.</li>
+      </ul>
+    </div>
+
+    <div class="ok">
+      <strong>Tóm lại:</strong> Cert thumbprint = hash (SHA-1/SHA-256) của toàn bộ chứng chỉ. Là <em>dấu vân tay</em> định danh duy nhất cho cert, dùng để so khớp, pinning, whitelist/blacklist, chỉ định cert cụ thể. Không phải chữ ký, không chứng minh danh tính.
+    </div>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="compare">
+    <h2>9. Bảng so sánh nhanh</h2>
+    <table>
+      <tr>
+        <th>Khái niệm</th>
+        <th>Ý nghĩa</th>
+      </tr>
+      <tr>
+        <td>TLS</td>
+        <td>Giao thức bảo mật kênh truyền</td>
+      </tr>
+      <tr>
+        <td>Handshake</td>
+        <td>Quá trình thống nhất, xác thực, trao đổi khoá</td>
+      </tr>
+      <tr>
+        <td>Record Protocol</td>
+        <td>Mã hoá và truyền dữ liệu ứng dụng</td>
+      </tr>
+      <tr>
+        <td>AEAD</td>
+        <td>Mã hoá + xác thực toàn vẹn kèm dữ liệu liên kết</td>
+      </tr>
+      <tr>
+        <td>Session key</td>
+        <td>Khoá đối xứng dùng cho phiên hiện tại</td>
+      </tr>
+      <tr>
+        <td>Forward secrecy</td>
+        <td>Lộ khoá dài hạn cũng khó giải mã phiên cũ (ECDHE, TLS 1.3)</td>
+      </tr>
+      <tr>
+        <td>mTLS</td>
+        <td>TLS xác thực hai chiều (client + server)</td>
+      </tr>
+      <tr>
+        <td>Cert Thumbprint</td>
+        <td>Hash của toàn bộ cert, dùng định danh / pinning</td>
+      </tr>
+      <tr>
+        <td>Session Resumption</td>
+        <td>Handshake lại nhanh, có thể 0-RTT</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- ========================================================== -->
+  <section id="notes">
+    <h2>10. Lưu ý quan trọng</h2>
+    <div class="warn">
+      <ul>
+        <li>TLS bảo vệ dữ liệu <strong>trên đường truyền</strong>, không bảo vệ dữ liệu đã lưu trên máy chủ.</li>
+        <li>Nếu có proxy/load balancer <strong>kết thúc TLS</strong>, nó có thể thấy dữ liệu đã giải mã.</li>
+        <li>Chứng chỉ self-signed sẽ gây cảnh báo vì không được CA tin cậy xác thực.</li>
+        <li>Nên dùng <strong>TLS 1.2 hoặc TLS 1.3</strong>; SSL 3.0 và TLS 1.0/1.1 đã lỗi thời.</li>
+        <li>Không phải mỗi request handshake lại; handshake xảy ra theo <strong>kết nối</strong>, không theo request.</li>
+      </ul>
+    </div>
+
+    <div class="danger">
+      <strong>Cảnh báo bảo mật:</strong> TLS không bảo vệ dữ liệu sau khi đã đến đích. Nếu server bị xâm nhập, attacker có thể đọc dữ liệu đã giải mã. TLS chỉ giải quyết vấn đề <em>trên đường truyền</em>.
+    </div>
+
+    <div class="ok">
+      <strong>Tóm lại:</strong> TLS là lớp bảo mật giúp client và server nói chuyện an toàn qua mạng. Handshake xác thực và tạo khoá (theo kết nối, không theo request); AEAD mã hoá và bảo vệ toàn vẹn dữ liệu; mTLS mở rộng xác thực sang cả hai chiều; Cert Thumbprint là dấu vân tay để định danh chứng chỉ.
+    </div>
+  </section>
+
+  <footer>
+    Tổng hợp kiến thức TLS · HTML &amp; CSS thuần · 2025
+  </footer>
+
+</div>
+
+</body>
+</html>

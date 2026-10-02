@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn phỏng vấn Java Spring Boot - Advanced Topics</title>
+<style>
+  :root {
+    --bg: #0f172a; --bg-elev: #1e293b; --bg-elev-2: #273449;
+    --border: #334155; --text: #e2e8f0; --text-dim: #94a3b8;
+    --heading: #a5b4fc; --accent: #22d3ee; --accent-2: #818cf8;
+    --code-bg: #0b1220; --code-text: #7dd3fc;
+    --summary: #f1f5f9; --answer: #cbd5e1;
+    --shadow: 0 4px 14px rgba(0,0,0,0.35);
+    --tip-bg: rgba(34,211,238,0.08); --tip-border: #22d3ee;
+  }
+  html.light {
+    --bg: #f5f7fa; --bg-elev: #ffffff; --bg-elev-2: #f9fafb;
+    --border: #e5e7eb; --text: #24292e; --text-dim: #6b7280;
+    --heading: #4f46e5; --accent: #06b6d4; --accent-2: #4f46e5;
+    --code-bg: #eef2ff; --code-text: #4338ca;
+    --summary: #1f2937; --answer: #374151;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --tip-bg: rgba(6,182,212,0.08); --tip-border: #06b6d4;
+  }
+  * { box-sizing: border-box; }
+  html, body { transition: background 0.25s, color 0.25s; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0; background: var(--bg); color: var(--text); line-height: 1.7;
+  }
+  header {
+    background: linear-gradient(135deg, #4c1d95, #0e7490);
+    color: #f8fafc; padding: 40px 20px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  header::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 25% 30%, rgba(167,139,250,0.25), transparent 40%),
+                radial-gradient(circle at 75% 70%, rgba(34,211,238,0.2), transparent 45%);
+    pointer-events: none;
+  }
+  header h1 { margin: 0 0 6px; font-size: 26px; position: relative; z-index: 1; }
+  header p { margin: 0; opacity: 0.9; position: relative; z-index: 1; font-size: 14px; }
+
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 100;
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.25); color: #f8fafc;
+    width: 42px; height: 42px; border-radius: 50%; font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .theme-toggle:hover { transform: scale(1.08); }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .toc {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { margin-top: 0; font-size: 17px; color: var(--heading); }
+  .toc ul { columns: 2; list-style: none; padding-left: 0; margin: 0; }
+  .toc li { margin: 5px 0; }
+  .toc a { color: var(--accent); text-decoration: none; font-size: 13.5px; }
+  .toc a:hover { color: var(--accent-2); padding-left: 4px; }
+
+  section {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 22px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    color: var(--heading); border-bottom: 2px solid var(--border);
+    padding-bottom: 10px; margin-top: 0; font-size: 19px;
+  }
+
+  details {
+    border-left: 3px solid var(--accent); background: var(--bg-elev-2);
+    border-radius: 8px; padding: 12px 18px; margin: 12px 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  details[open] {
+    background: linear-gradient(90deg, rgba(34,211,238,0.06), transparent 60%);
+    border-left-color: var(--accent-2);
+  }
+  details summary {
+    cursor: pointer; font-weight: 600; color: var(--summary);
+    list-style: none; position: relative; padding-left: 24px; font-size: 14.5px;
+  }
+  details summary::before {
+    content: "▶"; position: absolute; left: 0; top: 4px;
+    font-size: 11px; color: var(--accent); transition: transform 0.2s;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details summary::-webkit-details-marker { display: none; }
+
+  .answer {
+    margin-top: 12px; color: var(--answer); font-size: 14.5px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+
+  .answer code {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 2px 6px; border-radius: 4px; font-size: 90%;
+    font-family: "Consolas", "Monaco", monospace;
+    border: 1px solid var(--border);
+  }
+  .answer pre {
+    background: #0b1220; color: #e2e8f0; padding: 12px 14px;
+    border-radius: 8px; overflow-x: auto; font-size: 12.5px;
+    line-height: 1.55; border: 1px solid #334155; margin: 10px 0;
+  }
+  html.light .answer pre { background: #1e293b; border-color: #1e293b; }
+  .answer pre code { background: transparent; color: inherit; padding: 0; border: none; }
+  .answer ul, .answer ol { padding-left: 22px; margin: 8px 0; }
+  .answer li { margin: 4px 0; }
+  .answer strong { color: var(--summary); }
+  .answer em { color: var(--accent); font-style: normal; }
+  .answer p { margin: 8px 0; }
+
+  .tip {
+    background: var(--tip-bg); border-left: 3px solid var(--tip-border);
+    padding: 10px 14px; border-radius: 6px; margin: 12px 0 4px;
+    font-size: 13px; color: var(--text);
+  }
+  .tip::before {
+    content: "💡 Phỏng vấn: "; font-weight: 700; color: var(--accent);
+  }
+
+  .controls {
+    display: flex; gap: 8px; justify-content: flex-end;
+    margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .controls button {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    color: var(--text); padding: 7px 14px; border-radius: 8px;
+    cursor: pointer; font-size: 13px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .controls button:hover {
+    background: var(--bg-elev-2); border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  button.top {
+    position: fixed; right: 20px; bottom: 20px;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: white; border: none; border-radius: 50%;
+    width: 48px; height: 48px; font-size: 20px;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(79,70,229,0.5);
+    z-index: 99;
+  }
+  button.top:hover { transform: scale(1.08); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+  th { color: var(--heading); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
+
+  @media(max-width: 600px) {
+    .toc ul { columns: 1; }
+    header h1 { font-size: 20px; }
+    section { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="Chuyển Dark/Light">🌙</button>
+
+<header>
+  <h1>🚀 Ôn phỏng vấn Java Spring Boot — Advanced</h1>
+  <p>10 chủ đề nâng cao · Design Patterns · SOLID · System Design · Security · Testing</p>
+</header>
+
+<div class="container">
+
+  <div class="toc">
+    <h2>📑 Mục lục</h2>
+    <ul>
+      <li><a href="#t1">1. Design Patterns</a></li>
+      <li><a href="#t2">2. SOLID &amp; Clean Code</a></li>
+      <li><a href="#t3">3. Database Normalization</a></li>
+      <li><a href="#t4">4. Security nâng cao</a></li>
+      <li><a href="#t5">5. System Design &amp; High Concurrency</a></li>
+      <li><a href="#t6">6. Testing nâng cao</a></li>
+      <li><a href="#t7">7. Agile / Scrum</a></li>
+      <li><a href="#t8">8. Redis nâng cao</a></li>
+      <li><a href="#t9">9. SQL Practice</a></li>
+      <li><a href="#t10">10. Microservices nâng cao</a></li>
+    </ul>
+  </div>
+
+  <div class="controls">
+    <button onclick="toggleAll(true)">📂 Mở tất cả</button>
+    <button onclick="toggleAll(false)">📁 Đóng tất cả</button>
+  </div>
+
+  <!-- ============ 1. DESIGN PATTERNS ============ -->
+  <section id="t1">
+    <h2>1. Design Patterns (Creational · Structural · Behavioral)</h2>
+
+    <details>
+      <summary>1. Design pattern là gì? Có mấy nhóm chính?</summary>
+      <div class="answer">
+        <p>Design pattern là <em>giải pháp tái sử dụng</em> cho các vấn đề thiết kế phổ biến. Không phải code cụ thể mà là <strong>khuôn mẫu</strong>.</p>
+        <p><strong>3 nhóm chính</strong> (GoF — Gang of Four):</p>
+        <ul>
+          <li><strong>Creational (Khởi tạo)</strong>: Singleton, Factory Method, Abstract Factory, Builder, Prototype.</li>
+          <li><strong>Structural (Cấu trúc)</strong>: Adapter, Decorator, Facade, Proxy, Composite, Bridge, Flyweight.</li>
+          <li><strong>Behavioral (Hành vi)</strong>: Observer, Strategy, Template Method, Command, Iterator, State, Chain of Responsibility, Mediator, Visitor, Memento.</li>
+        </ul>
+        <div class="tip">Phỏng vấn middle hay hỏi: <em>"Bạn đã dùng pattern nào trong dự án thật?"</em> — phải kể tên cụ thể + use case + lợi ích.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>2. Singleton pattern — mục đích, cách implement an toàn, use case?</summary>
+      <div class="answer">
+        <p><strong>Mục đích</strong>: đảm bảo 1 class chỉ có <em>duy nhất 1 instance</em> trong toàn bộ JVM.</p>
+        <p><strong>Cách implement an toàn</strong> (thread-safe, lazy, chống reflection + serialization):</p>
+        <pre><code>public enum Singleton {
+  INSTANCE;
+  public void doWork() { ... }
+}</code></pre>
+        <p>Enum là cách <em>an toàn nhất</em> — JVM đảm bảo, chống reflection &amp; serialization tự động.</p>
+        <p>Cách khác (double-checked locking):</p>
+        <pre><code>public class Singleton {
+  private static volatile Singleton instance;
+  private Singleton() {}
+  public static Singleton getInstance() {
+    if (instance == null) {
+      synchronized (Singleton.class) {
+        if (instance == null) instance = new Singleton();
+      }
+    }
+    return instance;
+  }
+}</code></pre>
+        <p><strong>Use case thực tế</strong>:</p>
+        <ul>
+          <li>Spring bean scope <code>singleton</code> (mặc định) — mọi <code>@Service</code>, <code>@Repository</code>.</li>
+          <li>Logger factory, Configuration manager.</li>
+          <li>Connection pool (HikariCP).</li>
+          <li>Cache manager.</li>
+        </ul>
+        <div class="tip">Nhấn mạnh: <em>Singleton pattern (GoF) ≠ singleton scope (Spring)</em>. GoF là per-JVM; Spring là per-container.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>3. Factory Method vs Abstract Factory?</summary>
+      <div class="answer">
+        <p><strong>Factory Method</strong>: 1 method tạo 1 loại object. Subclass quyết định concrete class.</p>
+        <pre><code>interface PaymentFactory { Payment create(); }
+class VnPayFactory implements PaymentFactory {
+  public Payment create() { return new VnPayPayment(); }
+}</code></pre>
+        <p><strong>Abstract Factory</strong>: 1 interface tạo <em>họ</em> object liên quan.</p>
+        <pre><code>interface UIFactory {
+  Button createButton();
+  Checkbox createCheckbox();
+}
+class DarkUIFactory implements UIFactory { ... }
+class LightUIFactory implements UIFactory { ... }</code></pre>
+        <p><strong>Khác biệt</strong>: Factory Method = 1 sản phẩm; Abstract Factory = nhiều sản phẩm liên quan, đảm bảo tương thích.</p>
+        <p><strong>Use case Spring</strong>: <code>BeanFactory</code> / <code>ApplicationContext</code> chính là Abstract Factory.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>4. Builder pattern — khi nào dùng?</summary>
+      <div class="answer">
+        <p><strong>Mục đích</strong>: xây dựng object phức tạp (nhiều tham số optional) theo từng bước. Tránh <em>telescoping constructor</em> (constructor dài).</p>
+        <pre><code>User u = User.builder()
+    .name("Alice")
+    .email("a@b.com")
+    .age(25)
+    .build();</code></pre>
+        <p><strong>Khi dùng</strong>:</p>
+        <ul>
+          <li>Object có &gt; 4 tham số, nhiều cái optional.</li>
+          <li>Cần immutable object.</li>
+          <li>Ví dụ: <code>HttpRequest.newBuilder()</code>, <code>StringBuilder</code> (tương tự), Lombok <code>@Builder</code>.</li>
+        </ul>
+        <div class="tip">Spring <code>UriComponentsBuilder</code>, <code>WebClient.Builder</code>, <code>ResponseEntity.ok()</code> đều là Builder.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>5. Adapter pattern — ví dụ thực tế?</summary>
+      <div class="answer">
+        <p><strong>Mục đích</strong>: chuyển interface A thành interface B để 2 class không tương thích làm việc được với nhau.</p>
+        <p><strong>Ví dụ phỏng vấn hay hỏi</strong>: có <code>MediaPlayer</code> và <code>MediaPackage</code> — <code>MP3</code> implements <code>MediaPlayer</code>, còn <code>VLC</code>/<code>MP4</code> implements <code>MediaPackage</code>. Muốn dùng <code>MediaPackage</code> như <code>MediaPlayer</code> → cần <strong>Adapter</strong>.</p>
+        <pre><code>interface MediaPlayer { void play(String file); }
+
+class MediaAdapter implements MediaPlayer {
+  private MediaPackage pack;
+  public MediaAdapter(MediaPackage pack) { this.pack = pack; }
+  public void play(String file) { pack.playFile(file); }
+}</code></pre>
+        <p><strong>Use case thực tế</strong>:</p>
+        <ul>
+          <li>Tích hợp payment gateway (VNPay, MoMo, Stripe) — mỗi cái có API khác → adapter về interface chung.</li>
+          <li>Wrap thư viện bên thứ 3 (Jackson, Kafka client) thành interface của dự án.</li>
+          <li>Spring MVC <code>HandlerAdapter</code> — adapter giữa DispatcherServlet và controller.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>6. Observer pattern — use case?</summary>
+      <div class="answer">
+        <p><strong>Mục đích</strong>: 1 object (Subject) thay đổi → thông báo cho nhiều object (Observer) đang lắng nghe.</p>
+        <pre><code>interface Observer { void update(String msg); }
+
+class Subject {
+  private List&lt;Observer&gt; observers = new ArrayList&lt;&gt;();
+  public void attach(Observer o) { observers.add(o); }
+  public void notifyAll(String msg) {
+    observers.forEach(o -&gt; o.update(msg));
+  }
+}</code></pre>
+        <p><strong>Use case</strong>:</p>
+        <ul>
+          <li><strong>Event-driven</strong>: Spring <code>ApplicationEventPublisher</code> + <code>@EventListener</code>.</li>
+          <li><strong>Kafka/RabbitMQ</strong> ở tầng hệ thống (pub/sub).</li>
+          <li>UI: button click listener.</li>
+          <li>Reactive programming: RxJava, Reactor.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>7. Decorator pattern — khác Strategy chỗ nào?</summary>
+      <div class="answer">
+        <p><strong>Decorator</strong>: wrap object để <em>thêm hành vi</em> mà không đổi class gốc. Có thể wrap nhiều lớp.</p>
+        <pre><code>InputStream is = new BufferedInputStream(
+                    new FileInputStream("f.txt"));</code></pre>
+        <p><strong>Strategy</strong>: chọn 1 trong nhiều <em>thuật toán</em> tại runtime, không bọc.</p>
+        <pre><code>sorter.setStrategy(new QuickSort());
+sorter.sort(arr);</code></pre>
+        <p><strong>Khác biệt</strong>:</p>
+        <ul>
+          <li>Decorator: <em>thêm</em> hành vi (composition, đệ quy wrap).</li>
+          <li>Strategy: <em>thay</em> hành vi (chọn implementation).</li>
+        </ul>
+        <p><strong>Use case Decorator</strong>: <code>java.io.*</code> (InputStream chain), Spring AOP, HTTP filter chain, Spring Security filter chain.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>8. Strategy pattern — ví dụ?</summary>
+      <div class="answer">
+        <pre><code>interface ShippingStrategy { double calc(Order o); }
+
+@Component("fast") class FastShipping implements ShippingStrategy { ... }
+@Component("cheap") class CheapShipping implements ShippingStrategy { ... }
+
+@Service
+public class OrderService {
+  private final Map&lt;String, ShippingStrategy&gt; strategies;
+  public OrderService(Map&lt;String, ShippingStrategy&gt; strategies) {
+    this.strategies = strategies; // Spring inject toàn bộ bean theo name
+  }
+  public double ship(String type, Order o) {
+    return strategies.get(type).calc(o);
+  }
+}</code></pre>
+        <p><strong>Use case</strong>: tính phí ship, thuế theo quốc gia, thuật toán nén file, sort, discount rule.</p>
+        <div class="tip">Spring inject <code>Map&lt;String, Strategy&gt;</code> rất tiện — key là bean name. Đây là pattern phổ biến trong dự án thực tế.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>9. Facade, Proxy, Template Method?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Facade</strong>: cung cấp interface đơn giản che giấu hệ thống phức tạp. Ví dụ: <code>JdbcTemplate</code> che giấu connection/statement/resultset boilerplate.</li>
+          <li><strong>Proxy</strong>: đại diện cho object khác để kiểm soát truy cập. Spring AOP dùng proxy để thêm <code>@Transactional</code>, <code>@Cacheable</code>. Java có <code>java.lang.reflect.Proxy</code> (JDK dynamic proxy) và CGLIB.</li>
+          <li><strong>Template Method</strong>: định nghĩa skeleton của thuật toán, để subclass override 1 số bước. Ví dụ: <code>JdbcTemplate.execute()</code>, <code>AbstractList</code>.</li>
+        </ul>
+        <pre><code>// Template Method
+public abstract class DataImporter {
+  public final void importData() {  // template
+    open();
+    parse();
+    save();
+    close();
+  }
+  protected abstract void parse();
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>10. Chain of Responsibility — use case?</summary>
+      <div class="answer">
+        <p><strong>Mục đích</strong>: chuyển request qua 1 chuỗi handler, mỗi handler quyết định xử lý hoặc chuyển tiếp.</p>
+        <pre><code>public interface Handler {
+  void setNext(Handler h);
+  Response handle(Request req);
+}</code></pre>
+        <p><strong>Use case</strong>:</p>
+        <ul>
+          <li><strong>Spring Security Filter Chain</strong> — chain các filter (auth, csrf, cors...).</li>
+          <li>Servlet Filter chain.</li>
+          <li>Logging middleware (MdcFilter → AccessLog → RateLimit).</li>
+          <li>Validation chain, approval workflow.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>11. Có pattern nào bạn ghét / thấy bị lạm dụng?</summary>
+      <div class="answer">
+        <p>Câu hỏi "trap" — muốn xem bạn có chính kiến không.</p>
+        <p>Gợi ý trả lời:</p>
+        <ul>
+          <li><strong>Singleton bị lạm dụng</strong>: khó test, hidden dependency. Dùng DI thay thế.</li>
+          <li><strong>Abstract Factory quá sớm</strong>: khi chưa có nhu cầu thực sự → over-engineer.</li>
+          <li><strong>God Object / Manager class</strong>: không phải pattern nhưng là anti-pattern phổ biến — 1 class ôm quá nhiều trách nhiệm.</li>
+          <li><strong>Service Locator</strong>: anti-pattern, thay bằng DI.</li>
+          <li><strong>Anemic Domain Model</strong>: entity chỉ có getter/setter, business logic dồn hết vào service → mất OOP.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 2. SOLID ============ -->
+  <section id="t2">
+    <h2>2. SOLID &amp; Clean Code</h2>
+
+    <details>
+      <summary>12. SOLID là gì? Giải thích từng chữ?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>S — Single Responsibility Principle</strong>: 1 class chỉ có 1 lý do để thay đổi. Ví dụ: tách <code>UserRepository</code> (DB) khỏi <code>UserService</code> (business) khỏi <code>UserController</code> (HTTP).</li>
+          <li><strong>O — Open/Closed Principle</strong>: mở rộng được (kế thừa, interface) nhưng không sửa code cũ. Ví dụ: thêm <code>ExportPDF</code> không cần sửa <code>ExportService</code> — dùng interface <code>Exporter</code>.</li>
+          <li><strong>L — Liskov Substitution Principle</strong>: class con phải thay thế được class cha mà không phá vỡ hành vi. Ví dụ: <code>Square extends Rectangle</code> là vi phạm LSP (setWidth làm thay đổi height).</li>
+          <li><strong>I — Interface Segregation Principle</strong>: nhiều interface nhỏ &gt; 1 interface lớn. Client không nên bị force implement method không dùng. Ví dụ: tách <code>Printable</code>, <code>Scannable</code>, <code>Faxable</code> thay vì <code>MultiFunctionDevice</code>.</li>
+          <li><strong>D — Dependency Inversion Principle</strong>: phụ thuộc vào abstraction, không phụ thuộc vào concrete class. Đây là nền tảng của DI trong Spring.</li>
+        </ul>
+        <pre><code>// DIP
+// ❌ Sai — service phụ thuộc concrete
+class OrderService {
+  private MySQLOrderRepo repo = new MySQLOrderRepo();
+}
+
+// ✅ Đúng — service phụ thuộc interface
+class OrderService {
+  private OrderRepository repo; // interface
+  OrderService(OrderRepository repo) { this.repo = repo; }
+}</code></pre>
+        <div class="tip">Phỏng vấn hay hỏi: <em>"Cho ví dụ vi phạm SOLID mà em từng gặp và cách sửa?"</em> — nên có 1 ví dụ thật từ dự án.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>13. DRY, KISS, YAGNI là gì?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>DRY (Don't Repeat Yourself)</strong>: tránh lặp logic. Nhưng cẩn thận — <em>2 đoạn code giống nhau vì lý do khác nhau thì không nên gộp</em> (false DRY).</li>
+          <li><strong>KISS (Keep It Simple, Stupid)</strong>: giải pháp đơn giản nhất thường tốt nhất. Tránh over-engineer.</li>
+          <li><strong>YAGNI (You Aren't Gonna Need It)</strong>: đừng code tính năng "phòng khi cần" — chưa có yêu cầu thì đừng làm.</li>
+        </ul>
+        <p>Cộng thêm: <strong>Boy Scout Rule</strong> — để code sạch hơn khi bạn rời đi so với khi đến.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>14. Code smell là gì? Kể tên vài cái phổ biến?</summary>
+      <div class="answer">
+        <p><strong>Code smell</strong>: dấu hiệu code có vấn đề thiết kế (không phải bug).</p>
+        <ul>
+          <li><strong>Long method</strong>: method &gt; 30–50 dòng.</li>
+          <li><strong>Long parameter list</strong>: &gt; 3–4 tham số → dùng DTO/Builder.</li>
+          <li><strong>Duplicated code</strong>: copy-paste logic.</li>
+          <li><strong>God class</strong>: 1 class làm quá nhiều việc (1000+ dòng).</li>
+          <li><strong>Feature envy</strong>: method dùng field của class khác nhiều hơn class mình.</li>
+          <li><strong>Primitive obsession</strong>: dùng <code>String</code>/<code>int</code> cho mọi thứ thay vì Value Object (Email, Money, PhoneNumber).</li>
+          <li><strong>Shotgun surgery</strong>: 1 thay đổi nhỏ phải sửa nhiều file.</li>
+          <li><strong>Magic number/string</strong>: hardcode <code>86400</code>, <code>"ACTIVE"</code> → dùng constant hoặc enum.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>15. Composition vs Inheritance — ưu tiên cái nào?</summary>
+      <div class="answer">
+        <p>Nguyên tắc: <strong>"Favor composition over inheritance"</strong>.</p>
+        <ul>
+          <li><strong>Inheritance</strong>: quan hệ "is-a", coupling chặt, khó thay đổi runtime.</li>
+          <li><strong>Composition</strong>: quan hệ "has-a", linh hoạt, thay đổi runtime dễ.</li>
+        </ul>
+        <pre><code>// ❌ Inheritance
+class Car extends Engine { }  // xe "là" động cơ? Sai
+
+// ✅ Composition
+class Car {
+  private Engine engine;  // xe "có" động cơ
+  Car(Engine e) { this.engine = e; }
+}</code></pre>
+        <p>Spring DI khuyến khích composition — inject dependency thay vì extend abstract class.</p>
+        <div class="tip">Nếu interviewer hỏi "tại sao Java không đa kế thừa class?" → vì diamond problem; và composition giải quyết vấn đề này tốt hơn.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>16. Clean Code — những nguyên tắc bạn áp dụng?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Đặt tên rõ ràng</strong>: <code>calculateMonthlyInterest()</code> &gt; <code>calc()</code>.</li>
+          <li><strong>Hàm ngắn, làm 1 việc</strong>: &lt; 20 dòng, 1 mức abstraction.</li>
+          <li><strong>Comment khi cần WHY, không phải WHAT</strong>: code nói "what", comment nói "why".</li>
+          <li><strong>Tránh comment thừa</strong>: <code>// tăng i lên 1</code> — vô nghĩa.</li>
+          <li><strong>Format nhất quán</strong>: dùng formatter (Checkstyle, Spotless).</li>
+          <li><strong>Xử lý lỗi tường minh</strong>: không <code>catch (Exception e) {}</code>.</li>
+          <li><strong>Viết test</strong>: code không test = legacy code.</li>
+          <li><strong>Nguyên tắc Boy Scout</strong>: để lại sạch hơn khi đi.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 3. DATABASE NORMALIZATION ============ -->
+  <section id="t3">
+    <h2>3. Database Normalization</h2>
+
+    <details>
+      <summary>17. Normalization là gì? Tại sao cần?</summary>
+      <div class="answer">
+        <p><strong>Normalization</strong>: quá trình tổ chức dữ liệu để <em>giảm dư thừa</em> và <em>tăng tính toàn vẹn</em>.</p>
+        <p><strong>Mục đích</strong>:</p>
+        <ul>
+          <li>Loại bỏ dữ liệu trùng lặp.</li>
+          <li>Tránh anomaly khi insert/update/delete.</li>
+          <li>Đảm bảo phụ thuộc logic hợp lý.</li>
+        </ul>
+        <p><strong>Nhược điểm</strong>: nhiều bảng → nhiều JOIN → query chậm hơn. Trong thực tế đôi khi phải <em>denormalize</em> (chấp nhận dư thừa) để tối ưu đọc.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>18. 1NF là gì?</summary>
+      <div class="answer">
+        <p><strong>First Normal Form (1NF)</strong>:</p>
+        <ul>
+          <li>Mỗi cột chỉ chứa <em>giá trị nguyên tử</em> (atomic) — không list, không JSON array, không comma-separated.</li>
+          <li>Không có cột lặp lại (ví dụ phone1, phone2, phone3 → sai).</li>
+          <li>Mỗi row phải unique (có primary key).</li>
+        </ul>
+        <p><strong>Ví dụ vi phạm</strong>:</p>
+        <pre><code>| id | name  | phones               |
+| 1  | Alice | 0901,0902,0903       |  ❌</code></pre>
+        <p><strong>Chuẩn hóa</strong>: tách bảng <code>user_phone(user_id, phone)</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>19. 2NF là gì?</summary>
+      <div class="answer">
+        <p><strong>Second Normal Form (2NF)</strong>:</p>
+        <ul>
+          <li>Đã đạt 1NF.</li>
+          <li><em>Không có phụ thuộc một phần</em> (partial dependency) — mọi non-key attribute phụ thuộc <em>toàn bộ</em> composite primary key, không phải chỉ 1 phần.</li>
+        </ul>
+        <p><strong>Ví dụ vi phạm</strong>: bảng <code>order_item(order_id, product_id, product_name, qty)</code> — <code>product_name</code> chỉ phụ thuộc <code>product_id</code>, không phụ thuộc cả composite key <code>(order_id, product_id)</code>.</p>
+        <p><strong>Chuẩn hóa</strong>: tách <code>product(product_id, product_name)</code> khỏi <code>order_item(order_id, product_id, qty)</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>20. 3NF là gì?</summary>
+      <div class="answer">
+        <p><strong>Third Normal Form (3NF)</strong>:</p>
+        <ul>
+          <li>Đã đạt 2NF.</li>
+          <li><em>Không có phụ thuộc bắc cầu</em> (transitive dependency) — non-key attribute không phụ thuộc vào non-key attribute khác.</li>
+        </ul>
+        <p><strong>Ví dụ vi phạm</strong>: <code>employee(emp_id, dept_id, dept_name, dept_manager)</code> — <code>dept_name</code> và <code>dept_manager</code> phụ thuộc <code>dept_id</code>, mà <code>dept_id</code> là non-key → bắc cầu.</p>
+        <p><strong>Chuẩn hóa</strong>: tách <code>department(dept_id, dept_name, dept_manager)</code>.</p>
+        <p>Quy tắc nhớ: <em>"Mọi non-key attribute phụ thuộc trực tiếp vào primary key, không qua trung gian"</em>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>21. BCNF là gì? Khác 3NF?</summary>
+      <div class="answer">
+        <p><strong>Boyce-Codd Normal Form (BCNF)</strong> = 3NF mạnh hơn.</p>
+        <p>Điều kiện: mọi <em>determinant</em> (vế trái của functional dependency) phải là <em>super key</em>.</p>
+        <p>Khác 3NF: 3NF cho phép non-key attribute là determinant (nếu nó là phần của candidate key); BCNF không cho phép.</p>
+        <p><strong>Ví dụ vi phạm BCNF nhưng đạt 3NF</strong>: <code>(student, course, teacher)</code> — 1 teacher dạy 1 course, nhưng 1 course có nhiều teacher. Nếu key là <code>(student, course)</code>, thì <code>teacher → course</code> nhưng <code>teacher</code> không phải super key → vi phạm BCNF.</p>
+        <p><strong>Các cấp cao hơn</strong>: 4NF (loại multi-valued dependency), 5NF (join dependency).</p>
+        <div class="tip">Thực tế production thường dừng ở 3NF. BCNF chỉ dùng khi có yêu cầu chặt về integrity.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>22. Denormalization là gì? Khi nào dùng?</summary>
+      <div class="answer">
+        <p><strong>Denormalization</strong>: cố ý <em>thêm dư thừa</em> để tăng tốc đọc.</p>
+        <p><strong>Khi nào dùng</strong>:</p>
+        <ul>
+          <li>Read-heavy system (báo cáo, dashboard).</li>
+          <li>JOIN quá nhiều bảng → chậm.</li>
+          <li>Data warehouse (OLAP) — khác OLTP.</li>
+          <li>Cache computed value: ví dụ lưu <code>total_orders</code> trong bảng user thay vì COUNT mỗi lần.</li>
+        </ul>
+        <p><strong>Đánh đổi</strong>: đọc nhanh nhưng ghi chậm hơn (phải update nhiều nơi), dễ mất đồng bộ.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 4. SECURITY NÂNG CAO ============ -->
+  <section id="t4">
+    <h2>4. Security nâng cao</h2>
+
+    <details>
+      <summary>23. XSS là gì? Cách prevent?</summary>
+      <div class="answer">
+        <p><strong>XSS (Cross-Site Scripting)</strong>: attacker inject JavaScript vào trang, chạy trong browser của nạn nhân.</p>
+        <p><strong>3 loại</strong>:</p>
+        <ul>
+          <li><strong>Stored XSS</strong>: script lưu trong DB (comment, profile) → hiển thị cho mọi user.</li>
+          <li><strong>Reflected XSS</strong>: script trong URL param, phản chiếu ngay về response.</li>
+          <li><strong>DOM-based XSS</strong>: script chạy ở client do JS xử lý DOM không an toàn.</li>
+        </ul>
+        <p><strong>Prevent</strong>:</p>
+        <ul>
+          <li><strong>Output encoding</strong>: escape HTML khi render (Thymeleaf, React tự động).</li>
+          <li><strong>Content Security Policy (CSP)</strong>: header chặn inline script.</li>
+          <li><strong>HttpOnly cookie</strong>: JS không đọc được cookie.</li>
+          <li><strong>Validate input</strong>: whitelist, không blacklist.</li>
+          <li><strong>Không dùng <code>innerHTML</code></strong> với dữ liệu user.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>24. SQL Injection là gì? Cách prevent?</summary>
+      <div class="answer">
+        <p><strong>SQL Injection</strong>: attacker chèn SQL vào input → query thực thi lệnh độc hại.</p>
+        <pre><code>// ❌ Vulnerable
+String sql = "SELECT * FROM users WHERE name = '" + name + "'";
+// Nếu name = "' OR '1'='1" → trả về toàn bộ user
+
+// ✅ Safe — PreparedStatement
+String sql = "SELECT * FROM users WHERE name = ?";
+ps.setString(1, name);</code></pre>
+        <p><strong>Prevent</strong>:</p>
+        <ul>
+          <li><strong>PreparedStatement</strong> / parameterized query (luôn dùng).</li>
+          <li><strong>JPA/Hibernate</strong>: dùng JPQL với parameter (<code>:name</code>), tránh nối chuỗi.</li>
+          <li><strong>Validate input</strong>: whitelist ký tự.</li>
+          <li><strong>Least privilege</strong>: DB account chỉ có quyền cần thiết.</li>
+          <li><strong>WAF</strong>: Web Application Firewall.</li>
+        </ul>
+        <div class="tip">Native query trong JPA cũng có thể bị SQLi nếu dùng <code>String.format</code> — luôn dùng <code>@Param</code> và <code>:param</code>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>25. CSRF là gì? Khi nào cần bật/tắt?</summary>
+      <div class="answer">
+        <p><strong>CSRF (Cross-Site Request Forgery)</strong>: attacker lừa browser user (đã login) gửi request không mong muốn.</p>
+        <p>Ví dụ: user đang login ngân hàng, vào trang evil.com có form ẩn POST đến <code>/transfer</code>. Browser tự đính cookie ngân hàng → giao dịch thành công.</p>
+        <p><strong>Prevent</strong>:</p>
+        <ul>
+          <li><strong>CSRF token</strong>: server sinh token, client gửi kèm request, server verify.</li>
+          <li><strong>SameSite cookie</strong>: <code>SameSite=Strict/Lax</code> chặn cookie cross-site.</li>
+          <li><strong>Check Origin/Referer</strong> header.</li>
+          <li><strong>Không dùng GET cho thao tác thay đổi</strong>.</li>
+        </ul>
+        <p><strong>Spring Security</strong>:</p>
+        <pre><code>// Session-based auth: BẬT CSRF (default)
+http.csrf(Customizer.withDefaults());
+
+// REST API + JWT trong header: TẮT CSRF
+http.csrf(AbstractHttpConfigurer::disable);</code></pre>
+        <p>Lý do tắt với JWT: attacker không đọc được token từ domain khác → không tự đính được như cookie.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>26. Stateful vs Stateless Authentication?</summary>
+      <div class="answer">
+        <p><strong>Stateful</strong>:</p>
+        <ul>
+          <li>Server lưu session (in-memory, Redis).</li>
+          <li>Client gửi session ID qua cookie.</li>
+          <li>Ưu: revoke dễ, không lộ token mỗi request.</li>
+          <li>Nhược: scale khó (sticky session, share session store).</li>
+        </ul>
+        <p><strong>Stateless</strong>:</p>
+        <ul>
+          <li>Không lưu state server-side. Client giữ token (JWT).</li>
+          <li>Server verify token mỗi request.</li>
+          <li>Ưu: scale ngang dễ, phù hợp microservices.</li>
+          <li>Nhược: revoke khó (phải blacklist hoặc token ngắn hạn + refresh token).</li>
+        </ul>
+        <p><strong>Chọn</strong>: monolith + web truyền thống → stateful. Microservices + mobile → stateless JWT.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>27. SSO là gì? Implement thế nào trong microservices?</summary>
+      <div class="answer">
+        <p><strong>SSO (Single Sign-On)</strong>: đăng nhập 1 lần, dùng được nhiều hệ thống.</p>
+        <p><strong>Chuẩn phổ biến</strong>: <strong>OAuth2 + OIDC (OpenID Connect)</strong>. Providers: Keycloak, Auth0, Okta, AWS Cognito, Azure AD.</p>
+        <p><strong>Luồng trong microservices</strong>:</p>
+        <ol>
+          <li>User login ở <strong>Identity Provider (IdP)</strong> → nhận JWT (access + refresh + id token).</li>
+          <li>Client gọi API Gateway với token.</li>
+          <li>API Gateway verify token với IdP (qua public key/JWKS).</li>
+          <li>Gateway forward request đến service, kèm user info.</li>
+          <li>Mỗi service <em>không</em> cần login lại — chỉ verify JWT (self-contained).</li>
+        </ol>
+        <p><strong>Best practice</strong>:</p>
+        <ul>
+          <li>Không tự làm auth — dùng IdP chuẩn.</li>
+          <li>JWT verify offline bằng public key (không gọi IdP mỗi request).</li>
+          <li>RBAC: role/permission trong JWT claims.</li>
+          <li>Refresh token rotation để tránh bị đánh cắp.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>28. Các attack khác cần biết? (Clickjacking, SSRF, XXE, Path Traversal)</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Clickjacking</strong>: lừa user click vào iframe ẩn. Prevent: header <code>X-Frame-Options: DENY</code> hoặc CSP <code>frame-ancestors</code>.</li>
+          <li><strong>SSRF (Server-Side Request Forgery)</strong>: lừa server gọi request đến internal service. Prevent: whitelist domain, chặn internal IP.</li>
+          <li><strong>XXE (XML External Entity)</strong>: inject external entity vào XML parser → đọc file server. Prevent: tắt external entity trong parser.</li>
+          <li><strong>Path Traversal</strong>: <code>../../etc/passwd</code> trong filename. Prevent: sanitize, dùng <code>Paths.get(base).resolve(name).normalize()</code> và check prefix.</li>
+          <li><strong>Insecure Deserialization</strong>: deserialize object độc hại → RCE. Prevent: không dùng Java native serialization cho untrusted data.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 5. SYSTEM DESIGN ============ -->
+  <section id="t5">
+    <h2>5. System Design &amp; High Concurrency</h2>
+
+    <details>
+      <summary>29. Rate Limiter là gì? Các thuật toán phổ biến?</summary>
+      <div class="answer">
+        <p><strong>Rate Limiter</strong>: giới hạn số request client gửi trong 1 khoảng thời gian.</p>
+        <p><strong>Thuật toán</strong>:</p>
+        <ul>
+          <li><strong>Fixed Window</strong>: đếm theo cửa sổ cố định (0-60s). Nhược: burst ở biên (2x limit).</li>
+          <li><strong>Sliding Window Log</strong>: lưu timestamp từng request. Chính xác nhưng tốn memory.</li>
+          <li><strong>Sliding Window Counter</strong>: kết hợp counter 2 cửa sổ — cân bằng.</li>
+          <li><strong>Token Bucket</strong>: bucket chứa N token, refill đều. Cho phép burst.</li>
+          <li><strong>Leaky Bucket</strong>: request rò ra với tốc độ cố định. Làm phẳng traffic.</li>
+        </ul>
+        <p><strong>Implement với Redis</strong> (distributed):</p>
+        <pre><code>-- Sliding window đơn giản
+local count = redis.call('INCR', KEYS[1])
+if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+if count > tonumber(ARGV[2]) then return 0 end
+return 1</code></pre>
+        <p><strong>Nếu limit không đủ → scale</strong>:</p>
+        <ul>
+          <li>Tăng limit theo tier (user thường vs premium).</li>
+          <li>Sharding rate limiter theo user_id → mỗi Redis node quản 1 subset.</li>
+          <li>Dùng Redis Cluster hoặc Hazelcast.</li>
+          <li>Offload ở API Gateway (Kong, Nginx) thay vì app.</li>
+        </ul>
+        <p><strong>Trả về</strong>: HTTP 429 Too Many Requests + header <code>Retry-After</code>, <code>X-RateLimit-Remaining</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>30. Hệ thống bị latency cao 1 ngày — điều tra thế nào?</summary>
+      <div class="answer">
+        <p><strong>Bước 1 — Xác nhận &amp; phạm vi</strong>:</p>
+        <ul>
+          <li>Dashboard (Grafana): latency tăng từ khi nào? Ảnh hưởng endpoint nào? Tất cả user hay 1 số?</li>
+          <li>So sánh với baseline.</li>
+        </ul>
+        <p><strong>Bước 2 — Layer analysis</strong> (từ ngoài vào trong):</p>
+        <ul>
+          <li><strong>Network/DNS/LB</strong>: ping, traceroute, LB metrics.</li>
+          <li><strong>Application</strong>: log, thread dump (<code>jstack</code>), APM (New Relic, Datadog).</li>
+          <li><strong>DB</strong>: slow query log, connection pool metrics, lock waiting.</li>
+          <li><strong>External services</strong>: latency của service thứ 3 (payment, email).</li>
+          <li><strong>Infra</strong>: CPU, RAM, disk I/O, GC log.</li>
+        </ul>
+        <p><strong>Bước 3 — Xác định bottleneck</strong>:</p>
+        <ul>
+          <li>p50 vs p99: nếu p99 cao, chỉ 1% request chậm (thường do GC hoặc lock).</li>
+          <li>Nếu toàn bộ chậm đều → infra hoặc DB.</li>
+          <li>Thread dump: xem thread nào đang BLOCKED/WAITING.</li>
+          <li>Heap dump: OOM hoặc memory leak.</li>
+        </ul>
+        <p><strong>Bước 4 — Fix &amp; phòng ngừa</strong>:</p>
+        <ul>
+          <li>Short-term: tăng pool size, restart, scale out, cache.</li>
+          <li>Long-term: index DB, optimize query, async, rate limit.</li>
+          <li>Setup alerting cho metric quan trọng trước khi user complain.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>31. Nếu DB là nguyên nhân gây latency — tối ưu thế nào?</summary>
+      <div class="answer">
+        <p><strong>Query level</strong>:</p>
+        <ul>
+          <li><strong>Thêm index</strong>: cột trong <code>WHERE</code>, <code>JOIN</code>, <code>ORDER BY</code>.</li>
+          <li><strong>Composite index</strong>: theo thứ tự selectivity cao → thấp.</li>
+          <li><strong>EXPLAIN ANALYZE</strong> để xem execution plan.</li>
+          <li><strong>Tránh</strong>: <code>SELECT *</code>, function trên indexed column (<code>WHERE YEAR(created_at) = 2024</code> → không dùng index).</li>
+          <li><strong>Covering index</strong>: index chứa cả cột select.</li>
+        </ul>
+        <p><strong>Schema level</strong>:</p>
+        <ul>
+          <li>Denormalize khi cần (thêm cột computed).</li>
+          <li>Partition table lớn theo ngày/tháng.</li>
+          <li>Archive old data.</li>
+        </ul>
+        <p><strong>Application level</strong>:</p>
+        <ul>
+          <li><strong>Cache</strong>: Redis cho query hot.</li>
+          <li><strong>Read replica</strong>: đọc từ replica, ghi vào master.</li>
+          <li><strong>Connection pool tuning</strong>: HikariCP size hợp lý.</li>
+          <li><strong>Batch insert/update</strong>: <code>hibernate.jdbc.batch_size=50</code>.</li>
+          <li><strong>Fix N+1</strong>: JOIN FETCH, EntityGraph.</li>
+        </ul>
+        <p><strong>Kiến trúc level</strong>:</p>
+        <ul>
+          <li>Sharding theo user_id/tenant.</li>
+          <li>NoSQL cho data phù hợp (time-series, log).</li>
+          <li>CQRS: tách read/write model.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>32. Thiết kế hệ thống flash sale chịu tải cao?</summary>
+      <div class="answer">
+        <p><strong>Vấn đề</strong>: hàng nghìn request/s vào cùng 1 sản phẩm, cần tránh oversell, giữ hệ thống sống.</p>
+        <p><strong>Kiến trúc</strong>:</p>
+        <ol>
+          <li><strong>Rate limit</strong> ở API Gateway — chặn bot, giới hạn user.</li>
+          <li><strong>Queue hóa</strong>: đẩy request vào Kafka/RabbitMQ → xử lý tuần tự, giảm tải DB.</li>
+          <li><strong>Redis cache</strong>: lưu stock, decrement atomic (<code>DECR</code>, Lua script).</li>
+          <li><strong>Preload stock</strong> vào Redis trước flash sale.</li>
+          <li><strong>Optimistic lock</strong> hoặc <strong>pessimistic lock</strong> ở DB khi ghi đơn hàng.</li>
+          <li><strong>Idempotency key</strong>: 1 user chỉ tạo 1 đơn, retry không tạo 2.</li>
+          <li><strong>Holding page</strong>: trả về "đang xử lý" + polling kết quả (đỡ block request).</li>
+        </ol>
+        <p><strong>Tránh</strong>:</p>
+        <ul>
+          <li>Không để mọi request chạm DB — dùng Redis làm stock counter.</li>
+          <li>Không dùng <code>SELECT ... FOR UPDATE</code> cho hàng trăm user đồng thời → deadlock.</li>
+          <li>Không dùng transaction dài giữ lock lâu.</li>
+        </ul>
+        <pre><code>-- Redis Lua script (atomic)
+local stock = tonumber(redis.call('GET', KEYS[1]))
+if stock > 0 then
+  redis.call('DECR', KEYS[1])
+  return 1
+end
+return 0</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>33. Cascading failure là gì? Prevent thế nào?</summary>
+      <div class="answer">
+        <p><strong>Cascading failure</strong>: 1 service chết kéo theo service khác chết theo (domino).</p>
+        <p><strong>Nguyên nhân</strong>: service A gọi B chậm → thread pool A cạn → A chết → C gọi A cũng chết.</p>
+        <p><strong>Prevent</strong>:</p>
+        <ul>
+          <li><strong>Circuit Breaker</strong> (Resilience4j): fail fast khi downstream lỗi.</li>
+          <li><strong>Timeout</strong> mọi external call (HTTP, DB).</li>
+          <li><strong>Retry với backoff + jitter</strong>: tránh hammering.</li>
+          <li><strong>Bulkhead</strong>: tách thread pool cho từng dependency → 1 cái lỗi không chiếm hết thread.</li>
+          <li><strong>Fallback</strong>: trả cached data, empty list, hoặc default.</li>
+          <li><strong>Rate limit</strong> để giảm tải khi có sự cố.</li>
+          <li><strong>Health check + load balancer</strong>: loại bỏ instance unhealthy.</li>
+        </ul>
+        <pre><code>@CircuitBreaker(name = "payment", fallbackMethod = "fallback")
+@Retry(name = "payment")
+@TimeLimiter(name = "payment")
+public CompletableFuture&lt;Payment&gt; pay(Order o) { ... }</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>34. Đo và cải thiện throughput thế nào?</summary>
+      <div class="answer">
+        <p><strong>Metrics chính</strong>:</p>
+        <ul>
+          <li><strong>Throughput</strong>: requests/second, transactions/second.</li>
+          <li><strong>Latency</strong>: p50, p95, p99 (không dùng average — che giấu outlier).</li>
+          <li><strong>Error rate</strong>: % request lỗi.</li>
+          <li><strong>Saturation</strong>: CPU, memory, connection pool usage.</li>
+        </ul>
+        <p><strong>Cải thiện throughput</strong>:</p>
+        <ul>
+          <li><strong>Horizontal scale</strong>: thêm instance (stateless dễ).</li>
+          <li><strong>Cache</strong>: Redis, Caffeine, HTTP cache.</li>
+          <li><strong>Async &amp; reactive</strong>: WebFlux, CompletableFuture cho I/O-bound.</li>
+          <li><strong>Batch processing</strong>: gom nhiều request nhỏ thành batch.</li>
+          <li><strong>DB tuning</strong>: index, connection pool, query optimization.</li>
+          <li><strong>Compression</strong>: gzip cho response lớn.</li>
+          <li><strong>Profiling</strong>: JProfiler, async-profiler để tìm hotspot.</li>
+        </ul>
+        <p><strong>Load test tool</strong>: JMeter, Gatling, k6, Locust.</p>
+        <div class="tip">Câu hỏi kinh điển: <em>"Scale up vs scale out khác gì?"</em> — up = tăng resource 1 máy; out = thêm máy. Scale out thường rẻ và resilient hơn.</div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 6. TESTING NÂNG CAO ============ -->
+  <section id="t6">
+    <h2>6. Testing nâng cao</h2>
+
+    <details>
+      <summary>35. Line coverage vs Branch coverage?</summary>
+      <div class="answer">
+        <p><strong>Line coverage</strong>: % dòng code được chạy qua test.</p>
+        <p><strong>Branch coverage</strong>: % nhánh (if/else, switch, ternary, short-circuit) được chạy qua cả true &amp; false.</p>
+        <pre><code>public String check(int x) {
+  if (x > 0) return "positive";   // branch true
+  return "non-positive";          // branch false
+}</code></pre>
+        <ul>
+          <li>Test 1 lần với <code>x = 5</code> → line coverage = 100% (cả 2 dòng chạy? Không — dòng <code>return "non-positive"</code> không chạy, nên ~66%).</li>
+          <li>Branch coverage = 50% (chỉ test true).</li>
+          <li>Test thêm <code>x = -1</code> → branch = 100%.</li>
+        </ul>
+        <p><strong>Branch coverage chặt hơn</strong>. Industry thường target: line ≥ 80%, branch ≥ 70%.</p>
+        <p><strong>Tool</strong>: JaCoCo, Cobertura, SonarQube.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>36. Best practices khi viết unit test?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>FIRST</strong>: Fast, Independent, Repeatable, Self-validating, Timely.</li>
+          <li><strong>AAA</strong> hoặc <strong>Given-When-Then</strong>: Arrange - Act - Assert.</li>
+          <li><strong>Tên test rõ ràng</strong>: <code>findById_shouldThrow_whenNotFound()</code>.</li>
+          <li><strong>1 test 1 assert</strong> (hoặc 1 concept).</li>
+          <li><strong>Không test implementation detail</strong> — test behavior.</li>
+          <li><strong>Không dùng DB/network thật</strong> trong unit test → mock.</li>
+          <li><strong>Test edge case</strong>: null, empty, max value, exception.</li>
+          <li><strong>Không copy-paste test</strong> — dùng <code>@ParameterizedTest</code>.</li>
+          <li><strong>Coverage không phải mục tiêu cuối</strong> — 100% coverage không có nghĩa 0 bug.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>37. @Before vs @BeforeClass (JUnit 5: @BeforeEach vs @BeforeAll)?</summary>
+      <div class="answer">
+        <table>
+          <tr><th>JUnit 4</th><th>JUnit 5</th><th>Khi nào chạy</th></tr>
+          <tr><td><code>@BeforeClass</code></td><td><code>@BeforeAll</code></td><td>1 lần duy nhất trước tất cả test — phải <code>static</code> (JUnit 4)</td></tr>
+          <tr><td><code>@Before</code></td><td><code>@BeforeEach</code></td><td>Trước mỗi test method</td></tr>
+          <tr><td><code>@After</code></td><td><code>@AfterEach</code></td><td>Sau mỗi test method</td></tr>
+          <tr><td><code>@AfterClass</code></td><td><code>@AfterAll</code></td><td>1 lần sau tất cả test</td></tr>
+        </table>
+        <p><strong>Dùng cho gì</strong>:</p>
+        <ul>
+          <li><code>@BeforeAll</code>: khởi tạo resource nặng (DB container, Kafka).</li>
+          <li><code>@BeforeEach</code>: reset mock, tạo object test mới.</li>
+        </ul>
+        <p><strong>Mockito + JUnit 5</strong>: dùng <code>@ExtendWith(MockitoExtension.class)</code> — tự <code>initMocks</code> cho <code>@Mock</code>.</p>
+        <pre><code>@ExtendWith(MockitoExtension.class)
+class ServiceTest {
+  @Mock Repo repo;
+  @InjectMocks Service service;
+
+  @BeforeEach
+  void setUp() { /* reset state */ }
+
+  @Test void test1() { ... }
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>38. Reflection dùng để test private method thế nào?</summary>
+      <div class="answer">
+        <pre><code>Method m = MyClass.class.getDeclaredMethod("privateMethod", int.class);
+m.setAccessible(true);
+Object result = m.invoke(instance, 42);</code></pre>
+        <p><strong>Khi nào dùng</strong>:</p>
+        <ul>
+          <li>Test private method khi không có cách nào qua public API (dấu hiệu thiết kế kém).</li>
+          <li>Test utility class, helper.</li>
+          <li>Framework test (Mockito dùng reflection để inject mock).</li>
+        </ul>
+        <p><strong>Best practice</strong>:</p>
+        <ul>
+          <li><em>Hạn chế dùng</em> — private method nên được test qua public method.</li>
+          <li>Nếu private method phức tạp cần test riêng → nên tách ra class package-private hoặc utility.</li>
+          <li>Reflection phá vỡ encapsulation, dễ vỡ khi refactor.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>39. Test pyramid vs Test trophy?</summary>
+      <div class="answer">
+        <p><strong>Test pyramid</strong> (Mike Cohn):</p>
+        <ul>
+          <li><strong>Unit test</strong> (đáy): nhiều nhất, nhanh, không I/O.</li>
+          <li><strong>Integration test</strong> (giữa): vừa.</li>
+          <li><strong>E2E/UI test</strong> (đỉnh): ít nhất, chậm, dễ vỡ.</li>
+        </ul>
+        <p><strong>Test trophy</strong> (Kent C. Dodds) — phù hợp frontend:</p>
+        <ul>
+          <li>Static analysis (đáy).</li>
+          <li>Unit test (ít).</li>
+          <li><strong>Integration test (nhiều nhất)</strong> — test qua API/UI thật.</li>
+          <li>E2E (ít).</li>
+        </ul>
+        <p><strong>Backend Java</strong> thường theo pyramid, với <code>@WebMvcTest</code> (integration nhẹ) làm trung tâm.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>40. TDD là gì? Quy trình?</summary>
+      <div class="answer">
+        <p><strong>TDD (Test-Driven Development)</strong>: viết test <em>trước</em> code.</p>
+        <p><strong>Chu kỳ Red-Green-Refactor</strong>:</p>
+        <ol>
+          <li><strong>Red</strong>: viết test fail (vì chưa có code).</li>
+          <li><strong>Green</strong>: viết code tối thiểu để test pass.</li>
+          <li><strong>Refactor</strong>: dọn code, vẫn đảm bảo test pass.</li>
+        </ol>
+        <p><strong>Lợi ích</strong>: thiết kế tốt hơn (testable), ít bug, regression an toàn.</p>
+        <p><strong>Nhược điểm</strong>: chậm ban đầu, cần kỷ luật, không phù hợp với spike/POC.</p>
+        <div class="tip">Phỏng vấn hay hỏi: <em>"Em viết test trước hay sau?"</em> — câu trả lời trung thực: <em>"Em thường viết test song song, với logic phức tạp thì viết test trước để clarify requirement."</em></div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 7. AGILE ============ -->
+  <section id="t7">
+    <h2>7. Agile / Scrum</h2>
+
+    <details>
+      <summary>41. Agile là gì? Khác Waterfall?</summary>
+      <div class="answer">
+        <p><strong>Agile</strong>: triết lý phát triển phần mềm linh hoạt, chia nhỏ, lặp lại. 4 giá trị (Agile Manifesto):</p>
+        <ul>
+          <li>Individual &amp; interactions &gt; processes &amp; tools.</li>
+          <li>Working software &gt; documentation.</li>
+          <li>Customer collaboration &gt; contract negotiation.</li>
+          <li>Responding to change &gt; following a plan.</li>
+        </ul>
+        <p><strong>Waterfall</strong>: tuần tự — requirement → design → code → test → deploy. Ổn định nhưng chậm thích ứng.</p>
+        <p><strong>Agile</strong>: sprint ngắn (1–4 tuần), feedback liên tục, thích ứng thay đổi.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>42. Scrum có mấy loại meeting? Mục đích?</summary>
+      <div class="answer">
+        <p><strong>5 sự kiện chính trong Scrum</strong>:</p>
+        <ol>
+          <li><strong>Sprint Planning</strong>: đầu sprint — chọn backlog item cho sprint, estimate. Thời lượng ~2h cho sprint 2 tuần.</li>
+          <li><strong>Daily Standup</strong>: mỗi ngày 15 phút — 3 câu hỏi: hôm qua làm gì, hôm nay làm gì, có blocker gì.</li>
+          <li><strong>Sprint Review</strong>: cuối sprint — demo sản phẩm cho stakeholder, thu feedback.</li>
+          <li><strong>Sprint Retrospective</strong>: sau review — team nhìn lại: cái gì tốt, cái gì cần cải thiện, action item.</li>
+          <li><strong>Backlog Refinement (Grooming)</strong>: giữa sprint — chuẩn bị backlog cho sprint sau.</li>
+        </ol>
+        <p><strong>Vai trò</strong>: Product Owner (WHAT), Scrum Master (process), Dev Team (HOW).</p>
+        <p><strong>Artifact</strong>: Product Backlog, Sprint Backlog, Increment.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>43. Story point vs man-hour? Velocity?</summary>
+      <div class="answer">
+        <ul>
+          <li><strong>Story point</strong>: đơn vị tương đối đo <em>độ phức tạp</em>, không phải thời gian. Dùng Fibonacci (1, 2, 3, 5, 8, 13).</li>
+          <li><strong>Man-hour</strong>: thời gian cụ thể. Dễ hiểu nhưng không chính xác.</li>
+          <li><strong>Velocity</strong>: tổng story point hoàn thành mỗi sprint — dùng để dự đoán sprint sau.</li>
+          <li><strong>Estimation techniques</strong>: Planning Poker, T-shirt size (S/M/L/XL).</li>
+        </ul>
+        <p><strong>Ý nghĩa</strong>: story point phản ánh effort + complexity + risk + uncertainty, không chỉ time.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>44. Kanban vs Scrum?</summary>
+      <div class="answer">
+        <table>
+          <tr><th>Tiêu chí</th><th>Scrum</th><th>Kanban</th></tr>
+          <tr><td>Chu kỳ</td><td>Sprint cố định (1-4 tuần)</td><td>Liên tục (flow)</td></tr>
+          <tr><td>Vai trò</td><td>Có (PO, SM, Dev)</td><td>Không bắt buộc</td></tr>
+          <tr><td>Thay đổi giữa chừng</td><td>Hạn chế</td><td>Linh hoạt</td></tr>
+          <tr><td>Metric chính</td><td>Velocity</td><td>Cycle time, Lead time, WIP</td></tr>
+          <tr><td>Phù hợp</td><td>Team có roadmap rõ</td><td>Support, maintenance, ops</td></tr>
+        </table>
+        <p><strong>Kanban board</strong>: Todo → In Progress → Review → Done. Giới hạn <strong>WIP (Work In Progress)</strong> mỗi cột để tránh bottleneck.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 8. REDIS NÂNG CAO ============ -->
+  <section id="t8">
+    <h2>8. Redis nâng cao</h2>
+
+    <details>
+      <summary>45. Redis là gì? Tại sao nhanh?</summary>
+      <div class="answer">
+        <p><strong>Redis</strong>: in-memory key-value store. Hỗ trợ String, List, Set, Sorted Set, Hash, Stream, HyperLogLog, Geo.</p>
+        <p><strong>Nhanh vì</strong>:</p>
+        <ul>
+          <li><strong>In-memory</strong>: không đọc disk mỗi query.</li>
+          <li><strong>Single-threaded</strong> cho command execution (không lock).</li>
+          <li><strong>I/O multiplexing</strong> (epoll).</li>
+          <li>Data structure tối ưu.</li>
+        </ul>
+        <p><strong>Persistence</strong>: RDB (snapshot), AOF (append-only log). Có thể tắt nếu chỉ dùng cache.</p>
+        <p><strong>Use case</strong>: cache, session store, rate limiter, leaderboard, message queue (Stream), distributed lock, pub/sub.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>46. Redis distributed lock — SETNX? Redlock?</summary>
+      <div class="answer">
+        <p><strong>Cách đơn giản</strong> (single Redis):</p>
+        <pre><code>SET lock_key unique_value NX PX 30000
+-- NX: chỉ set nếu chưa tồn tại
+-- PX 30000: TTL 30s (tránh deadlock nếu process crash)</code></pre>
+        <p>Release lock phải atomic (dùng Lua) và chỉ release nếu <code>value</code> khớp (tránh xóa lock của người khác):</p>
+        <pre><code>if redis.call("get", KEYS[1]) == ARGV[1] then
+  return redis.call("del", KEYS[1])
+end</code></pre>
+        <p><strong>Redlock</strong> (thuật toán của Redis author):</p>
+        <ul>
+          <li>Dùng N (thường 5) Redis master độc lập.</li>
+          <li>Client lấy lock trên đa số (N/2 + 1) node trong thời gian ngắn.</li>
+          <li>Nếu thành công → lock acquired; ngược lại release.</li>
+        </ul>
+        <p><strong>Tranh cãi</strong>: Martin Kleppmann chỉ trích Redlock không an toàn trong 1 số tình huống (clock drift, GC pause). Nhiều dự án ưu tiên <strong>ZooKeeper, etcd</strong>, hoặc <strong>Redisson</strong> (Java lib) hơn.</p>
+        <p><strong>Redisson</strong> cho Java:</p>
+        <pre><code>RLock lock = redisson.getLock("myLock");
+lock.lock(30, TimeUnit.SECONDS);
+try { /* critical section */ }
+finally { lock.unlock(); }</code></pre>
+        <div class="tip">Phỏng vấn hay hỏi: <em>"Nếu process giữ lock bị crash giữa chừng?"</em> → TTL tự release. <em>"Nếu xử lý lâu hơn TTL?"</em> → Cần watchdog gia hạn lock (Redisson có sẵn).</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>47. Redis eviction policy?</summary>
+      <div class="answer">
+        <p>Khi Redis đầy bộ nhớ, phải evict key. Các policy (<code>maxmemory-policy</code>):</p>
+        <ul>
+          <li><strong>noeviction</strong>: trả lỗi khi ghi.</li>
+          <li><strong>allkeys-lru</strong>: xóa key ít dùng gần đây nhất (LRU). Phổ biến nhất cho cache.</li>
+          <li><strong>allkeys-lfu</strong>: xóa key ít dùng nhất (LFU — tần suất).</li>
+          <li><strong>allkeys-random</strong>: random.</li>
+          <li><strong>volatile-lru / volatile-lfu / volatile-ttl</strong>: chỉ xóa trong số key có TTL.</li>
+        </ul>
+        <p><strong>Chọn</strong>:</p>
+        <ul>
+          <li>Cache thuần → <code>allkeys-lru</code>.</li>
+          <li>Vừa cache vừa data quan trọng (không TTL) → <code>volatile-lru</code>.</li>
+          <li>Session store → <code>volatile-lru</code> + TTL.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>48. Đo hiệu quả Redis cache thế nào?</summary>
+      <div class="answer">
+        <p><strong>Metrics chính</strong> (từ <code>INFO stats</code>):</p>
+        <ul>
+          <li><strong>Hit rate</strong> = hits / (hits + misses). Target &gt; 80-90% cho cache tốt.</li>
+          <li><strong>Evicted keys</strong>: nếu cao → cache thiếu bộ nhớ, tăng size hoặc giảm TTL.</li>
+          <li><strong>Expired keys</strong>: bình thường, nhưng nếu quá nhiều → TTL quá ngắn.</li>
+          <li><strong>Memory usage</strong> (<code>INFO memory</code>): <code>used_memory</code>, <code>maxmemory</code>.</li>
+          <li><strong>Latency</strong> (<code>redis-cli --latency</code>): p50, p99.</li>
+          <li><strong>Ops/sec</strong>: commands processed.</li>
+          <li><strong>Connected clients</strong>: số connection đang mở.</li>
+          <li><strong>Network I/O</strong>: bytes in/out.</li>
+        </ul>
+        <p><strong>Tools</strong>:</p>
+        <ul>
+          <li><code>redis-cli info stats</code>, <code>redis-cli monitor</code> (debug).</li>
+          <li><strong>RedisInsight</strong> — UI chính thức.</li>
+          <li><strong>Grafana + Prometheus</strong> với <code>redis_exporter</code>.</li>
+          <li><strong>APM</strong>: Micrometer + Spring Boot Actuator (<code>/actuator/metrics/cache.gets</code>).</li>
+        </ul>
+        <pre><code>// Spring Boot cache metrics
+cache.gets{name="users",result="hit"}
+cache.gets{name="users",result="miss"}
+cache.evictions{name="users"}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>49. Redis Pub/Sub vs Stream?</summary>
+      <div class="answer">
+        <p><strong>Pub/Sub</strong>:</p>
+        <ul>
+          <li>Fire-and-forget: subscriber offline → mất message.</li>
+          <li>Không lưu history.</li>
+          <li>Dùng cho: realtime notification, chat.</li>
+        </ul>
+        <p><strong>Stream</strong> (từ Redis 5.0):</p>
+        <ul>
+          <li>Giống Kafka mini: message lưu, có ID, consumer group.</li>
+          <li>Hỗ trợ ack, replay.</li>
+          <li>Dùng cho: event queue nhẹ, không muốn thêm Kafka.</li>
+        </ul>
+        <p><strong>Chọn</strong>: cần delivery đảm bảo → Stream (hoặc Kafka). Realtime notification, mất message cũng được → Pub/Sub.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 9. SQL PRACTICE ============ -->
+  <section id="t9">
+    <h2>9. SQL Practice</h2>
+
+    <details>
+      <summary>50. Query: lấy khách hàng có tổng đơn &gt; 5000?</summary>
+      <div class="answer">
+        <p><strong>Đề bài</strong>: bảng <code>Customers(cust_id, name)</code> và <code>Orders(order_id, cust_id, amount)</code>. Lấy tất cả customer tồn tại trong Orders và tổng amount &gt; 5000.</p>
+        <pre><code>SELECT c.*
+FROM Customers c
+JOIN Orders o ON c.cust_id = o.cust_id
+GROUP BY c.cust_id, c.name
+HAVING SUM(o.amount) > 5000;</code></pre>
+        <p><strong>Cách khác với EXISTS</strong>:</p>
+        <pre><code>SELECT c.*
+FROM Customers c
+WHERE EXISTS (
+  SELECT 1 FROM Orders o
+  WHERE o.cust_id = c.cust_id
+  GROUP BY o.cust_id
+  HAVING SUM(o.amount) > 5000
+);</code></pre>
+        <p><strong>Chú ý</strong>:</p>
+        <ul>
+          <li><code>WHERE</code> filter trước <code>GROUP BY</code>; <code>HAVING</code> filter sau (trên aggregate).</li>
+          <li>Phải GROUP BY cả <code>c.name</code> nếu select ra (tùy DB — MySQL chấp nhận <code>ONLY_FULL_GROUP_BY=off</code>, PostgreSQL bắt buộc).</li>
+          <li>Nếu muốn khách <em>không</em> có đơn cũng hiện → <code>LEFT JOIN</code> + <code>HAVING SUM(COALESCE(o.amount,0)) > 5000</code> (nhưng sẽ loại khách có sum=0).</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>51. Query: top 3 khách hàng chi nhiều nhất mỗi tháng?</summary>
+      <div class="answer">
+        <pre><code>WITH monthly AS (
+  SELECT c.cust_id, c.name,
+         DATE_TRUNC('month', o.created_at) AS mth,
+         SUM(o.amount) AS total,
+         RANK() OVER (PARTITION BY DATE_TRUNC('month', o.created_at)
+                      ORDER BY SUM(o.amount) DESC) AS rk
+  FROM Customers c
+  JOIN Orders o ON c.cust_id = o.cust_id
+  GROUP BY c.cust_id, c.name, DATE_TRUNC('month', o.created_at)
+)
+SELECT * FROM monthly WHERE rk <= 3;</code></pre>
+        <p><strong>Điểm quan trọng</strong>:</p>
+        <ul>
+          <li><strong>Window function</strong> <code>RANK() OVER (PARTITION BY ...)</code> là chìa khóa cho "top N per group".</li>
+          <li>Dùng <code>WITH</code> (CTE) cho dễ đọc.</li>
+          <li><code>RANK</code> vs <code>DENSE_RANK</code> vs <code>ROW_NUMBER</code>: rank nhảy số khi tie; dense không nhảy; row_number luôn unique.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>52. Query: tìm customer không có order nào?</summary>
+      <div class="answer">
+        <pre><code>-- LEFT JOIN + IS NULL
+SELECT c.* FROM Customers c
+LEFT JOIN Orders o ON c.cust_id = o.cust_id
+WHERE o.cust_id IS NULL;
+
+-- NOT EXISTS (thường nhanh hơn)
+SELECT c.* FROM Customers c
+WHERE NOT EXISTS (SELECT 1 FROM Orders o WHERE o.cust_id = c.cust_id);
+
+-- NOT IN (cẩn thận với NULL)
+SELECT c.* FROM Customers c
+WHERE c.cust_id NOT IN (SELECT cust_id FROM Orders WHERE cust_id IS NOT NULL);</code></pre>
+        <p><strong>Lưu ý</strong>: <code>NOT IN</code> với subquery chứa NULL → trả về empty. Luôn filter NULL hoặc dùng <code>NOT EXISTS</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>53. Query: tìm duplicate rows?</summary>
+      <div class="answer">
+        <pre><code>-- Tìm email trùng
+SELECT email, COUNT(*) as cnt
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;
+
+-- Xóa duplicate, giữ id nhỏ nhất
+DELETE FROM users
+WHERE id NOT IN (
+  SELECT MIN(id) FROM users GROUP BY email
+);</code></pre>
+        <p><strong>PostgreSQL / MySQL 8+</strong> (window function):</p>
+        <pre><code>WITH ranked AS (
+  SELECT id, ROW_NUMBER() OVER (PARTITION BY email ORDER BY id) AS rn
+  FROM users
+)
+DELETE FROM users WHERE id IN (SELECT id FROM ranked WHERE rn > 1);</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>54. Query: tìm employee có lương cao thứ 2?</summary>
+      <div class="answer">
+        <pre><code>-- Subquery
+SELECT MAX(salary) FROM employees
+WHERE salary < (SELECT MAX(salary) FROM employees);
+
+-- Window function (rõ ràng hơn)
+SELECT * FROM (
+  SELECT *, DENSE_RANK() OVER (ORDER BY salary DESC) AS rk
+  FROM employees
+) t WHERE rk = 2;</code></pre>
+        <p><strong>Chú ý</strong>: nếu có nhiều người cùng lương cao thứ 2 → dùng <code>DENSE_RANK</code>. Nếu muốn 1 người bất kỳ → <code>ROW_NUMBER</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>55. Index — khi nào dùng? Khi nào không?</summary>
+      <div class="answer">
+        <p><strong>Dùng index khi</strong>:</p>
+        <ul>
+          <li>Cột thường xuyên trong <code>WHERE</code>, <code>JOIN</code>, <code>ORDER BY</code>.</li>
+          <li>Cột có <strong>high cardinality</strong> (nhiều giá trị unique: email, id).</li>
+          <li>Foreign key.</li>
+          <li>Composite index cho query có nhiều điều kiện (thứ tự quan trọng).</li>
+        </ul>
+        <p><strong>Không nên index</strong>:</p>
+        <ul>
+          <li>Cột low cardinality (giới tính, status ít giá trị).</li>
+          <li>Bảng nhỏ (vài nghìn row).</li>
+          <li>Cột ít query.</li>
+          <li>Bảng write-heavy (index làm chậm insert/update).</li>
+        </ul>
+        <p><strong>Loại index</strong>: B-tree (default), Hash, GIN (full-text, JSONB), GiST (geometry), BRIN (large sequential).</p>
+        <div class="tip">Câu hỏi mở rộng: <em>"Tại sao index làm chậm insert?"</em> → Mỗi lần insert phải update cả index → tăng I/O và lock.</div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 10. MICROSERVICES NÂNG CAO ============ -->
+  <section id="t10">
+    <h2>10. Microservices nâng cao</h2>
+
+    <details>
+      <summary>56. Microservices giao tiếp với nhau thế nào?</summary>
+      <div class="answer">
+        <p><strong>2 kiểu chính</strong>:</p>
+        <ul>
+          <li><strong>Synchronous</strong>: REST (HTTP/JSON), gRPC (HTTP/2 + Protobuf). Yêu cầu response ngay.</li>
+          <li><strong>Asynchronous</strong>: message queue (Kafka, RabbitMQ), event-driven. Không chờ response.</li>
+        </ul>
+        <p><strong>REST vs gRPC</strong>:</p>
+        <table>
+          <tr><th></th><th>REST</th><th>gRPC</th></tr>
+          <tr><td>Protocol</td><td>HTTP/1.1</td><td>HTTP/2</td></tr>
+          <tr><td>Format</td><td>JSON (text)</td><td>Protobuf (binary)</td></tr>
+          <tr><td>Performance</td><td>Chậm hơn</td><td>Nhanh hơn 5-10x</td></tr>
+          <tr><td>Contract</td><td>OpenAPI</td><td>.proto file (strongly-typed)</td></tr>
+          <tr><td>Streaming</td><td>Hạn chế</td><td>Bidirectional streaming</td></tr>
+          <tr><td>Browser support</td><td>Tốt</td><td>Hạn chế (cần grpc-web)</td></tr>
+        </table>
+        <p><strong>Chọn</strong>:</p>
+        <ul>
+          <li>Public API, browser → REST.</li>
+          <li>Internal service-to-service, hiệu năng cao → gRPC.</li>
+          <li>Decoupling, event-driven → Kafka/RabbitMQ.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>57. Tracing giữa các service — implement thế nào?</summary>
+      <div class="answer">
+        <p><strong>Distributed Tracing</strong>: theo dõi 1 request xuyên nhiều service.</p>
+        <p><strong>Khái niệm</strong>:</p>
+        <ul>
+          <li><strong>Trace ID</strong>: định danh request xuyên suốt.</li>
+          <li><strong>Span ID</strong>: định danh từng bước trong 1 service.</li>
+          <li><strong>Parent Span</strong>: span cha — tạo thành cây.</li>
+        </ul>
+        <p><strong>Chuẩn</strong>: <strong>OpenTelemetry</strong> (OTel) — thay thế OpenTracing + OpenCensus.</p>
+        <p><strong>Implement trong Spring Boot</strong>:</p>
+        <pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;io.micrometer&lt;/groupId&gt;
+  &lt;artifactId&gt;micrometer-tracing-bridge-otel&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;io.opentelemetry&lt;/groupId&gt;
+  &lt;artifactId&gt;opentelemetry-exporter-otlp&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+        <p><strong>Cách hoạt động</strong>:</p>
+        <ul>
+          <li>Service A sinh trace ID khi nhận request.</li>
+          <li>Khi gọi service B (REST/gRPC/Kafka), trace ID được truyền qua header (<code>traceparent</code>) hoặc message header.</li>
+          <li>B tiếp tục span với cùng trace ID.</li>
+          <li>Mọi span được gửi đến collector (Jaeger, Zipkin, Tempo, Datadog).</li>
+        </ul>
+        <p><strong>Tool</strong>: Jaeger, Zipkin, Grafana Tempo, AWS X-Ray, Datadog APM.</p>
+        <p><strong>MDC logging</strong>: đưa trace ID vào log để correlate log giữa service.</p>
+        <pre><code>logging.pattern.level=%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>58. External service call — quản lý thread/connection thế nào?</summary>
+      <div class="answer">
+        <p><strong>Vấn đề</strong>: mỗi request đến external service cần thread + connection. Nếu không quản lý → thread pool cạn, memory leak, cascade failure.</p>
+        <p><strong>Giải pháp</strong>:</p>
+        <ul>
+          <li><strong>Connection pool + Timeout</strong> cho HTTP client:
+            <pre><code>@Bean
+public RestTemplate restTemplate() {
+  HttpComponentsClientHttpRequestFactory f = new HttpComponentsClientHttpRequestFactory();
+  f.setConnectTimeout(3000);
+  f.setReadTimeout(5000);
+  return new RestTemplate(f);
+}</code></pre>
+          </li>
+          <li><strong>Circuit Breaker</strong> (Resilience4j): fail fast khi external chết.</li>
+          <li><strong>Bulkhead</strong>: giới hạn số thread đồng thời gọi 1 external → không chiếm hết thread pool.</li>
+          <li><strong>Retry với exponential backoff + jitter</strong>:
+            <pre><code>@Retry(name = "payment", fallbackMethod = "fallback")
+@Backoff(delay = 1000, multiplier = 2)
+public Payment pay() { ... }</code></pre>
+          </li>
+          <li><strong>Async</strong>: dùng WebClient (reactive) hoặc <code>@Async</code> — không block thread.</li>
+          <li><strong>Cache</strong> response nếu có thể.</li>
+          <li><strong>Fallback</strong>: trả giá trị mặc định, cached, hoặc queue lại.</li>
+        </ul>
+        <pre><code>@CircuitBreaker(name = "payment", fallbackMethod = "fallback")
+@Bulkhead(name = "payment", type = Type.THREADPOOL)
+@Retry(name = "payment")
+@TimeLimiter(name = "payment")
+public CompletableFuture&lt;Payment&gt; pay(Order o) { ... }</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>59. Kafka transactions là gì?</summary>
+      <div class="answer">
+        <p><strong>Mục đích</strong>: đảm bảo <em>exactly-once semantics</em> khi produce message — hoặc tất cả thành công, hoặc không message nào được ghi.</p>
+        <p><strong>Cách hoạt động</strong>:</p>
+        <ol>
+          <li>Producer có <code>transactional.id</code> cố định.</li>
+          <li><code>initTransactions()</code> → đăng ký với broker.</li>
+          <li><code>beginTransaction()</code> → bắt đầu.</li>
+          <li>Produce nhiều message (có thể nhiều partition/topic).</li>
+          <li><code>commitTransaction()</code> hoặc <code>abortTransaction()</code>.</li>
+        </ol>
+        <pre><code>producer.initTransactions();
+try {
+  producer.beginTransaction();
+  producer.send(record1);
+  producer.send(record2);
+  producer.commitTransaction();
+} catch (Exception e) {
+  producer.abortTransaction();
+}</code></pre>
+        <p><strong>Consumer side</strong>: đọc với <code>isolation.level=read_committed</code> để không đọc message từ transaction chưa commit.</p>
+        <p><strong>Use case</strong>:</p>
+        <ul>
+          <li><strong>Read-Process-Write</strong>: đọc từ topic A, xử lý, ghi vào topic B — atomic.</li>
+          <li>Đảm bảo khi crash giữa chừng, không ghi nửa vời.</li>
+        </ul>
+        <p><strong>Spring Kafka</strong>:</p>
+        <pre><code>@Transactional
+@KafkaListener(topics = "input")
+public void listen(String msg) {
+  // xử lý + gửi sang topic khác, tất cả trong 1 Kafka transaction
+}</code></pre>
+        <p><strong>Hạn chế</strong>: chỉ trong Kafka, không span tới DB. Muốn atomic với DB → dùng <strong>Outbox Pattern</strong> hoặc <strong>Saga</strong>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>60. Design message cho Kafka/RabbitMQ — best practices?</summary>
+      <div class="answer">
+        <p><strong>Nguyên tắc chung</strong>:</p>
+        <ul>
+          <li><strong>Schema evolution</strong>: thêm field optional &gt; xóa field. Dùng Avro/Protobuf + Schema Registry.</li>
+          <li><strong>Versioning</strong>: có field <code>eventVersion</code> hoặc topic <code>user.created.v2</code>.</li>
+          <li><strong>Idempotency key</strong>: <code>eventId</code> để consumer dedupe.</li>
+          <li><strong>Timestamp</strong>: <code>occurredAt</code> (khi event xảy ra) + <code>publishedAt</code> (khi publish).</li>
+          <li><strong>Correlation ID</strong>: để trace.</li>
+          <li><strong>Payload nhỏ</strong>: gửi ID + tham chiếu, không gửi blob lớn.</li>
+        </ul>
+        <p><strong>Nên làm</strong>:</p>
+        <ul>
+          <li>Message là <strong>event</strong> (sự kiện đã xảy ra), không phải command: <code>OrderCreated</code> thay vì <code>CreateOrder</code>.</li>
+          <li>Immutable.</li>
+          <li>Có metadata (headers) tách khỏi payload.</li>
+          <li>Consumer phải <strong>idempotent</strong> — vì message có thể đến 2 lần (at-least-once).</li>
+        </ul>
+        <p><strong>Tránh</strong>:</p>
+        <ul>
+          <li>Payload chứa toàn bộ entity lớn (kèm nested object, image base64).</li>
+          <li>Phụ thuộc vào thứ tự field.</li>
+          <li>Dùng Java native serialization (<code>Serializable</code>) → không cross-language, dễ vỡ khi refactor.</li>
+          <li>Breaking change: đổi type, xóa field bắt buộc.</li>
+          <li>Business logic trong message (consumer phải hiểu).</li>
+        </ul>
+        <pre><code>{
+  "eventId": "uuid",
+  "eventType": "OrderCreated",
+  "eventVersion": 1,
+  "occurredAt": "2024-01-01T10:00:00Z",
+  "correlationId": "trace-abc",
+  "payload": {
+    "orderId": 123,
+    "customerId": 456,
+    "total": 99.99
+  }
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>61. Serverless là gì? Ưu nhược điểm?</summary>
+      <div class="answer">
+        <p><strong>Serverless</strong>: không quản lý server, cloud tự scale, trả tiền theo request/thời gian chạy. Gồm FaaS (Function-as-a-Service) + BaaS (Backend-as-a-Service).</p>
+        <p><strong>Ví dụ</strong>: AWS Lambda, Google Cloud Functions, Azure Functions.</p>
+        <p><strong>Ưu điểm</strong>:</p>
+        <ul>
+          <li>Không quản lý infra, tự scale 0 → vô hạn.</li>
+          <li>Trả tiền theo dùng (pay-per-invocation).</li>
+          <li>Deploy nhanh, nhỏ gọn.</li>
+        </ul>
+        <p><strong>Nhược điểm</strong>:</p>
+        <ul>
+          <li><strong>Cold start</strong>: function chưa chạy lần nào → khởi động chậm (Java đặc biệt — có thể 1-3s).</li>
+          <li>Giới hạn timeout (Lambda 15 phút).</li>
+          <li>Khó debug, khó test local.</li>
+          <li>Vendor lock-in.</li>
+          <li>Không phù hợp cho long-running, stateful, high-throughput liên tục.</li>
+        </ul>
+        <p><strong>Spring Cloud Function</strong> cho phép viết function theo kiểu Spring chạy trên Lambda.</p>
+        <p><strong>Khi nào dùng</strong>: event-driven, traffic thất thường (cron, webhook), glue code. <strong>Không dùng</strong>: API throughput cao liên tục, WebSocket, ML training.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>62. Autowiring modes trong Spring?</summary>
+      <div class="answer">
+        <p>Spring hỗ trợ 4 mode autowiring (có thể cấu hình qua XML; với annotation thì dùng <code>@Autowired</code>):</p>
+        <ul>
+          <li><strong>no</strong> (mặc định): không autowire — phải khai báo thủ công.</li>
+          <li><strong>byName</strong>: inject theo tên bean — tương ứng <code>@Autowired @Qualifier("beanName")</code>.</li>
+          <li><strong>byType</strong>: inject theo type — mặc định của <code>@Autowired</code>.</li>
+          <li><strong>constructor</strong>: inject qua constructor — tương đương constructor injection (khuyến nghị).</li>
+        </ul>
+        <p><strong>Với <code>@Autowired</code></strong>, resolution order:</p>
+        <ol>
+          <li>Match theo type.</li>
+          <li>Nếu nhiều bean → fallback theo <code>@Primary</code>, sau đó <code>@Qualifier</code>, sau đó theo bean name (khớp với tên field/parameter).</li>
+          <li>Nếu vẫn ambiguous → <code>NoUniqueBeanDefinitionException</code>.</li>
+        </ol>
+        <p><strong>Limitations</strong>:</p>
+        <ul>
+          <li><strong>Primitive types</strong>: không autowire được <code>int</code>, <code>String</code>... vì không phải bean — phải dùng <code>@Value</code>.</li>
+          <li><strong>Ambiguity</strong>: nhiều bean cùng type → cần <code>@Qualifier</code>/<code>@Primary</code>.</li>
+          <li><strong>Khó debug</strong>: lỗi inject chỉ vỡ khi runtime, không compile-time.</li>
+          <li><strong>Không explicit dependency</strong>: field injection che giấu dependency.</li>
+        </ul>
+        <pre><code>@Service
+public class MyService {
+  @Value("${app.timeout:5000}") private int timeout;  // primitive
+  @Autowired @Qualifier("vnPay") private PaymentGateway gateway;  // byName
+}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>63. Điều gì xảy ra khi thêm Spring Security starter?</summary>
+      <div class="answer">
+        <p>Khi thêm <code>spring-boot-starter-security</code>:</p>
+        <ol>
+          <li><strong>Auto-config</strong> kích hoạt <code>SecurityAutoConfiguration</code> + <code>UserDetailsServiceAutoConfiguration</code>.</li>
+          <li><strong>Toàn bộ endpoint bị bảo vệ mặc định</strong> — phải login mới truy cập.</li>
+          <li><strong>Form login + HTTP Basic</strong> tự bật.</li>
+          <li><strong>User mặc định</strong> được tạo: username <code>user</code>, password random in ra log khi khởi động:
+            <pre><code>Using generated security password: 3e4a5c8f-...</code></pre>
+          </li>
+          <li><strong>Filter chain</strong> được setup: <code>UsernamePasswordAuthenticationFilter</code>, <code>BasicAuthenticationFilter</code>, <code>CsrfFilter</code>...</li>
+          <li><strong>CSRF</strong> bật mặc định cho form-based.</li>
+          <li><strong>Session-based auth</strong> mặc định.</li>
+          <li><strong>Session fixation protection</strong>, <strong>security headers</strong> (<code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>).</li>
+        </ol>
+        <p><strong>Cần config lại</strong>:</p>
+        <ul>
+          <li>Định nghĩa <code>SecurityFilterChain</code> bean để custom rules.</li>
+          <li>Cấu hình <code>PasswordEncoder</code> (BCrypt).</li>
+          <li>Định nghĩa <code>UserDetailsService</code> để load user từ DB.</li>
+          <li>Tắt CSRF nếu làm REST API + JWT.</li>
+          <li>Chuyển sang stateless session nếu dùng JWT.</li>
+        </ul>
+        <div class="tip">Đây là câu hỏi rất phổ biến — nhấn mạnh: <em>"Khi thêm starter, mọi thứ tự động bảo vệ, phải override lại"</em>.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>64. Logging khác nhau giữa local/QA/Prod — cấu hình thế nào?</summary>
+      <div class="answer">
+        <p><strong>Cách 1: Profile + application-{env}.yml</strong></p>
+        <pre><code># application-dev.yml
+logging:
+  level:
+    root: DEBUG
+    com.example: DEBUG
+    org.hibernate.SQL: DEBUG
+
+# application-qa.yml
+logging:
+  level:
+    root: INFO
+    com.example: INFO
+  file:
+    name: /var/log/app/app.log
+
+# application-prod.yml
+logging:
+  level:
+    root: WARN
+    com.example: INFO
+  file:
+    name: /var/log/app/app.log
+    max-size: 100MB
+    max-history: 30</code></pre>
+        <p><strong>Cách 2: logback-spring.xml với <code>&lt;springProfile&gt;</code></strong></p>
+        <pre><code>&lt;springProfile name="dev"&gt;
+  &lt;root level="DEBUG"&gt;
+    &lt;appender-ref ref="CONSOLE"/&gt;
+  &lt;/root&gt;
+&lt;/springProfile&gt;
+
+&lt;springProfile name="prod"&gt;
+  &lt;root level="INFO"&gt;
+    &lt;appender-ref ref="ROLLING"/&gt;
+  &lt;/root&gt;
+&lt;/springProfile&gt;</code></pre>
+        <p><strong>Best practice</strong>:</p>
+        <ul>
+          <li><strong>Local</strong>: console log, level DEBUG, có SQL, có trace ID.</li>
+          <li><strong>QA/Test</strong>: file log, INFO, JSON format để parse dễ.</li>
+          <li><strong>Prod</strong>: JSON log (ELK/CloudWatch parse), INFO/WARN, masking sensitive data (password, token), rolling + retention.</li>
+          <li>Dùng <strong>MDC</strong> để thêm trace ID, user ID vào mọi log line.</li>
+          <li>Không log <code>System.out.println</code> — dùng SLF4J.</li>
+          <li>Không log exception mà quên stacktrace.</li>
+        </ul>
+        <p><strong>Runtime change level</strong> (không cần restart):</p>
+        <pre><code>POST /actuator/loggers/com.example
+{ "configuredLevel": "DEBUG" }</code></pre>
+      </div>
+    </details>
+  </section>
+
+</div>
+
+<button class="top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">↑</button>
+
+<script>
+  function toggleAll(open) {
+    document.querySelectorAll('details').forEach(d => d.open = open);
+  }
+
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeToggle');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      root.classList.add('light');
+      themeBtn.textContent = '☀️';
+    } else {
+      root.classList.remove('light');
+      themeBtn.textContent = '🌙';
+    }
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  themeBtn.addEventListener('click', () => {
+    const next = root.classList.contains('light') ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+</script>
+
+</body>
+</html>
