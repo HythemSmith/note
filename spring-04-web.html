@@ -1,0 +1,2917 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring MVC Request Flow — Chi tiết chuyên sâu</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg-elev: #1e293b;
+    --bg-elev-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --heading: #a5b4fc;
+    --accent: #22d3ee;
+    --accent-2: #818cf8;
+    --code-bg: #0b1220;
+    --code-text: #7dd3fc;
+    --shadow: 0 4px 14px rgba(0,0,0,0.35);
+    --tip-bg: rgba(34,211,238,0.08);
+    --warn-bg: rgba(251,146,60,0.08);
+    --warn-border: #fb923c;
+    --good-bg: rgba(52,211,153,0.08);
+    --good-border: #34d399;
+    --bad-bg: rgba(239,68,68,0.08);
+    --bad-border: #ef4444;
+    --deep-bg: rgba(129,140,248,0.08);
+    --deep-border: #818cf8;
+    --interview-bg: rgba(168,85,247,0.08);
+    --interview-border: #a855f7;
+    --filter-color: #f97316;
+    --interceptor-color: #22d3ee;
+    --aop-color: #a78bfa;
+  }
+  html.light {
+    --bg: #f5f7fa;
+    --bg-elev: #ffffff;
+    --bg-elev-2: #f9fafb;
+    --border: #e5e7eb;
+    --text: #24292e;
+    --text-dim: #6b7280;
+    --heading: #4f46e5;
+    --accent: #06b6d4;
+    --accent-2: #4f46e5;
+    --code-bg: #eef2ff;
+    --code-text: #4338ca;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --tip-bg: rgba(6,182,212,0.08);
+    --warn-bg: rgba(251,146,60,0.1);
+    --warn-border: #ea580c;
+    --good-bg: rgba(16,185,129,0.08);
+    --good-border: #059669;
+    --bad-bg: rgba(239,68,68,0.08);
+    --bad-border: #dc2626;
+    --deep-bg: rgba(99,102,241,0.08);
+    --deep-border: #6366f1;
+    --interview-bg: rgba(168,85,247,0.08);
+    --interview-border: #9333ea;
+    --filter-color: #ea580c;
+    --interceptor-color: #0891b2;
+    --aop-color: #7c3aed;
+  }
+  * { box-sizing: border-box; }
+  html, body { transition: background 0.25s, color 0.25s; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0; background: var(--bg); color: var(--text); line-height: 1.75;
+  }
+  header {
+    background: linear-gradient(135deg, #1e1b4b, #0e7490);
+    color: #f8fafc; padding: 48px 20px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  header::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(129,140,248,0.25), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(34,211,238,0.2), transparent 45%);
+    pointer-events: none;
+  }
+  header .chapter { font-size: 12px; letter-spacing: 3px; opacity: 0.85; position: relative; z-index: 1; margin-bottom: 10px; }
+  header h1 { margin: 0 0 8px; font-size: 28px; position: relative; z-index: 1; }
+  header p { margin: 0; opacity: 0.9; font-size: 15px; position: relative; z-index: 1; }
+
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 100;
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.25); color: #f8fafc;
+    width: 42px; height: 42px; border-radius: 50%; font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .theme-toggle:hover { transform: scale(1.08); }
+
+  .container { max-width: 950px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .toc {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 26px; margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { margin-top: 0; font-size: 17px; color: var(--heading); }
+  .toc ol { padding-left: 22px; margin: 0; columns: 2; column-gap: 24px; }
+  @media (max-width: 600px) { .toc ol { columns: 1; } }
+  .toc li { margin: 6px 0; break-inside: avoid; }
+  .toc a { color: var(--accent); text-decoration: none; font-size: 13.5px; }
+  .toc a:hover { color: var(--accent-2); text-decoration: underline; }
+
+  section {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 26px 28px; margin-bottom: 22px;
+    box-shadow: var(--shadow); scroll-margin-top: 20px;
+  }
+  section h2 {
+    color: var(--heading); border-bottom: 2px solid var(--border);
+    padding-bottom: 12px; margin-top: 0; font-size: 22px;
+  }
+  section h3 { color: var(--accent); font-size: 17px; margin-top: 28px; margin-bottom: 12px; }
+  section h4 { color: var(--accent-2); font-size: 15px; margin-top: 20px; margin-bottom: 8px; }
+
+  section p { color: var(--text); margin: 10px 0; }
+  section code {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 2px 6px; border-radius: 4px; font-size: 90%;
+    font-family: "Consolas", "Monaco", monospace;
+    border: 1px solid var(--border);
+  }
+  section pre {
+    background: #0b1220; color: #e2e8f0;
+    padding: 16px 18px; border-radius: 8px; overflow-x: auto;
+    font-size: 13px; line-height: 1.6;
+    border: 1px solid #334155; margin: 12px 0;
+  }
+  html.light section pre { background: #1e293b; border-color: #1e293b; }
+  section pre code { background: transparent; color: inherit; padding: 0; border: none; }
+  section ul, section ol { padding-left: 22px; }
+  section li { margin: 6px 0; color: var(--text); }
+  section strong { color: #f1f5f9; }
+  html.light section strong { color: #0f172a; }
+  section em { color: var(--accent); font-style: normal; }
+
+  .tip, .warn, .good, .bad, .deep, .interview {
+    padding: 14px 18px; border-radius: 8px; margin: 16px 0;
+    font-size: 14px; color: var(--text); line-height: 1.7;
+  }
+  .tip { background: var(--tip-bg); border-left: 3px solid var(--accent); }
+  .tip::before { content: "💡 Tip: "; font-weight: 700; }
+  .warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border); }
+  .warn::before { content: "⚠️ Cảnh báo: "; font-weight: 700; }
+  .good { background: var(--good-bg); border-left: 3px solid var(--good-border); }
+  .good::before { content: "✅ Nên: "; font-weight: 700; }
+  .bad { background: var(--bad-bg); border-left: 3px solid var(--bad-border); }
+  .bad::before { content: "❌ Sai: "; font-weight: 700; }
+  .deep { background: var(--deep-bg); border-left: 3px solid var(--deep-border); }
+  .deep::before { content: "🔬 Đào sâu: "; font-weight: 700; }
+  .interview { background: var(--interview-bg); border-left: 3px solid var(--interview-border); }
+  .interview::before { content: "🎤 Phỏng vấn: "; font-weight: 700; }
+
+  .diagram {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px; margin: 16px 0;
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: 12.5px; line-height: 1.75;
+    color: var(--text); overflow-x: auto; white-space: pre;
+  }
+  html.light .diagram { background: #f8fafc; color: #475569; }
+
+  .side-by-side {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0;
+  }
+  @media (max-width: 700px) { .side-by-side { grid-template-columns: 1fr; } }
+  .side-by-side > div { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .side-by-side h5 {
+    margin: 0; padding: 8px 12px; font-size: 12px;
+    background: var(--bg-elev-2); color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .side-by-side h5.bad { color: var(--bad-border); }
+  .side-by-side h5.good { color: var(--good-border); }
+  .side-by-side h5.filter-h { color: var(--filter-color); }
+  .side-by-side h5.interceptor-h { color: var(--interceptor-color); }
+  .side-by-side h5.aop-h { color: var(--aop-color); }
+  .side-by-side pre { margin: 0; border-radius: 0; border: none; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px;
+  }
+  th, td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th { color: var(--heading); background: var(--bg-elev-2); font-weight: 600; }
+  td { color: var(--text); }
+
+  .key {
+    background: linear-gradient(90deg, rgba(34,211,238,0.15), transparent);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px; border-radius: 6px;
+    font-size: 15px; color: var(--text); margin: 18px 0; font-weight: 500;
+  }
+
+  .analogy {
+    background: linear-gradient(135deg, rgba(129,140,248,0.08), rgba(34,211,238,0.08));
+    border: 1px dashed var(--accent-2);
+    border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+  }
+  .analogy::before { content: "🎨 Ví von: "; font-weight: 700; color: var(--accent-2); }
+
+  .source-code {
+    background: #1a1f2e; border: 1px solid #2d3748;
+    border-radius: 8px; margin: 14px 0; overflow: hidden;
+  }
+  .source-code .header {
+    background: #252d3d; padding: 8px 14px;
+    font-size: 11.5px; color: #68d391;
+    font-family: "Consolas", monospace;
+    border-bottom: 1px solid #2d3748;
+  }
+  .source-code pre { margin: 0; border-radius: 0; border: none; background: #1a1f2e; }
+  html.light .source-code { background: #f1f5f9; border-color: #cbd5e1; }
+  html.light .source-code .header { background: #e2e8f0; color: #059669; border-color: #cbd5e1; }
+  html.light .source-code pre { background: #f1f5f9; }
+
+  .chapter-nav {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin-top: 30px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .chapter-nav a {
+    flex: 1; padding: 12px 16px; text-align: center;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); text-decoration: none;
+    font-size: 13px; transition: all 0.15s;
+  }
+  .chapter-nav a:hover { border-color: var(--accent); }
+  .chapter-nav a.disabled { opacity: 0.4; pointer-events: none; }
+
+  /* Stack layer visualization */
+  .stack-viz {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px 20px; margin: 20px 0;
+    font-family: "Consolas", monospace; font-size: 12.5px;
+    color: var(--text); overflow-x: auto; white-space: pre; line-height: 1.5;
+  }
+  html.light .stack-viz { background: #f8fafc; color: #334155; }
+
+  /* Tag */
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .tag.filter { background: rgba(249,115,22,0.15); color: var(--filter-color); }
+  .tag.interceptor { background: rgba(34,211,238,0.15); color: var(--interceptor-color); }
+  .tag.aop { background: rgba(167,139,250,0.15); color: var(--aop-color); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
+
+  @media(max-width: 600px) {
+    header h1 { font-size: 22px; }
+    section { padding: 18px 16px; }
+    .diagram { font-size: 11px; padding: 14px; }
+  }
+    /* ========== SYNTAX HIGHLIGHTING (highlight.js theme custom) ========== */
+  section pre code.hljs,
+  .source-code pre code.hljs {
+    display: block; padding: 0; background: transparent;
+  }
+  .hljs { color: #e2e8f0; background: transparent; }
+
+  /* Comment, quote — xám in nghiêng */
+  .hljs-comment,
+  .hljs-quote               { color: #64748b; font-style: italic; }
+
+  /* Từ khóa: public, class, if, return, new, void, static, final... */
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-section,
+  .hljs-doctag              { color: #c678dd; font-weight: 600; }
+
+  /* String, regex */
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-addition,
+  .hljs-template-variable   { color: #98c379; }
+
+  /* Tên hàm, method: preHandle, getHandler, resolveViewName... */
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-function .hljs-title{ color: #61afef; }
+
+  /* Tên class, type: DispatcherServlet, HandlerMapping, HttpServlet... */
+  .hljs-title.class_,
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-class .hljs-title   { color: #e5c07b; }
+
+  /* Số, hằng số */
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet              { color: #d19a66; }
+
+  /* Thuộc tính, biến, tham số */
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-variable,
+  .hljs-template-tag,
+  .hljs-params              { color: #d19a66; }
+
+  /* Annotation @Controller, @GetMapping, @Transactional — cyan nổi bật */
+  .hljs-meta,
+  .hljs-meta .hljs-keyword,
+  .hljs-meta .hljs-string   { color: #56b6c2; font-weight: 500; }
+
+  /* Toán tử, dấu câu */
+  .hljs-operator,
+  .hljs-punctuation         { color: #56b6c2; }
+
+  /* Tag HTML/XML */
+  .hljs-tag                 { color: #e06c75; }
+  .hljs-tag .hljs-name      { color: #e06c75; }
+  .hljs-tag .hljs-attr      { color: #d19a66; }
+
+  /* Property name trong YAML */
+  .hljs-property            { color: #61afef; }
+
+  /* Xóa, thêm */
+  .hljs-deletion            { color: #e06c75; }
+  .hljs-emphasis            { font-style: italic; }
+  .hljs-strong              { font-weight: 700; }
+
+  /* Đảm bảo code block giữ nền tối dù Light mode */
+  section pre code.hljs,
+  .source-code pre code.hljs { background: transparent !important; }
+
+  /* Inline code giữ style cũ */
+  section code:not(.hljs) {
+    background: var(--code-bg);
+    color: var(--code-text);
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="Chuyển Dark/Light">🌙</button>
+
+<header>
+  <div class="chapter">CHƯƠNG 4 / 10 · SPRING MVC REQUEST FLOW</div>
+  <h1>Spring MVC Request Flow — Chi tiết chuyên sâu</h1>
+  <p>Hành trình của 1 HTTP request — từ Servlet đến Controller, và mọi thứ ở giữa</p>
+</header>
+
+<div class="container">
+
+  <div class="toc">
+    <h2>📑 Nội dung chương</h2>
+    <ol>
+      <li><a href="#s1">Servlet &amp; Servlet Container</a></li>
+      <li><a href="#s2">DispatcherServlet — Front Controller</a></li>
+      <li><a href="#s3">HandlerMapping</a></li>
+      <li><a href="#s4">HandlerAdapter</a></li>
+      <li><a href="#s5">HandlerInterceptor</a></li>
+      <li><a href="#s6">Argument Resolver</a></li>
+      <li><a href="#s7">HttpMessageConverter</a></li>
+      <li><a href="#s8">Return Value Handler</a></li>
+      <li><a href="#s9">ViewResolver</a></li>
+      <li><a href="#s10">Exception Handling trong MVC</a></li>
+      <li><a href="#s11">⭐ Filter vs Interceptor vs AOP — Chi tiết</a></li>
+      <li><a href="#s12">Async Request</a></li>
+      <li><a href="#s13">Full Request Lifecycle Diagram</a></li>
+      <li><a href="#s14">Cấu hình MVC trong Spring Boot</a></li>
+      <li><a href="#s15">Best Practices + Checklist</a></li>
+    </ol>
+  </div>
+
+  <!-- ============ SECTION 1 ============ -->
+  <section id="s1">
+    <h2>1. Servlet &amp; Servlet Container</h2>
+
+    <h3>Servlet là gì?</h3>
+    <p><strong>Servlet</strong> là 1 class Java implement interface <code>jakarta.servlet.Servlet</code> — nhận HTTP request và trả HTTP response. Ra đời 1997 như chuẩn Java EE để xử lý web.</p>
+
+    <div class="source-code">
+      <div class="header">Servlet interface — rút gọn</div>
+<pre><code>public interface Servlet {
+    void init(ServletConfig config) throws ServletException;
+    void service(ServletRequest req, ServletResponse res) throws ServletException, IOException;
+    void destroy();
+    ServletConfig getServletConfig();
+    String getServletInfo();
+}</code></pre>
+    </div>
+
+    <h3>Servlet Container là gì?</h3>
+    <p><strong>Servlet Container</strong> (Tomcat, Jetty, Undertow) — chương trình Java quản lý vòng đời servlet, parse HTTP, quản lý thread pool.</p>
+
+    <p><strong>Nhiệm vụ:</strong></p>
+    <ul>
+      <li>Parse HTTP request thành <code>HttpServletRequest</code> object.</li>
+      <li>Map request URL → servlet tương ứng.</li>
+      <li>Quản lý lifecycle servlet (init → service → destroy).</li>
+      <li>Quản lý thread pool — 1 request = 1 thread.</li>
+      <li>Convert response → HTTP bytes gửi client.</li>
+    </ul>
+
+    <h3>Servlet lifecycle</h3>
+
+    <div class="diagram">
+1. Container khởi động
+   │
+2. new ServletClass()          ← tạo instance
+   │
+3. servlet.init(config)         ← gọi 1 lần, nhận config
+   │
+4. servlet.service(req, res)    ← gọi MỖI request
+   │   ├─ HttpServlet.service() phân loại theo method
+   │   ├─ Gọi doGet() nếu GET
+   │   ├─ Gọi doPost() nếu POST
+   │   └─ ...
+   │
+5. Container shutdown
+   │
+6. servlet.destroy()            ← gọi 1 lần, cleanup
+    </div>
+
+    <div class="deep">
+      <strong>Đào sâu — tại sao Servlet là singleton?</strong> Servlet instance được tạo 1 lần, dùng chung cho mọi request. Vì vậy servlet phải <strong>thread-safe</strong> — không được có mutable field. Đây cũng là lý do Spring bean mặc định phải stateless.
+    </div>
+
+    <h3>Ví dụ — Servlet thuần (không Spring)</h3>
+
+    <pre><code>@WebServlet("/hello")
+public class HelloServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res)
+            throws IOException {
+        String name = req.getParameter("name");
+        res.setContentType("application/json");
+        res.getWriter().write("{\"msg\":\"Hello " + name + "\"}");
+    }
+}</code></pre>
+
+    <p><strong>Vấn đề khi không có Spring:</strong></p>
+    <ul>
+      <li>Mỗi URL = 1 servlet → 100 endpoint = 100 class.</li>
+      <li>Không có DI — mọi dependency phải tự <code>new</code>.</li>
+      <li>Không có AOP, transaction, validation.</li>
+      <li>Không có view resolver, message converter.</li>
+      <li>Code lặp lại khủng khiếp.</li>
+    </ul>
+
+    <div class="key">
+      Spring MVC ra đời để giải quyết: thay vì 100 servlet, chỉ cần <strong>1 DispatcherServlet</strong> — Front Controller điều phối mọi request.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Servlet lifecycle có mấy bước?"<br>
+      <strong>Trả lời</strong>: 3 bước — <code>init()</code> gọi 1 lần khi tạo, <code>service()</code> gọi mỗi request (phân loại sang <code>doGet</code>/<code>doPost</code>...), <code>destroy()</code> gọi 1 lần khi shutdown. Servlet là singleton.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 2 ============ -->
+  <section id="s2">
+    <h2>2. DispatcherServlet — Front Controller</h2>
+
+    <h3>Front Controller Pattern là gì?</h3>
+    <p><strong>Front Controller</strong> = 1 controller duy nhất nhận mọi request, rồi điều phối đến handler phù hợp.</p>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">Không có Front Controller</h5>
+        <pre><code>Client → /users   → UserServlet
+Client → /orders  → OrderServlet
+Client → /products→ ProductServlet
+Client → /login   → LoginServlet
+// Mỗi URL = 1 servlet
+// Cross-cutting concern lặp lại</code></pre>
+      </div>
+      <div>
+        <h5 class="good">Có Front Controller</h5>
+        <pre><code>Client → mọi URL → DispatcherServlet
+                       │
+                       ├─→ UserController
+                       ├─→ OrderController
+                       ├─→ ProductController
+                       └─→ LoginController
+// 1 điểm vào, xử lý chung</code></pre>
+      </div>
+    </div>
+
+    <h3>DispatcherServlet — class con của HttpServlet</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source — DispatcherServlet (khai báo)</div>
+<pre><code>public class DispatcherServlet extends FrameworkServlet {
+    // FrameworkServlet extends HttpServletBean implements ApplicationContextAware
+    // → DispatcherServlet là HttpServlet
+}
+
+// FrameworkServlet
+protected void service(HttpServletRequest req, HttpServletResponse res) {
+    // Override để chuẩn bị context
+    super.service(req, res);
+}
+
+// HttpServlet
+protected void service(HttpServletRequest req, HttpServletResponse res) {
+    String method = req.getMethod();
+    if ("GET".equals(method)) doGet(req, res);
+    else if ("POST".equals(method)) doPost(req, res);
+    // ...
+}
+
+// DispatcherServlet override
+protected void doGet(HttpServletRequest req, HttpServletResponse res) {
+    processRequest(req, res);
+}
+
+// → cuối cùng gọi đến
+protected void doDispatch(HttpServletRequest req, HttpServletResponse res) { ... }</code></pre>
+    </div>
+
+    <h3>doDispatch() — Trái tim của DispatcherServlet</h3>
+
+    <p>Đây là method điều phối toàn bộ — mình sẽ trích source rút gọn:</p>
+
+    <div class="source-code">
+      <div class="header">Spring source — DispatcherServlet.doDispatch() (rút gọn)</div>
+<pre><code>protected void doDispatch(HttpServletRequest request,
+                          HttpServletResponse response) throws Exception {
+    HttpServletRequest processedRequest = request;
+    HandlerExecutionChain mappedHandler = null;
+    ModelAndView mv = null;
+
+    try {
+        // 1. Check multipart (file upload)
+        processedRequest = checkMultipart(request);
+
+        // 2. TÌM HANDLER
+        mappedHandler = getHandler(processedRequest);
+        if (mappedHandler == null) {
+            noHandlerFound(processedRequest, response);
+            return;   // 404
+        }
+
+        // 3. TÌM ADAPTER cho handler
+        HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+
+        // 4. GỌI preHandle của interceptor
+        if (!mappedHandler.applyPreHandle(processedRequest, response)) {
+            return;   // interceptor chặn
+        }
+
+        // 5. GỌI CONTROLLER qua adapter
+        mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+
+        // 6. GỌI postHandle
+        mappedHandler.applyPostHandle(processedRequest, response, mv);
+
+    } catch (Exception ex) {
+        // 7. XỬ LÝ EXCEPTION
+        dispatchException = ex;
+    }
+
+    // 8. RENDER view / serialize response
+    processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
+
+    // 9. GỌI afterCompletion
+    if (mappedHandler != null) {
+        mappedHandler.triggerAfterCompletion(request, response, null);
+    }
+}</code></pre>
+    </div>
+
+    <div class="deep">
+      <strong>Đào sâu</strong>: Toàn bộ request flow của Spring MVC nằm trong <strong>~40 dòng</strong> của <code>doDispatch()</code>. Đây là hàm bạn nên đọc 1 lần trong đời — hiểu nó = hiểu cả Spring MVC.
+    </div>
+
+    <h3>Cấu hình DispatcherServlet trong Spring Boot</h3>
+
+    <p>Spring Boot auto-config qua <code>DispatcherServletAutoConfiguration</code>. Mặc định:</p>
+    <ul>
+      <li>URL mapping: <code>/</code> (mọi request).</li>
+      <li>Bean name: <code>dispatcherServlet</code>.</li>
+      <li>Load on startup: true.</li>
+    </ul>
+
+    <pre><code># application.yml — override
+spring:
+  mvc:
+    servlet:
+      path: /api            # prefix cho dispatcher
+      load-on-startup: 1</code></pre>
+
+    <h3>Các strategy mà DispatcherServlet khởi tạo</h3>
+
+    <p>Khi khởi động, <code>DispatcherServlet.initStrategies()</code> tìm và đăng ký 9 strategy:</p>
+
+    <table>
+      <tr><th>Strategy</th><th>Vai trò</th></tr>
+      <tr><td><code>HandlerMapping</code></td><td>Tìm handler cho request</td></tr>
+      <tr><td><code>HandlerAdapter</code></td><td>Gọi handler</td></tr>
+      <tr><td><code>HandlerExceptionResolver</code></td><td>Xử lý exception</td></tr>
+      <tr><td><code>ViewResolver</code></td><td>Render view</td></tr>
+      <tr><td><code>LocaleResolver</code></td><td>i18n</td></tr>
+      <tr><td><code>ThemeResolver</code></td><td>Theme (legacy)</td></tr>
+      <tr><td><code>MultipartResolver</code></td><td>File upload</td></tr>
+      <tr><td><code>FlashMapManager</code></td><td>Flash attributes</td></tr>
+      <tr><td><code>RequestToViewNameTranslator</code></td><td>Derive view name</td></tr>
+    </table>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "DispatcherServlet là gì? Tại sao cần nó?"<br>
+      <strong>Trả lời</strong>: Là Front Controller — HttpServlet duy nhất nhận mọi request. Nó điều phối: tìm handler qua HandlerMapping, gọi handler qua HandlerAdapter, chạy interceptor, xử lý exception, render view. Nhờ nó mà không cần 100 servlet riêng lẻ.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 3 ============ -->
+  <section id="s3">
+    <h2>3. HandlerMapping — Tìm controller</h2>
+
+    <h3>Interface HandlerMapping</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface HandlerMapping {
+    @Nullable
+    HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception;
+}</code></pre>
+    </div>
+
+    <p><strong>Input</strong>: request. <strong>Output</strong>: <code>HandlerExecutionChain</code> — gồm handler + interceptors.</p>
+
+    <h3>Các implementation của HandlerMapping</h3>
+
+    <table>
+      <tr><th>Class</th><th>Dùng cho</th></tr>
+      <tr><td><code>RequestMappingHandlerMapping</code></td><td>@Controller + @RequestMapping — phổ biến nhất</td></tr>
+      <tr><td><code>SimpleUrlHandlerMapping</code></td><td>Map URL → bean name</td></tr>
+      <tr><td><code>BeanNameUrlHandlerMapping</code></td><td>URL = bean name (legacy)</td></tr>
+      <tr><td><code>RouterFunctionMapping</code></td><td>Functional endpoint (Spring 5+)</td></tr>
+    </table>
+
+    <h3>RequestMappingHandlerMapping.buildBảng routing lúc startup</h3>
+
+    <div class="diagram">
+1. ApplicationContext refresh
+   │
+2. RequestMappingHandlerMapping.afterPropertiesSet()
+   │
+3. initHandlerMethods()
+   │
+   ├─ Scan tất cả bean trong container
+   │
+   ├─ Với mỗi bean, kiểm tra isHandler(beanType)
+   │   │  └─ isHandler = có @Controller hoặc @RequestMapping?
+   │   │
+   │   ├─ Nếu có → getMappingForMethod(method, beanType)
+   │   │   │  └─ Đọc @GetMapping, @PostMapping, @RequestMapping
+   │   │   │
+   │   │   └─ Tạo RequestMappingInfo
+   │   │       ├─ URL pattern
+   │   │       ├─ HTTP method
+   │   │       ├─ consumes
+   │   │       ├─ produces
+   │   │       └─ headers, params
+   │   │
+   │   └─ Đăng ký vào registry: URL → HandlerMethod
+   │
+   └─ Build xong bảng routing
+    </div>
+
+    <h3>Ví dụ bảng routing</h3>
+
+    <pre><code>@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping
+    public List&lt;UserDto&gt; list() { ... }
+
+    @GetMapping("/{id}")
+    public UserDto get(@PathVariable Long id) { ... }
+
+    @PostMapping(consumes = "application/json")
+    public UserDto create(@RequestBody CreateUserRequest req) { ... }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) { ... }
+}</code></pre>
+
+    <p><strong>Bảng routing sau khi build:</strong></p>
+
+    <table>
+      <tr><th>URL Pattern</th><th>Method</th><th>Consumes</th><th>Handler</th></tr>
+      <tr><td>/api/users</td><td>GET</td><td>-</td><td>UserController.list()</td></tr>
+      <tr><td>/api/users/{id}</td><td>GET</td><td>-</td><td>UserController.get()</td></tr>
+      <tr><td>/api/users</td><td>POST</td><td>application/json</td><td>UserController.create()</td></tr>
+      <tr><td>/api/users/{id}</td><td>DELETE</td><td>-</td><td>UserController.delete()</td></tr>
+    </table>
+
+    <h3>Match rules khi có request</h3>
+
+    <p>Khi request <code>GET /api/users/123</code> đến, HandlerMapping phải match:</p>
+
+    <ol>
+      <li><strong>URL pattern</strong>: <code>/api/users/{id}</code> match <code>/api/users/123</code> → id = 123.</li>
+      <li><strong>HTTP method</strong>: GET phải khớp @GetMapping.</li>
+      <li><strong>Consumes</strong>: Content-Type của request phải match (nếu có khai báo).</li>
+      <li><strong>Produces</strong>: Accept header của client phải match.</li>
+      <li><strong>Headers</strong>: nếu có khai báo <code>headers = "X-Api-Version=1"</code>.</li>
+      <li><strong>Params</strong>: nếu có khai báo <code>params = "action=create"</code>.</li>
+    </ol>
+
+    <h3>Priority khi nhiều handler match</h3>
+
+    <p>Nếu 2 mapping cùng match, Spring dùng <strong>Comparator</strong> xếp hạng:</p>
+
+    <ul>
+      <li>Path cụ thể hơn thắng: <code>/users/admin</code> &gt; <code>/users/{id}</code>.</li>
+      <li>Có consumes/produces cụ thể thắng.</li>
+      <li>Nhiều điều kiện hơn thắng.</li>
+    </ul>
+
+    <div class="deep">
+      <strong>Đào sâu — PathPattern (Spring 5.3+)</strong>: Spring cũ dùng <code>AntPathMatcher</code> (String-based, chậm). Spring mới dùng <code>PathPatternParser</code> — parse pattern thành object 1 lần, match nhanh hơn, an toàn hơn với path traversal. Bật qua <code>spring.mvc.pathmatch.matching-strategy=path_pattern_parser</code>.
+    </div>
+
+    <h3>Khi không tìm thấy handler</h3>
+
+    <p><code>getHandler()</code> trả về <code>null</code> → DispatcherServlet gọi <code>noHandlerFound()</code>:</p>
+
+    <ul>
+      <li>Nếu <code>throwExceptionIfNoHandlerFound=true</code> → ném <code>NoHandlerFoundException</code> → 404 qua exception resolver.</li>
+      <li>Ngược lại → gửi 404 trực tiếp.</li>
+    </ul>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "HandlerMapping hoạt động thế nào?"<br>
+      <strong>Trả lời</strong>: Lúc startup, <code>RequestMappingHandlerMapping</code> scan mọi bean, tìm class có <code>@Controller</code>, đọc annotation method, build bảng routing URL → HandlerMethod. Khi có request, tra bảng, match URL + method + headers → trả về <code>HandlerExecutionChain</code> (handler + interceptors).
+    </div>
+  </section>
+
+  <!-- ============ SECTION 4 ============ -->
+  <section id="s4">
+    <h2>4. HandlerAdapter — Gọi controller</h2>
+
+    <h3>Tại sao cần HandlerAdapter?</h3>
+
+    <p>Câu hỏi tự nhiên: DispatcherServlet có handler rồi — sao không gọi trực tiếp mà cần Adapter?</p>
+
+    <p><strong>Vì có nhiều loại handler khác nhau</strong>:</p>
+
+    <ul>
+      <li><code>@RequestMapping</code> method — cần resolve tham số, xử lý return value.</li>
+      <li><code>HttpRequestHandler</code> — interface cũ, gọi thẳng.</li>
+      <li><code>@Controller</code> với <code>@ResponseBody</code>.</li>
+      <li>Servlet, Filter — cần wrap.</li>
+      <li>Router Function (Spring 5+).</li>
+    </ul>
+
+    <p>Mỗi loại handler có <strong>cách gọi khác nhau</strong>. DispatcherServlet không muốn biết hết → dùng Adapter pattern.</p>
+
+    <div class="analogy">
+      Ổ cắm điện VN là 2 chân dẹt. Ổ châu Âu là 2 chân tròn. Bạn có nhiều thiết bị khác nhau → dùng <strong>adapter</strong> để cắm. DispatcherServlet là ổ cắm — nó cần adapter cho từng loại handler.
+    </div>
+
+    <h3>Các implementation của HandlerAdapter</h3>
+
+    <table>
+      <tr><th>Class</th><th>Cho handler</th></tr>
+      <tr><td><code>RequestMappingHandlerAdapter</code></td><td>@RequestMapping method — chính</td></tr>
+      <tr><td><code>HttpRequestHandlerAdapter</code></td><td>HttpRequestHandler bean</td></tr>
+      <tr><td><code>SimpleControllerHandlerAdapter</code></td><td>Controller interface (legacy)</td></tr>
+      <tr><td><code>SimpleServletHandlerAdapter</code></td><td>Servlet thuần</td></tr>
+    </table>
+
+    <h3>Cách DispatcherServlet chọn adapter</h3>
+
+    <div class="source-code">
+      <div class="header">DispatcherServlet</div>
+<pre><code>protected HandlerAdapter getHandlerAdapter(Object handler) {
+    for (HandlerAdapter adapter : this.handlerAdapters) {
+        if (adapter.supports(handler)) {   // ← hỏi từng adapter
+            return adapter;
+        }
+    }
+    throw new ServletException("No adapter for handler: " + handler);
+}</code></pre>
+    </div>
+
+    <h3>RequestMappingHandlerAdapter hoạt động thế nào?</h3>
+
+    <p>Đây là adapter chính — xử lý <code>@RequestMapping</code> method:</p>
+
+    <div class="diagram">
+RequestMappingHandlerAdapter.handle()
+  │
+  1. Cast handler → HandlerMethod
+  │
+  2. Tạo ServletInvocableHandlerMethod
+  │   (wrap method + bean)
+  │
+  3. Chuẩn bị ArgumentResolvers
+  │   (danh sách resolver để bind tham số)
+  │
+  4. Chuẩn bị ReturnValueHandlers
+  │   (danh sách handler để xử lý return)
+  │
+  5. Bind + invoke:
+  │   ├─ resolveArguments()     → bind @RequestParam, @PathVariable...
+  │   ├─ method.invoke()         → gọi controller method
+  │   └─ handleReturnValue()    → serialize response
+  │
+  6. Return ModelAndView (null nếu @ResponseBody)
+    </div>
+
+    <h3>HandlerMethod — object bao quanh method</h3>
+
+    <pre><code>public class HandlerMethod {
+    private final Object bean;          // controller instance
+    private final Method method;        // reflection Method
+    private final MethodParameter[] parameters;
+    private final Class&lt;?&gt; beanType;
+    // ...
+}</code></pre>
+
+    <p>HandlerMethod cung cấp:</p>
+    <ul>
+      <li>Truy cập annotation trên method: <code>getMethodAnnotation()</code>.</li>
+      <li>Truy cập parameter metadata: <code>getMethodParameters()</code>.</li>
+      <li>Invoke với argument đã resolve sẵn.</li>
+    </ul>
+
+    <div class="deep">
+      <strong>Đào sâu — Adapter pattern</strong>: Đây là ví dụ kinh điển của Adapter. Bạn có interface cũ (<code>HandlerAdapter.supports()</code>) và nhiều loại handler khác nhau (<code>@RequestMapping</code>, <code>HttpRequestHandler</code>...). Adapter giúp chúng work cùng nhau mà không sửa code gốc.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Tại sao cần HandlerAdapter, không gọi controller trực tiếp?"<br>
+      <strong>Trả lời</strong>: Vì có nhiều loại handler khác nhau (annotation-based, HttpRequestHandler, Router Function). Mỗi loại cần cách gọi khác nhau. HandlerAdapter là Adapter pattern — DispatcherServlet không cần biết chi tiết, chỉ cần tìm adapter phù hợp. Nhờ đó có thể thêm loại handler mới mà không sửa DispatcherServlet.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 5 ============ -->
+  <section id="s5">
+    <h2>5. HandlerInterceptor — Chặn request</h2>
+
+    <h3>Interface HandlerInterceptor</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface HandlerInterceptor {
+
+    // Chạy TRƯỚC handler
+    // return true  → đi tiếp
+    // return false → dừng, không vào handler
+    default boolean preHandle(HttpServletRequest request,
+                              HttpServletResponse response,
+                              Object handler) throws Exception {
+        return true;
+    }
+
+    // Chạy SAU handler, TRƯỚC render view
+    // Chỉ chạy nếu preHandle return true và handler không exception
+    default void postHandle(HttpServletRequest request,
+                            HttpServletResponse response,
+                            Object handler,
+                            @Nullable ModelAndView modelAndView) throws Exception { }
+
+    // Chạy SAU khi request hoàn tất (kể cả exception)
+    // Chỉ chạy nếu preHandle của interceptor này return true
+    default void afterCompletion(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 Object handler,
+                                 @Nullable Exception ex) throws Exception { }
+}</code></pre>
+    </div>
+
+    <h3>Thứ tự chạy khi có nhiều interceptor</h3>
+
+    <pre><code>registry.addInterceptor(intA);   // order = 0
+registry.addInterceptor(intB);   // order = 1
+registry.addInterceptor(intC);   // order = 2</code></pre>
+
+    <div class="diagram">
+Request →
+  │
+  ├─ intA.preHandle()  → true
+  ├─ intB.preHandle()  → true
+  ├─ intC.preHandle()  → true
+  │
+  ▼
+Controller xử lý
+  │
+  ▼
+  ├─ intC.postHandle()
+  ├─ intB.postHandle()
+  ├─ intA.postHandle()
+  │
+  ▼
+Render view
+  │
+  ▼
+  ├─ intC.afterCompletion()
+  ├─ intB.afterCompletion()
+  ├─ intA.afterCompletion()
+  │
+  ▼
+Response → Client</code></pre>
+
+    <p><strong>Quy tắc</strong>: <code>preHandle</code> chạy <strong>xuôi</strong> thứ tự đăng ký. <code>postHandle</code> và <code>afterCompletion</code> chạy <strong>ngược</strong>.</p>
+
+    <h3>Ví dụ thực tế — Request ID Interceptor</h3>
+
+    <pre><code>@Component
+@Slf4j
+public class RequestIdInterceptor implements HandlerInterceptor {
+
+    private static final String HEADER = "X-Request-Id";
+    private static final String MDC_KEY = "requestId";
+
+    @Override
+    public boolean preHandle(HttpServletRequest req,
+                             HttpServletResponse res,
+                             Object handler) {
+        String requestId = req.getHeader(HEADER);
+        if (requestId == null || requestId.isBlank()) {
+            requestId = UUID.randomUUID().toString();
+        }
+        MDC.put(MDC_KEY, requestId);
+        res.setHeader(HEADER, requestId);
+        log.info(">>> {} {}", req.getMethod(), req.getRequestURI());
+        return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest req,
+                                HttpServletResponse res,
+                                Object handler,
+                                Exception ex) {
+        log.info("<<< {} {} — done", req.getMethod(), req.getRequestURI());
+        MDC.clear();   // ← QUAN TRỌNG: cleanup để tránh leak
+    }
+}</code></pre>
+
+    <h3>Đăng ký Interceptor</h3>
+
+    <pre><code>@Configuration
+@RequiredArgsConstructor
+public class WebConfig implements WebMvcConfigurer {
+
+    private final RequestIdInterceptor requestIdInterceptor;
+    private final AuthInterceptor authInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // Áp dụng cho mọi URL
+        registry.addInterceptor(requestIdInterceptor)
+                .addPathPatterns("/**");
+
+        // Chỉ áp dụng cho /api/**
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(
+                    "/api/auth/login",
+                    "/api/auth/register",
+                    "/api/public/**"
+                )
+                .order(1);
+    }
+}</code></pre>
+
+    <h3>Auth Interceptor — Ví dụ</h3>
+
+    <pre><code>@Component
+@RequiredArgsConstructor
+public class AuthInterceptor implements HandlerInterceptor {
+
+    private final JwtService jwtService;
+
+    @Override
+    public boolean preHandle(HttpServletRequest req,
+                             HttpServletResponse res,
+                             Object handler) throws IOException {
+
+        // Bỏ qua CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            return true;
+        }
+
+        // Không phải HandlerMethod → skip
+        if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
+
+        String header = req.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            res.setStatus(401);
+            res.setContentType("application/json");
+            res.getWriter().write("{\"error\":\"Missing token\"}");
+            return false;   // ← DỪNG
+        }
+
+        String token = header.substring(7);
+        if (!jwtService.isValid(token)) {
+            res.setStatus(401);
+            res.getWriter().write("{\"error\":\"Invalid token\"}");
+            return false;
+        }
+
+        // Lưu thông tin để controller dùng
+        req.setAttribute("userId", jwtService.extractUserId(token));
+        return true;
+    }
+}</code></pre>
+
+    <h3>Lưu ý quan trọng</h3>
+
+    <div class="warn">
+      <strong>postHandle KHÔNG chạy nếu controller ném exception</strong>. Khi exception xảy ra, flow nhảy thẳng đến <code>afterCompletion</code> qua exception resolver. Đây là lý do cleanup thường đặt trong <code>afterCompletion</code>, không phải <code>postHandle</code>.
+    </div>
+
+    <div class="warn">
+      <strong>MDC.clear() rất quan trọng</strong>. Vì Tomcat dùng thread pool — thread được tái sử dụng. Nếu bạn <code>MDC.put()</code> mà không <code>MDC.clear()</code>, log của request sau sẽ bị "lẫn" requestId cũ.
+    </div>
+
+    <div class="deep">
+      <strong>Đào sâu — Interceptor có phải bean không?</strong> Có. Interceptor phải là bean (<code>@Component</code>) để có thể inject dependency (như <code>JwtService</code>). Nhưng phải đăng ký qua <code>WebMvcConfigurer</code> — không tự động apply như <code>@Component</code> thông thường.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Interceptor có mấy method? Khác nhau chỗ nào?"<br>
+      <strong>Trả lời</strong>: 3 method — <code>preHandle</code> chạy trước controller, return false để chặn. <code>postHandle</code> chạy sau controller, trước render view — KHÔNG chạy nếu có exception. <code>afterCompletion</code> chạy sau cùng, kể cả có exception — dùng để cleanup.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 6 ============ -->
+  <section id="s6">
+    <h2>6. Argument Resolver — Bind tham số</h2>
+
+    <h3>Vấn đề</h3>
+
+    <p>Controller method có nhiều loại tham số khác nhau. Spring làm sao biết cách bind từng cái?</p>
+
+    <pre><code>@GetMapping("/users/{id}")
+public UserDto get(
+    @PathVariable Long id,
+    @RequestParam(required = false) String fields,
+    @RequestHeader("X-Tenant") String tenant,
+    HttpServletRequest request,
+    Principal principal
+) { ... }</code></pre>
+
+    <h3>HandlerMethodArgumentResolver</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface HandlerMethodArgumentResolver {
+
+    // Resolver này có hỗ trợ parameter này không?
+    boolean supportsParameter(MethodParameter parameter);
+
+    // Nếu có → bind giá trị cho parameter
+    Object resolveArgument(MethodParameter parameter,
+                           ModelAndViewContainer mavContainer,
+                           NativeWebRequest webRequest,
+                           WebDataBinderFactory binderFactory) throws Exception;
+}</code></pre>
+    </div>
+
+    <p><strong>Quy trình:</strong></p>
+
+    <div class="diagram">
+Với mỗi parameter của controller method:
+  │
+  ├─ Duyệt danh sách resolvers (đã sort theo @Order)
+  │
+  ├─ Hỏi: supportsParameter(param)?
+  │
+  ├─ Resolver đầu tiên trả true → thắng
+  │
+  └─ Gọi resolveArgument() → lấy giá trị
+    </div>
+
+    <h3>Các resolver phổ biến</h3>
+
+    <table>
+      <tr><th>Parameter type</th><th>Resolver</th></tr>
+      <tr><td><code>@RequestParam</code></td><td>RequestParamMethodArgumentResolver</td></tr>
+      <tr><td><code>@PathVariable</code></td><td>PathVariableMethodArgumentResolver</td></tr>
+      <tr><td><code>@RequestBody</code></td><td>RequestResponseBodyMethodProcessor</td></tr>
+      <tr><td><code>@RequestHeader</code></td><td>RequestHeaderMethodArgumentResolver</td></tr>
+      <tr><td><code>@CookieValue</code></td><td>ServletCookieValueMethodArgumentResolver</td></tr>
+      <tr><td><code>@ModelAttribute</code></td><td>ModelAttributeMethodProcessor</td></tr>
+      <tr><td><code>HttpServletRequest</code></td><td>ServletRequestMethodArgumentResolver</td></tr>
+      <tr><td><code>HttpServletResponse</code></td><td>ServletResponseMethodArgumentResolver</td></tr>
+      <tr><td><code>Principal</code></td><td>PrincipalMethodArgumentResolver</td></tr>
+      <tr><td><code>Locale</code></td><td>LocaleMethodArgumentResolver</td></tr>
+      <tr><td>Type khác (không annotation)</td><td>ServletModelAttributeMethodProcessor</td></tr>
+    </table>
+
+    <h3>Ví dụ bind @RequestBody</h3>
+
+    <pre><code>@PostMapping("/users")
+public UserDto create(@Valid @RequestBody CreateUserRequest req) { ... }</code></pre>
+
+    <p><strong>Quy trình bind:</strong></p>
+
+    <div class="diagram">
+1. RequestResponseBodyMethodProcessor.supportsParameter()
+   → check có @RequestBody không? → Có
+   
+2. resolveArgument()
+   ├─ Đọc Content-Type (application/json)
+   ├─ Chọn HttpMessageConverter phù hợp (Jackson)
+   ├─ Gọi converter.read(request.getInputStream(), type)
+   │   → Jackson parse JSON thành object
+   ├─ Nếu có @Valid → gọi Validator
+   │   └─ Fail → ném MethodArgumentNotValidException
+   └─ Return object đã bind
+    </div>
+
+    <h3>Custom Argument Resolver — Khi nào cần?</h3>
+
+    <p>Ví dụ — tự tạo <code>@CurrentUser</code> annotation để inject user đang login:</p>
+
+    <pre><code>@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface CurrentUser { }
+
+@Component
+public class CurrentUserResolver implements HandlerMethodArgumentResolver {
+
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        return parameter.hasParameterAnnotation(CurrentUser.class);
+    }
+
+    @Override
+    public Object resolveArgument(MethodParameter parameter,
+                                  ModelAndViewContainer mav,
+                                  NativeWebRequest req,
+                                  WebDataBinderFactory factory) {
+        // Đọc userId từ SecurityContext
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return userService.findByUsername(auth.getName());
+    }
+}
+
+// Đăng ký
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addArgumentResolvers(List&lt;HandlerMethodArgumentResolver&gt; resolvers) {
+        resolvers.add(new CurrentUserResolver());
+    }
+}
+
+// Dùng
+@GetMapping("/me")
+public UserDto me(@CurrentUser User user) {
+    return UserMapper.toDto(user);
+}</code></pre>
+
+    <div class="deep">
+      <strong>Đào sâu — tại sao resolver phải sort theo Order?</strong> Vì có thể nhiều resolver cùng <code>supportsParameter = true</code>. Ví dụ <code>@RequestParam String name</code> — cả <code>RequestParamMethodArgumentResolver</code> và <code>ServletModelAttributeMethodProcessor</code> đều có thể handle. Order quyết định resolver nào thắng.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Làm sao Spring bind @RequestBody thành object?"<br>
+      <strong>Trả lời</strong>: <code>RequestResponseBodyMethodProcessor</code> (một ArgumentResolver) hỗ trợ parameter có <code>@RequestBody</code>. Khi resolve, nó đọc Content-Type, chọn <code>HttpMessageConverter</code> (Jackson cho JSON), gọi <code>read()</code> để parse input stream thành object. Nếu có <code>@Valid</code>, gọi Validator sau đó.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 7 ============ -->
+  <section id="s7">
+    <h2>7. HttpMessageConverter — Serialize/Deserialize</h2>
+
+    <h3>Vai trò</h3>
+
+    <p><strong>HttpMessageConverter</strong> chuyển đổi giữa:</p>
+    <ul>
+      <li>HTTP body (bytes) ↔ Java object.</li>
+      <li>Dùng cho cả <code>@RequestBody</code> (đọc) và <code>@ResponseBody</code> (ghi).</li>
+    </ul>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface HttpMessageConverter&lt;T&gt; {
+
+    // Converter có đọc được mediaType → class này không?
+    boolean canRead(Class&lt;?&gt; clazz, @Nullable MediaType mediaType);
+
+    // Converter có ghi được class này → mediaType không?
+    boolean canWrite(Class&lt;?&gt; clazz, @Nullable MediaType mediaType);
+
+    // Đọc từ input stream → object
+    T read(Class&lt;? extends T&gt; clazz, HttpInputMessage inputMessage) throws IOException;
+
+    // Ghi object → output stream
+    void write(T t, @Nullable MediaType contentType, HttpOutputMessage outputMessage) throws IOException;
+}</code></pre>
+    </div>
+
+    <h3>Các converter mặc định trong Spring Boot</h3>
+
+    <table>
+      <tr><th>Converter</th><th>Content-Type</th><th>Xử lý</th></tr>
+      <tr><td>ByteArrayHttpMessageConverter</td><td>*/*</td><td>byte[]</td></tr>
+      <tr><td>StringHttpMessageConverter</td><td>text/plain</td><td>String</td></tr>
+      <tr><td>ResourceHttpMessageConverter</td><td>*/*</td><td>Resource</td></tr>
+      <tr><td>FormHttpMessageConverter</td><td>application/x-www-form-urlencoded</td><td>MultiValueMap</td></tr>
+      <tr><td>MappingJackson2HttpMessageConverter</td><td>application/json</td><td>Object ↔ JSON</td></tr>
+      <tr><td>MappingJackson2XmlHttpMessageConverter</td><td>application/xml</td><td>Object ↔ XML</td></tr>
+    </table>
+
+    <h3>Cách chọn converter</h3>
+
+    <div class="diagram">
+Khi bind @RequestBody:
+  │
+  ├─ Lấy Content-Type của request
+  │
+  ├─ Duyệt danh sách converters
+  │
+  ├─ Hỏi: converter.canRead(targetClass, contentType)?
+  │
+  ├─ Converter đầu tiên return true → thắng
+  │
+  └─ Gọi converter.read() → object
+
+Khi ghi @ResponseBody:
+  │
+  ├─ Xác định content type từ Accept header
+  │   (hoặc default theo config)
+  │
+  ├─ Duyệt converters
+  │
+  ├─ Hỏi: converter.canWrite(returnType, contentType)?
+  │
+  ├─ Gọi converter.write() → output stream
+    </div>
+
+    <h3>Ví dụ — Custom Jackson config</h3>
+
+    <p>Bạn có thể override ObjectMapper để custom serialize:</p>
+
+    <pre><code>@Configuration
+public class JacksonConfig {
+
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
+        return builder -&gt; builder
+            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .modules(new JavaTimeModule());
+    }
+}</code></pre>
+
+    <h3>Ví dụ — Custom Converter cho YAML</h3>
+
+    <pre><code>public class YamlHttpMessageConverter extends AbstractHttpMessageConverter&lt;Object&gt; {
+
+    private final ObjectMapper yamlMapper;
+
+    public YamlHttpMessageConverter() {
+        super(new MediaType("application", "yaml"));
+        this.yamlMapper = new ObjectMapper(new YAMLFactory());
+    }
+
+    @Override
+    protected boolean supports(Class&lt;?&gt; clazz) {
+        return true;   // hỗ trợ mọi class
+    }
+
+    @Override
+    protected Object readInternal(Class&lt;?&gt; clazz, HttpInputMessage inputMessage)
+            throws IOException {
+        return yamlMapper.readValue(inputMessage.getBody(), clazz);
+    }
+
+    @Override
+    protected void writeInternal(Object o, HttpOutputMessage outputMessage)
+            throws IOException {
+        yamlMapper.writeValue(outputMessage.getBody(), o);
+    }
+}
+
+// Đăng ký
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void extendMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+        converters.add(new YamlHttpMessageConverter());
+    }
+}</code></pre>
+
+    <div class="deep">
+      <strong>Đào sâu — Jackson xử lý LocalDate thế nào?</strong> Mặc định Jackson serialize <code>LocalDate</code> thành array [2024, 1, 1] — không đẹp. Cần đăng ký <code>JavaTimeModule</code>. Spring Boot tự làm khi thấy dependency <code>jackson-datatype-jsr310</code> trên classpath.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Làm sao Spring biết dùng Jackson để parse JSON?"<br>
+      <strong>Trả lời</strong>: Dựa vào Content-Type của request và danh sách <code>HttpMessageConverter</code> được đăng ký. Với <code>application/json</code>, <code>MappingJackson2HttpMessageConverter</code> có <code>canRead() = true</code> → được chọn. Spring Boot auto-config converter này nếu có Jackson trên classpath.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 8 ============ -->
+  <section id="s8">
+    <h2>8. Return Value Handler — Xử lý return</h2>
+
+    <h3>Interface HandlerMethodReturnValueHandler</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface HandlerMethodReturnValueHandler {
+
+    boolean supportsReturnType(MethodParameter returnType);
+
+    void handleReturnValue(@Nullable Object returnValue,
+                           MethodParameter returnType,
+                           ModelAndViewContainer mavContainer,
+                           NativeWebRequest webRequest) throws Exception;
+}</code></pre>
+    </div>
+
+    <h3>Các handler phổ biến</h3>
+
+    <table>
+      <tr><th>Return type</th><th>Handler</th><th>Kết quả</th></tr>
+      <tr><td><code>@ResponseBody</code> object</td><td>RequestResponseBodyMethodProcessor</td><td>Serialize → JSON</td></tr>
+      <tr><td><code>ResponseEntity&lt;T&gt;</code></td><td>HttpEntityMethodProcessor</td><td>Status + headers + body</td></tr>
+      <tr><td><code>ModelAndView</code></td><td>ModelAndViewMethodReturnValueHandler</td><td>Render view</td></tr>
+      <tr><td><code>String</code> (view name)</td><td>ViewNameMethodReturnValueHandler</td><td>Resolve view</td></tr>
+      <tr><td><code>void</code></td><td>ServletModelAttributeMethodProcessor</td><td>Dựa vào request</td></tr>
+      <tr><td><code>Callable&lt;T&gt;</code></td><td>CallableMethodReturnValueHandler</td><td>Async</td></tr>
+      <tr><td><code>DeferredResult&lt;T&gt;</code></td><td>DeferredResultMethodReturnValueHandler</td><td>Async</td></tr>
+    </table>
+
+    <h3>Ví dụ — Controller return khác nhau</h3>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="good">ResponseEntity — Linh hoạt</h5>
+        <pre><code>@GetMapping("/{id}")
+public ResponseEntity&lt;UserDto&gt; get(@PathVariable Long id) {
+    return userService.findById(id)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+}
+// → HttpEntityMethodProcessor
+// Set status + headers + body</code></pre>
+      </div>
+      <div>
+        <h5 class="good">Plain object + @ResponseStatus</h5>
+        <pre><code>@PostMapping
+@ResponseStatus(HttpStatus.CREATED)
+public UserDto create(@RequestBody Req req) {
+    return userService.create(req);
+}
+// → RequestResponseBodyMethodProcessor
+// Đọc @ResponseStatus → status 201
+// Serialize UserDto → JSON</code></pre>
+      </div>
+    </div>
+
+    <h3>Cơ chế hoạt động</h3>
+
+    <div class="diagram">
+Sau khi controller method return:
+  │
+  ├─ Duyệt danh sách ReturnValueHandlers
+  │
+  ├─ Hỏi: handler.supportsReturnType(returnType)?
+  │
+  ├─ Handler đầu tiên return true → thắng
+  │
+  └─ Gọi handler.handleReturnValue()
+
+Ví dụ với ResponseEntity:
+  │
+  ├─ HttpEntityMethodProcessor.supportsReturnType(ResponseEntity) → true
+  │
+  ├─ handleReturnValue()
+  │   ├─ Extract status → set vào response
+  │   ├─ Extract headers → set vào response
+  │   └─ Gọi HttpMessageConverter.write(body) → JSON
+  │
+  └─ Response hoàn chỉnh
+    </div>
+
+    <div class="deep">
+      <strong>Đào sâu — tại sao cần HandlerMethodReturnValueHandler?</strong> Vì cùng 1 return type có thể có nhiều cách xử lý khác nhau. Ví dụ <code>String</code> — nếu controller là <code>@Controller</code> → coi là view name. Nếu <code>@RestController</code> → coi là body text. Annotation quyết định handler nào được chọn.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "ResponseEntity và @ResponseBody khác gì?"<br>
+      <strong>Trả lời</strong>: <code>@ResponseBody</code> (hoặc <code>@RestController</code>) chỉ serialize body → JSON. <code>ResponseEntity</code> cho phép set thêm status + headers. Khi cần linh hoạt (404 vs 200, custom headers), dùng ResponseEntity. Khi status cố định, dùng @ResponseBody + @ResponseStatus.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 9 ============ -->
+  <section id="s9">
+    <h2>9. ViewResolver — Render view</h2>
+
+    <h3>Khi nào ViewResolver chạy?</h3>
+
+    <p><strong>Chỉ chạy khi controller trả về view name</strong> — không chạy với <code>@ResponseBody</code> hay <code>ResponseEntity</code>.</p>
+
+    <div class="diagram">
+Controller return "user-profile"
+  │
+  ▼
+ModelAndView( viewName="user-profile", model={user:...} )
+  │
+  ▼
+DispatcherServlet.processDispatchResult()
+  │
+  ▼
+ViewResolver.resolveViewName("user-profile", locale)
+  │
+  ▼
+ThymeleafViewResolver → tìm templates/user-profile.html
+  │
+  ▼
+View.render(model, request, response)
+  │
+  ▼
+HTML gửi về client
+    </div>
+
+    <h3>Interface ViewResolver</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface ViewResolver {
+    @Nullable
+    View resolveViewName(String viewName, Locale locale) throws Exception;
+}</code></pre>
+    </div>
+
+    <h3>Các implementation phổ biến</h3>
+
+    <table>
+      <tr><th>Resolver</th><th>View tech</th></tr>
+      <tr><td>ThymeleafViewResolver</td><td>Thymeleaf (default Spring Boot)</td></tr>
+      <tr><td>InternalResourceViewResolver</td><td>JSP</td></tr>
+      <tr><td>FreeMarkerViewResolver</td><td>FreeMarker</td></tr>
+      <tr><td>GroovyMarkupViewResolver</td><td>Groovy Markup</td></tr>
+      <tr><td>ContentNegotiatingViewResolver</td><td>Đa view tech</td></tr>
+    </table>
+
+    <h3>Ví dụ — Controller trả view</h3>
+
+    <pre><code>@Controller
+public class PageController {
+
+    @GetMapping("/users/{id}")
+    public String userProfile(@PathVariable Long id, Model model) {
+        User user = userService.findById(id);
+        model.addAttribute("user", user);
+        return "user-profile";   // ← view name → templates/user-profile.html
+    }
+}</code></pre>
+
+    <pre><code>&lt;!-- templates/user-profile.html --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org"&gt;
+&lt;body&gt;
+    &lt;h1 th:text="${user.name}"&gt;User Name&lt;/h1&gt;
+    &lt;p th:text="${user.email}"&gt;email@example.com&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <h3>Cấu hình Thymeleaf trong Spring Boot</h3>
+
+    <pre><code>spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false       # dev — tắt cache để reload nhanh
+    mode: HTML
+    encoding: UTF-8</code></pre>
+
+    <h3>Redirect và Forward</h3>
+
+    <pre><code>// Redirect — 302, browser đổi URL
+return "redirect:/users/list";
+return "redirect:/users/" + id;
+
+// Forward — giữ URL, internal
+return "forward:/internal/handler";
+
+// Redirect với flash attributes
+redirectAttributes.addFlashAttribute("msg", "Tạo thành công");
+return "redirect:/users";</code></pre>
+
+    <div class="warn">
+      <strong>Với REST API, ViewResolver không chạy</strong>. Vì <code>@RestController</code> đã bao gồm <code>@ResponseBody</code> → kết quả đi thẳng qua <code>HttpMessageConverter</code> → JSON. ViewResolver bị skip hoàn toàn.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Khi nào ViewResolver chạy, khi nào không?"<br>
+      <strong>Trả lời</strong>: Chạy khi controller return view name (String hoặc ModelAndView) và không có <code>@ResponseBody</code>. Không chạy khi controller là <code>@RestController</code> hoặc có <code>@ResponseBody</code> — kết quả đi qua HttpMessageConverter thay vì ViewResolver.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 10 ============ -->
+  <section id="s10">
+    <h2>10. Exception Handling trong MVC</h2>
+
+    <h3>HandlerExceptionResolver</h3>
+
+    <div class="source-code">
+      <div class="header">Spring source</div>
+<pre><code>public interface HandlerExceptionResolver {
+    @Nullable
+    ModelAndView resolveException(HttpServletRequest request,
+                                  HttpServletResponse response,
+                                  @Nullable Object handler,
+                                  Exception ex);
+}</code></pre>
+    </div>
+
+    <h3>3 resolver chạy theo thứ tự</h3>
+
+    <ol>
+      <li><strong>ExceptionHandlerExceptionResolver</strong> — xử lý <code>@ExceptionHandler</code>.</li>
+      <li><strong>ResponseStatusExceptionResolver</strong> — xử lý <code>@ResponseStatus</code> trên exception.</li>
+      <li><strong>DefaultHandlerExceptionResolver</strong> — xử lý exception built-in của Spring (TypeMismatchException, HttpRequestMethodNotSupportedException...).</li>
+    </ol>
+
+    <p>Resolver đầu tiên trả về ModelAndView ≠ null → thắng. Ngược lại → chuyển sang resolver tiếp.</p>
+
+    <h3>@RestControllerAdvice — Chi tiết</h3>
+
+    <pre><code>@RestControllerAdvice   // ← @ControllerAdvice + @ResponseBody
+@Slf4j
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFound(ResourceNotFoundException ex) {
+        log.warn("Not found: {}", ex.getMessage());
+        return new ErrorResponse("NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidation(MethodArgumentNotValidException ex) {
+        Map&lt;String, String&gt; errors = ex.getBindingResult().getFieldErrors().stream()
+            .collect(Collectors.toMap(
+                FieldError::getField,
+                FieldError::getDefaultMessage,
+                (a, b) -&gt; a
+            ));
+        return new ErrorResponse("VALIDATION_ERROR", "Dữ liệu không hợp lệ", errors);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflict(DataIntegrityViolationException ex) {
+        log.error("DB conflict", ex);
+        return new ErrorResponse("CONFLICT", "Duplicate or constraint violation");
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAll(Exception ex) {
+        log.error("Unexpected error", ex);
+        return new ErrorResponse("INTERNAL_ERROR", "Unexpected error occurred");
+    }
+}</code></pre>
+
+    <h3>Cơ chế match exception</h3>
+
+    <div class="diagram">
+Exception được ném ra: ResourceNotFoundException
+
+ExceptionHandlerExceptionResolver:
+  │
+  ├─ Tra bảng @ExceptionHandler
+  │
+  ├─ Tìm handler match chính xác ResourceNotFoundException
+  │   → GlobalExceptionHandler.handleNotFound()
+  │
+  ├─ Nếu không có → tìm theo class cha
+  │   → Exception.class handler
+  │
+  └─ Nguyên tắc: CỤ THỂ thắng
+    </div>
+
+    <h3>Thứ tự ưu tiên — Ví dụ</h3>
+
+    <pre><code>@ExceptionHandler(RuntimeException.class)         // #1
+@ExceptionHandler(IllegalStateException.class)    // #2
+@ExceptionHandler(ResourceNotFoundException.class)// #3 (con của IllegalStateException)</code></pre>
+
+    <p>Nếu ném <code>ResourceNotFoundException</code>:</p>
+    <ul>
+      <li>Spring chọn <strong>#3</strong> — cụ thể nhất.</li>
+      <li>Nếu #3 không có → chọn #2.</li>
+      <li>Nếu #2 không có → chọn #1.</li>
+    </ul>
+
+    <h3>Exception trong Filter — Tại sao @ExceptionHandler không bắt được?</h3>
+
+    <div class="diagram">
+Request
+  │
+  ▼
+┌────────────────────────────────┐
+│ Filter Chain                    │  ← Exception ở đây KHÔNG bắt được
+│  (Security, CORS...)            │     bởi @ExceptionHandler
+└────────────────────────────────┘
+  │
+  ▼
+DispatcherServlet
+  │
+  ▼
+@ExceptionHandler ← Chỉ bắt được exception từ controller trở xuống
+    </div>
+
+    <p><strong>Lý do</strong>: Filter chạy trước DispatcherServlet. Exception từ Filter không đi qua <code>ExceptionHandlerExceptionResolver</code> — nó đi trực tiếp ra Servlet Container.</p>
+
+    <p><strong>Cách xử lý exception trong Filter:</strong></p>
+
+    <pre><code>@Component
+public class JwtFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req,
+                                    HttpServletResponse res,
+                                    FilterChain chain) throws IOException {
+        try {
+            // validate token
+            chain.doFilter(req, res);
+        } catch (JwtException ex) {
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            res.setContentType("application/json");
+            res.getWriter().write("{\"error\":\"" + ex.getMessage() + "\"}");
+            // Không throw ra ngoài
+        }
+    }
+}</code></pre>
+
+    <div class="warn">
+      <strong>Lưu ý</strong>: Nếu Filter throw exception không được catch, Tomcat sẽ dùng <code>ErrorPage</code> — không đi qua <code>@RestControllerAdvice</code>. Phải tự xử lý trong Filter.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "@RestControllerAdvice có bắt được exception từ Filter không?"<br>
+      <strong>Trả lời</strong>: Không. Vì Filter chạy trước DispatcherServlet, exception từ Filter không đi qua ExceptionHandlerExceptionResolver. Phải tự try-catch trong Filter và ghi response thủ công.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 11 ============ -->
+  <section id="s11">
+    <h2>11. ⭐ Filter vs Interceptor vs AOP — Chi tiết đào sâu</h2>
+
+    <p>Đây là mục quan trọng nhất chương — hiểu rõ 3 tầng này là nắm được "cách can thiệp vào request" trong Spring.</p>
+
+    <!-- ============ PART 1: FILTER ============ -->
+    <h3>PART 1: FILTER — Tầng Servlet Container</h3>
+
+    <h4>Định nghĩa</h4>
+
+    <p><strong>Filter</strong> là 1 interface thuộc <strong>Servlet API</strong> (<code>jakarta.servlet.Filter</code>) — không phải Spring. Nó chặn request/response ở tầng Servlet Container (Tomcat), trước khi vào DispatcherServlet.</p>
+
+    <div class="source-code">
+      <div class="header">Servlet API — Filter interface</div>
+<pre><code>public interface Filter {
+    default void init(FilterConfig filterConfig) { }
+
+    // Chuỗi filter: mỗi filter chạy doFilter
+    // Phải gọi chain.doFilter() để đi tiếp
+    void doFilter(ServletRequest request,
+                  ServletResponse response,
+                  FilterChain chain) throws IOException, ServletException;
+
+    default void destroy() { }
+}</code></pre>
+    </div>
+
+    <h4>Bản chất — Vị trí trong stack</h4>
+
+    <div class="stack-viz">
+┌────────────────────────────────────────────────────────┐
+│                    HTTP REQUEST                         │
+└────────────────────┬───────────────────────────────────┘
+                     │
+                     ▼
+╔════════════════════════════════════════════════════════╗
+║  SERVLET CONTAINER (Tomcat)                            ║
+║                                                         ║
+║  ┌──────────────────────────────────────────────────┐  ║
+║  │  FILTER CHAIN  ← Bạn ở đây                       │  ║
+║  │    ├─ CharacterEncodingFilter                     │  ║
+║  │    ├─ CorsFilter                                  │  ║
+║  │    ├─ SpringSecurityFilterChain                   │  ║
+║  │    └─ RequestContextFilter                        │  ║
+║  └──────────────────────────────────────────────────┘  ║
+║                     │                                   ║
+║                     ▼                                   ║
+║  ┌──────────────────────────────────────────────────┐  ║
+║  │  DISPATCHER SERVLET                               │  ║
+║  │    ├─ Interceptor  ← Spring MVC                  │  ║
+║  │    ├─ ArgumentResolver                            │  ║
+║  │    ├─ Controller → AOP → Service → Repo           │  ║
+║  │    └─ ReturnValueHandler                          │  ║
+║  └──────────────────────────────────────────────────┘  ║
+║                                                         ║
+╚════════════════════════════════════════════════════════╝
+    </div>
+
+    <h4>Cách cài đặt Filter</h4>
+
+    <p><strong>Cách 1: implement Filter + @Component</strong></p>
+
+    <pre><code>@Component
+@Order(1)   // ← thứ tự chạy
+@Slf4j
+public class RequestLoggingFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request,
+                         ServletResponse response,
+                         FilterChain chain) throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        long start = System.currentTimeMillis();
+
+        log.info("BEGIN {} {}", req.getMethod(), req.getRequestURI());
+
+        try {
+            chain.doFilter(request, response);   // ← QUAN TRỌNG: đi tiếp
+        } finally {
+            long duration = System.currentTimeMillis() - start;
+            log.info("END {} {} — {}ms",
+                     req.getMethod(), req.getRequestURI(), duration);
+        }
+    }
+}</code></pre>
+
+    <p><strong>Cách 2: FilterRegistrationBean — kiểm soát URL pattern</strong></p>
+
+    <pre><code>@Configuration
+public class FilterConfig {
+
+    @Bean
+    public FilterRegistrationBean&lt;RequestLoggingFilter&gt; loggingFilter() {
+        FilterRegistrationBean&lt;RequestLoggingFilter&gt; reg = new FilterRegistrationBean&lt;&gt;();
+        reg.setFilter(new RequestLoggingFilter());
+        reg.addUrlPatterns("/api/*");              // ← chỉ /api/*
+        reg.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return reg;
+    }
+}</code></pre>
+
+    <p><strong>Cách 3: @WebFilter — Servlet chuẩn</strong></p>
+
+    <pre><code>@WebFilter(urlPatterns = "/api/*")
+public class ApiFilter implements Filter { ... }
+// Cần @ServletComponentScan trên @SpringBootApplication</code></pre>
+
+    <h4>Phân tích — Có Filter vs Không có Filter</h4>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">❌ Không có Filter</h5>
+        <ul style="padding:12px 20px;font-size:13px;line-height:1.7;">
+          <li><strong>Không thể</strong> set encoding UTF-8 trước khi Spring đọc body → tiếng Việt lỗi.</li>
+          <li><strong>Không thể</strong> xử lý CORS ở tầng thấp → browser chặn preflight.</li>
+          <li><strong>Không thể</strong> chặn request quá sớm — ví dụ rate limit theo IP trước khi vào DispatcherServlet.</li>
+          <li><strong>Không thể</strong> wrap request để đọc body nhiều lần (logging).</li>
+          <li><strong>Không thể</strong> xác thực trước khi Spring MVC parse request.</li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="good">✅ Có Filter</h5>
+        <ul style="padding:12px 20px;font-size:13px;line-height:1.7;">
+          <li>Set UTF-8 cho mọi request/response.</li>
+          <li>Xử lý CORS toàn cục.</li>
+          <li>Rate limit theo IP trước khi tốn tài nguyên Spring.</li>
+          <li>Wrap request bằng <code>ContentCachingRequestWrapper</code>.</li>
+          <li>Security filter chain (Spring Security).</li>
+          <li>Compress response (gzip).</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4>Hạn chế của Filter</h4>
+
+    <ul>
+      <li><strong>Không biết controller nào sắp chạy</strong> — chỉ có request thô.</li>
+      <li><strong>Không có Spring context</strong> đầy đủ — phải inject qua constructor.</li>
+      <li><strong>Không truy cập được ModelAndView</strong>.</li>
+      <li><strong>Không truy cập SecurityContext</strong> mặc định (phải set sau filter khác).</li>
+    </ul>
+
+    <!-- ============ PART 2: INTERCEPTOR ============ -->
+    <h3>PART 2: INTERCEPTOR — Tầng Spring MVC</h3>
+
+    <h4>Định nghĩa</h4>
+
+    <p><strong>HandlerInterceptor</strong> là interface thuộc <strong>Spring MVC</strong> (<code>org.springframework.web.servlet</code>) — chặn request trong phạm vi Spring MVC, trước và sau controller.</p>
+
+    <div class="source-code">
+      <div class="header">Spring source — HandlerInterceptor</div>
+<pre><code>public interface HandlerInterceptor {
+
+    default boolean preHandle(HttpServletRequest request,
+                              HttpServletResponse response,
+                              Object handler) throws Exception {
+        return true;
+    }
+
+    default void postHandle(HttpServletRequest request,
+                            HttpServletResponse response,
+                            Object handler,
+                            @Nullable ModelAndView modelAndView) throws Exception { }
+
+    default void afterCompletion(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 Object handler,
+                                 @Nullable Exception ex) throws Exception { }
+}</code></pre>
+    </div>
+
+    <h4>Bản chất — Vị trí trong stack</h4>
+
+    <div class="stack-viz">
+Filter chain đã chạy xong
+                     │
+                     ▼
+╔════════════════════════════════════════════════════════╗
+║  DISPATCHER SERVLET                                     ║
+║                                                         ║
+║  1. HandlerMapping → tìm controller                    ║
+║                                                         ║
+║  2. ┌────────────────────────────────────────────┐    ║
+║     │  INTERCEPTOR CHAIN  ← Bạn ở đây            │    ║
+║     │    ├─ AuthInterceptor.preHandle()           │    ║
+║     │    ├─ LoggingInterceptor.preHandle()        │    ║
+║     │    └─ ...                                    │    ║
+║     └────────────────────────────────────────────┘    ║
+║                     │                                   ║
+║  3.                 ▼                                   ║
+║     ┌────────────────────────────────────────────┐    ║
+║     │  ArgumentResolver → bind params             │    ║
+║     │  CONTROLLER METHOD                          │    ║
+║     │  ReturnValueHandler                         │    ║
+║     └────────────────────────────────────────────┘    ║
+║                     │                                   ║
+║  4.                 ▼                                   ║
+║     ┌────────────────────────────────────────────┐    ║
+║     │  INTERCEPTOR CHAIN (chiều về)               │    ║
+║     │    ├─ LoggingInterceptor.postHandle()       │    ║
+║     │    └─ AuthInterceptor.postHandle()          │    ║
+║     └────────────────────────────────────────────┘    ║
+║                     │                                   ║
+║  5. ViewResolver render                                ║
+║                                                         ║
+║  6. INTERCEPTOR.afterCompletion() (mọi interceptor)    ║
+╚════════════════════════════════════════════════════════╝
+                     │
+                     ▼
+Response về client
+    </div>
+
+    <h4>Cách cài đặt Interceptor</h4>
+
+    <pre><code>@Component
+@RequiredArgsConstructor
+@Slf4j
+public class AuthInterceptor implements HandlerInterceptor {
+
+    private final JwtService jwtService;
+
+    @Override
+    public boolean preHandle(HttpServletRequest req,
+                             HttpServletResponse res,
+                             Object handler) throws IOException {
+
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) return true;
+        if (!(handler instanceof HandlerMethod)) return true;
+
+        String token = extractToken(req);
+        if (token == null || !jwtService.isValid(token)) {
+            res.setStatus(401);
+            res.setContentType("application/json");
+            res.getWriter().write("{\"error\":\"Unauthorized\"}");
+            return false;   // ← dừng chuỗi
+        }
+        return true;
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest req,
+                           HttpServletResponse res,
+                           Object handler,
+                           ModelAndView mv) {
+        // Chạy sau controller — trước render view
+        // KHÔNG chạy nếu có exception
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest req,
+                                HttpServletResponse res,
+                                Object handler,
+                                Exception ex) {
+        // Chạy sau cùng — kể cả khi có exception
+        MDC.clear();
+    }
+}
+
+// Đăng ký
+@Configuration
+@RequiredArgsConstructor
+public class WebConfig implements WebMvcConfigurer {
+
+    private final AuthInterceptor authInterceptor;
+    private final LoggingInterceptor loggingInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(loggingInterceptor)
+                .addPathPatterns("/**")
+                .order(0);
+
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/api/**")
+                .excludePathPatterns("/api/auth/**", "/api/public/**")
+                .order(1);
+    }
+}</code></pre>
+
+    <h4>Phân tích — Có Interceptor vs Không có Interceptor</h4>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">❌ Không có Interceptor</h5>
+        <ul style="padding:12px 20px;font-size:13px;line-height:1.7;">
+          <li>Phải lặp code check auth ở <strong>mọi controller method</strong>.</li>
+          <li>Không biết controller method nào sắp chạy để log chi tiết.</li>
+          <li>Không inject được <code>Service</code> vào tầng check (Filter khó hơn).</li>
+          <li>Không có <code>postHandle</code> để modify response sau controller.</li>
+          <li>Không truy cập <code>@RequestMapping</code> metadata.</li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="good">✅ Có Interceptor</h5>
+        <ul style="padding:12px 20px;font-size:13px;line-height:1.7;">
+          <li><strong>Biết</strong> controller method sắp chạy — qua <code>Object handler</code>.</li>
+          <li><strong>Inject</strong> bean dễ dàng — vì Interceptor là Spring bean.</li>
+          <li><strong>Đọc được annotation</strong> của method (như <code>@PublicApi</code>, <code>@AdminOnly</code>).</li>
+          <li>Log chi tiết theo controller — biết endpoint nào chậm.</li>
+          <li>Có <code>postHandle</code> để thêm header sau khi controller xử lý.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4>Ưu điểm Interceptor so với Filter</h4>
+
+    <ul>
+      <li><strong>Biết handler method</strong>: <code>handler instanceof HandlerMethod</code> → cast → <code>getMethodAnnotation()</code>.</li>
+      <li><strong>Spring DI đầy đủ</strong>: inject service, repo, config dễ dàng.</li>
+      <li><strong>Đọc annotation</strong>: ví dụ check <code>@PublicApi</code> trên method để skip auth.</li>
+      <li><strong>3 hook point</strong>: preHandle, postHandle, afterCompletion.</li>
+      <li><strong>Được gọi trước/sau render view</strong>.</li>
+    </ul>
+
+    <!-- ============ PART 3: AOP ============ -->
+    <h3>PART 3: AOP — Tầng Method</h3>
+
+    <h4>Định nghĩa</h4>
+
+    <p><strong>AOP (Aspect-Oriented Programming)</strong> là cơ chế của Spring Core — chặn <strong>method call</strong>, không có khái niệm HTTP. Nó chạy quanh bất kỳ method nào — bất kỳ class nào.</p>
+
+    <div class="source-code">
+      <div class="header">AspectJ — Annotation style</div>
+<pre><code>@Aspect
+@Component
+public class LoggingAspect {
+
+    @Around("@annotation(Loggable)")
+    public Object log(ProceedingJoinPoint pjp) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            return pjp.proceed();
+        } finally {
+            long duration = System.currentTimeMillis() - start;
+            log.info("{}.{} took {}ms",
+                     pjp.getSignature().getDeclaringTypeName(),
+                     pjp.getSignature().getName(),
+                     duration);
+        }
+    }
+}
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Loggable { }
+
+// Sử dụng
+@Service
+public class UserService {
+    @Loggable
+    public UserDto findById(Long id) { ... }
+}</code></pre>
+    </div>
+
+    <h4>Bản chất — Proxy mechanism</h4>
+
+    <p>Spring AOP dùng <strong>proxy</strong> — không chặn bytecode như AspectJ. Khi bạn gọi <code>userService.findById()</code>, thực chất là gọi proxy trước:</p>
+
+    <div class="stack-viz">
+Client code:
+  userService.findById(1)
+       │
+       ▼
+╔══════════════════════════════════════════════╗
+║  PROXY (Spring tạo)                          ║
+║                                              ║
+║  1. @Around advice của LoggingAspect         ║
+║     ├─ Bắt đầu bấm giờ                       ║
+║     ├─ pjp.proceed()  ──────┐               ║
+║     └─ Kết thúc bấm giờ       │               ║
+║                               ▼               ║
+║  2. Real UserService.findById()               ║
+║     ├─ Logic thật                             ║
+║     └─ Return                                 ║
+║                               │               ║
+║  3. Log thời gian chạy ←──────┘               ║
+║                                              ║
+║  4. Return kết quả cho client                ║
+╚══════════════════════════════════════════════╝
+    </div>
+
+    <p><strong>Có 2 loại proxy</strong>:</p>
+    <ul>
+      <li><strong>JDK Dynamic Proxy</strong>: nếu class implements interface — chỉ proxy interface.</li>
+      <li><strong>CGLIB Proxy</strong>: nếu class không implement interface — subclass class đó.</li>
+    </ul>
+
+    <p>Spring Boot mặc định dùng CGLIB từ Spring 4.</p>
+
+    <h4>Cách cài đặt AOP</h4>
+
+    <p><strong>Bước 1</strong>: Thêm dependency:</p>
+
+    <pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-aop&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+
+    <p><strong>Bước 2</strong>: Viết Aspect:</p>
+
+    <pre><code>@Aspect
+@Component
+@Slf4j
+public class PerformanceAspect {
+
+    @Around("@annotation(Measured)")
+    public Object measure(ProceedingJoinPoint pjp) throws Throwable {
+        long start = System.nanoTime();
+        try {
+            return pjp.proceed();
+        } finally {
+            long duration = (System.nanoTime() - start) / 1_000_000;
+            log.info("{} — {}ms",
+                     pjp.getSignature().toShortString(),
+                     duration);
+        }
+    }
+
+    // Pointcut theo package
+    @Before("execution(* com.example.service.*.*(..))")
+    public void beforeService(JoinPoint jp) {
+        log.debug("Calling: {}", jp.getSignature().toShortString());
+    }
+}</code></pre>
+
+    <p><strong>Các Advice type</strong>:</p>
+
+    <table>
+      <tr><th>Advice</th><th>Khi chạy</th></tr>
+      <tr><td><code>@Before</code></td><td>Trước method</td></tr>
+      <tr><td><code>@After</code></td><td>Sau method (kể cả exception)</td></tr>
+      <tr><td><code>@AfterReturning</code></td><td>Sau method thành công</td></tr>
+      <tr><td><code>@AfterThrowing</code></td><td>Sau method ném exception</td></tr>
+      <tr><td><code>@Around</code></td><td>Bao quanh method — mạnh nhất</td></tr>
+    </table>
+
+    <h4>Phân tích — Có AOP vs Không có AOP</h4>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">❌ Không có AOP</h5>
+        <ul style="padding:12px 20px;font-size:13px;line-height:1.7;">
+          <li>Phải viết <code>try-catch-begin-commit</code> trong mọi service method.</li>
+          <li>Log thời gian chạy lặp ở 50 method.</li>
+          <li>Check quyền ở từng method thủ công.</li>
+          <li>Cache logic lặp đi lặp lại.</li>
+          <li>Code business bị "ô nhiễm" bởi cross-cutting concerns.</li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="good">✅ Có AOP</h5>
+        <ul style="padding:12px 20px;font-size:13px;line-height:1.7;">
+          <li><code>@Transactional</code> — 1 annotation = transaction.</li>
+          <li><code>@Cacheable</code> — tự động cache.</li>
+          <li><code>@Loggable</code> — tự log.</li>
+          <li><code>@PreAuthorize</code> — security.</li>
+          <li><code>@Retryable</code> — retry.</li>
+          <li>Business code sạch — chỉ còn logic thật.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4>Hạn chế của AOP</h4>
+
+    <ul>
+      <li><strong>Không có HTTP context</strong> — không biết request/response.</li>
+      <li><strong>Self-invocation không chạy</strong> — gọi method trong cùng class không qua proxy.</li>
+      <li><strong>Chỉ chặn được public method</strong> (với proxy-based AOP).</li>
+      <li><strong>Performance overhead</strong> — mỗi method call qua proxy. Ít nhưng có.</li>
+    </ul>
+
+    <!-- ============ COMPARISON TABLE ============ -->
+    <h3>SO SÁNH TỔNG HỢP — 3 TẦNG</h3>
+
+    <h4>Bảng so sánh chi tiết</h4>
+
+    <table>
+      <tr>
+        <th>Tiêu chí</th>
+        <th style="color:var(--filter-color)">Filter</th>
+        <th style="color:var(--interceptor-color)">Interceptor</th>
+        <th style="color:var(--aop-color)">AOP</th>
+      </tr>
+      <tr>
+        <td><strong>Package</strong></td>
+        <td>jakarta.servlet</td>
+        <td>org.springframework.web.servlet</td>
+        <td>org.aspectj</td>
+      </tr>
+      <tr>
+        <td><strong>Tầng</strong></td>
+        <td>Servlet Container</td>
+        <td>Spring MVC</td>
+        <td>Spring Core</td>
+      </tr>
+      <tr>
+        <td><strong>Chạy khi</strong></td>
+        <td>Trước DispatcherServlet</td>
+        <td>Trong DispatcherServlet</td>
+        <td>Quanh method call</td>
+      </tr>
+      <tr>
+        <td><strong>Có HTTP context?</strong></td>
+        <td>✅ Có</td>
+        <td>✅ Có</td>
+        <td>❌ Không</td>
+      </tr>
+      <tr>
+        <td><strong>Biết handler method?</strong></td>
+        <td>❌ Không</td>
+        <td>✅ Có (Object handler)</td>
+        <td>✅ Có (MethodSignature)</td>
+      </tr>
+      <tr>
+        <td><strong>Spring DI?</strong></td>
+        <td>⚠️ Qua constructor</td>
+        <td>✅ Đầy đủ (là bean)</td>
+        <td>✅ Đầy đủ (là bean)</td>
+      </tr>
+      <tr>
+        <td><strong>Đọc annotation?</strong></td>
+        <td>❌ Không</td>
+        <td>✅ Có</td>
+        <td>✅ Có</td>
+      </tr>
+      <tr>
+        <td><strong>Bắt exception của controller?</strong></td>
+        <td>⚠️ Có (bao ngoài)</td>
+        <td>✅ afterCompletion</td>
+        <td>✅ @AfterThrowing</td>
+      </tr>
+      <tr>
+        <td><strong>Self-invocation?</strong></td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>❌ Không chạy</td>
+      </tr>
+      <tr>
+        <td><strong>Performance</strong></td>
+        <td>Nhanh nhất</td>
+        <td>Trung bình</td>
+        <td>Chậm nhất (proxy)</td>
+      </tr>
+      <tr>
+        <td><strong>Dùng cho</strong></td>
+        <td>Encoding, CORS, Security, logging thô</td>
+        <td>Auth, rate limit, logging theo controller</td>
+        <td>Transaction, cache, retry, business logging</td>
+      </tr>
+    </table>
+
+    <h4>Thứ tự chạy — Ví dụ 1 request</h4>
+
+    <div class="diagram">
+Client gửi: GET /api/users/123
+
+1. Servlet Container nhận request
+   │
+2. Filter: CharacterEncodingFilter.doFilter()
+   │   ├─ Set UTF-8
+   │   └─ chain.doFilter()
+   │
+3. Filter: CorsFilter.doFilter()
+   │   ├─ Check Origin
+   │   └─ chain.doFilter()
+   │
+4. Filter: SpringSecurityFilterChain.doFilter()
+   │   ├─ Parse token
+   │   ├─ Set SecurityContext
+   │   └─ chain.doFilter()
+   │
+5. Filter: RequestLoggingFilter.doFilter()
+   │   ├─ Log "BEGIN GET /api/users/123"
+   │   └─ chain.doFilter()
+   │
+6. DispatcherServlet.doDispatch()
+   │
+7. HandlerMapping → UserController.get()
+   │
+8. Interceptor chain:
+   │   ├─ LoggingInterceptor.preHandle()  → true
+   │   └─ AuthInterceptor.preHandle()      → true
+   │
+9. ArgumentResolver:
+   │   ├─ @PathVariable id = 123
+   │   └─ Inject dependencies
+   │
+10. Controller method — qua AOP proxy:
+    │   ├─ AOP: @Loggable advice started
+    │   ├─ UserController.get(123)
+    │   │   └─ userService.findById(123)  ← gọi service
+    │   │        │
+    │   │        └─ Service cũng có AOP proxy (nếu có @Transactional):
+    │   │             ├─ AOP: beginTransaction()
+    │   │             ├─ Real service method
+    │   │             ├─ Repository → DB
+    │   │             └─ AOP: commit()
+    │   │
+    │   └─ AOP: log took 45ms
+    │
+11. ReturnValueHandler:
+    │   ├─ Serialize UserDto → JSON
+    │   └─ Set vào response body
+    │
+12. Interceptor chain (chiều về):
+    │   └─ AuthInterceptor.postHandle()
+    │
+13. Filter chain (chiều về):
+    │   └─ RequestLoggingFilter log "END ... 48ms"
+    │
+14. Response gửi về client
+    </div>
+
+    <h4>Khi nào dùng cái nào?</h4>
+
+    <div class="diagram">
+┌───────────────────────────────────────────────────────────┐
+│  BẠN MUỐN...                           → DÙNG GÌ?        │
+├───────────────────────────────────────────────────────────┤
+│  Set UTF-8, CORS, gzip                    → Filter       │
+│  Security toàn cục                        → Filter       │
+│  Rate limit theo IP trước Spring          → Filter       │
+│  Wrap request để đọc body nhiều lần       → Filter       │
+│                                                           │
+│  Kiểm tra token theo controller           → Interceptor  │
+│  Log chi tiết theo endpoint               → Interceptor  │
+│  Check quyền dựa vào @Annotation method   → Interceptor  │
+│  Thêm header vào response sau controller  → Interceptor  │
+│                                                           │
+│  Transaction                              → AOP          │
+│  Cache                                    → AOP          │
+│  Retry                                    → AOP          │
+│  Performance monitoring method            → AOP          │
+│  Custom business annotation               → AOP          │
+└───────────────────────────────────────────────────────────┘
+    </div>
+
+    <h4>Case study thực tế — Chặn user không có quyền</h4>
+
+    <p><strong>Nếu dùng Filter</strong>:</p>
+
+    <pre><code>@Component
+public class AuthFilter implements Filter {
+    public void doFilter(...) {
+        String token = extractToken(req);
+        if (!isValid(token)) {
+            res.setStatus(401);
+            return;   // ← chặn
+        }
+        chain.doFilter(req, res);
+    }
+}</code></pre>
+
+    <p><strong>Vấn đề</strong>: AuthFilter chặn cả <code>/api/public/**</code> — không phân biệt endpoint. Muốn exclude phải config URL pattern.</p>
+
+    <p><strong>Nếu dùng Interceptor</strong>:</p>
+
+    <pre><code>@Component
+public class AuthInterceptor implements HandlerInterceptor {
+    public boolean preHandle(req, res, Object handler) {
+        HandlerMethod hm = (HandlerMethod) handler;
+        
+        // Đọc annotation trên method
+        PublicApi pub = hm.getMethodAnnotation(PublicApi.class);
+        if (pub != null) return true;   // ← endpoint public → skip
+        
+        // Check token
+        if (!isValid(req)) {
+            res.setStatus(401);
+            return false;
+        }
+        return true;
+    }
+}
+
+// Controller
+@GetMapping("/health")
+@PublicApi                     // ← đánh dấu public
+public String health() { return "OK"; }</code></pre>
+
+    <p><strong>Ưu điểm</strong>: Interceptor biết được annotation trên method → logic linh hoạt hơn nhiều.</p>
+
+    <h4>Case study — Transaction + Retry + Cache</h4>
+
+    <p>Đây là lĩnh vực độc quyền của AOP — Filter và Interceptor không làm được:</p>
+
+    <pre><code>@Service
+public class PaymentService {
+
+    @Transactional           // ← AOP: transaction
+    @Retryable(maxAttempts = 3)   // ← AOP: retry
+    @Cacheable("payments")   // ← AOP: cache
+    @Loggable                // ← AOP: custom log
+    @PreAuthorize("hasRole('ADMIN')")   // ← AOP: security
+    public Payment process(Long orderId) { ... }
+}</code></pre>
+
+    <p>5 concern = 5 aspect chạy quanh 1 method. Filter/Interceptor không làm được vì không có khái niệm "method".</p>
+
+    <h4>Analogy tổng hợp</h4>
+
+    <div class="analogy">
+      <strong>Filter</strong> = Cổng bảo vệ tòa nhà. Kiểm tra mọi người vào — không quan tâm đến phòng nào. Chặn ở tầng ngoài cùng.<br><br>
+      <strong>Interceptor</strong> = Lễ tân tầng. Biết bạn đến gặp ai (controller), biết phòng nào. Có thể chặn bạn ở tầng — trước khi bạn vào phòng.<br><br>
+      <strong>AOP</strong> = Trợ lý cá nhân. Đi theo bạn vào từng cuộc họp (method). Ghi chú, mở cửa, tắt đèn — quanh từng cuộc họp. Không quan tâm tòa nhà hay tầng.
+    </div>
+
+    <h4>Có thể dùng cả 3 cùng lúc không?</h4>
+
+    <p><strong>Có</strong> — và thực tế thường vậy:</p>
+
+    <pre><code>Filter:         CharacterEncodingFilter, CorsFilter, SpringSecurityFilterChain
+                  → xử lý UTF-8, CORS, security toàn cục
+
+Interceptor:    RequestIdInterceptor, AuthInterceptor
+                  → thêm request ID, kiểm tra token, log theo endpoint
+
+AOP:            @Transactional, @Cacheable, @Loggable
+                  → transaction, cache, business logging</code></pre>
+
+    <div class="key">
+      <strong>Nguyên tắc chọn</strong>:<br>
+      • Cần HTTP context thô, trước Spring → <strong>Filter</strong><br>
+      • Cần biết controller, đọc annotation method → <strong>Interceptor</strong><br>
+      • Cần chặn method call, không cần HTTP → <strong>AOP</strong>
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi tổng hợp</strong>: "Em phân biệt Filter, Interceptor, AOP thế nào?"<br>
+      <strong>Trả lời</strong>:
+      <ul>
+        <li><strong>Filter</strong>: tầng Servlet Container, chạy trước DispatcherServlet, không biết controller. Dùng cho encoding, CORS, security toàn cục.</li>
+        <li><strong>Interceptor</strong>: tầng Spring MVC, chạy trong DispatcherServlet, biết handler method. Có 3 hook: preHandle, postHandle, afterCompletion. Dùng cho auth, rate limit, log chi tiết.</li>
+        <li><strong>AOP</strong>: tầng method, chạy quanh method call qua proxy. Không có HTTP context. Dùng cho @Transactional, @Cacheable, @Retryable.</li>
+      </ul>
+      Thứ tự chạy: Filter → DispatcherServlet → Interceptor → AOP → Controller → Return Value → Interceptor → Filter → Client.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 12 ============ -->
+  <section id="s12">
+    <h2>12. Async Request — Callable, DeferredResult</h2>
+
+    <h3>Vấn đề với sync request</h3>
+
+    <p>Trong Spring MVC truyền thống: 1 request = 1 thread xử lý đến hết. Nếu method chậm (gọi external API 5s) → thread bị block 5s → không phục vụ request khác.</p>
+
+    <div class="diagram">
+Tomcat thread pool: 200 threads
+
+Request 1 → Thread 1 ────┐
+Request 2 → Thread 2 ────┤  Đều gọi external API chậm 5s
+Request 3 → Thread 3 ────┤  → Cả 3 thread bị block
+...                      │
+Request 200 → Thread 200─┘
+
+Request 201 → WAITING — hết thread!
+    </div>
+
+    <h3>Servlet 3.0 Async — Giải pháp</h3>
+
+    <p>Servlet 3.0 (2009) cho phép <strong>trả thread về pool</strong> ngay khi bắt đầu xử lý async. Kết quả trả về sau — không giữ thread.</p>
+
+    <h3>Spring MVC — 3 cách async</h3>
+
+    <h4>Cách 1: Callable&lt;T&gt;</h4>
+
+    <pre><code>@GetMapping("/users/{id}")
+public Callable&lt;UserDto&gt; get(@PathVariable Long id) {
+    return () -&gt; {
+        // Chạy trên thread khác — không giữ Tomcat thread
+        Thread.sleep(5000);
+        return userService.findById(id);
+    };
+}</code></pre>
+
+    <p><strong>Spring chạy Callable trên TaskExecutor</strong>. Tomcat thread được release ngay.</p>
+
+    <h4>Cách 2: DeferredResult&lt;T&gt;</h4>
+
+    <pre><code>@GetMapping("/notify")
+public DeferredResult&lt;String&gt; waitForEvent() {
+    DeferredResult&lt;String&gt; result = new DeferredResult&lt;&gt;(30_000L);   // timeout 30s
+
+    // Đăng ký callback vào event bus
+    eventBus.subscribe(event -&gt; result.setResult(event.getMessage()));
+
+    // Timeout handler
+    result.onTimeout(() -&gt; result.setErrorResult("timeout"));
+
+    return result;   // return ngay — thread release
+}
+
+// Từ thread khác:
+void onExternalEvent(String msg) {
+    pendingResults.forEach(r -&gt; r.setResult(msg));
+}</code></pre>
+
+    <p><strong>Dùng cho long polling</strong> — client chờ event từ server.</p>
+
+    <h4>Cách 3: WebAsyncTask</h4>
+
+    <pre><code>@GetMapping("/users/{id}")
+public WebAsyncTask&lt;UserDto&gt; get(@PathVariable Long id) {
+    Callable&lt;UserDto&gt; task = () -&gt; userService.findById(id);
+    WebAsyncTask&lt;UserDto&gt; async = new WebAsyncTask&lt;&gt;(5000L, task);
+
+    async.onTimeout(() -&gt; {
+        throw new TimeoutException("Too slow");
+    });
+
+    async.onCompletion(() -&gt; {
+        log.info("Done");
+    });
+
+    return async;
+}</code></pre>
+
+    <h3>So sánh sync vs async</h3>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>Sync</th>
+        <th>Async (Callable)</th>
+      </tr>
+      <tr>
+        <td>Thread giữ</td>
+        <td>Suốt request</td>
+        <td>Chỉ lúc nhận + trả</td>
+      </tr>
+      <tr>
+        <td>Throughput</td>
+        <td>Thấp (200 concurrent)</td>
+        <td>Cao (2000+)</td>
+      </tr>
+      <tr>
+        <td>Code</td>
+        <td>Đơn giản</td>
+        <td>Phức tạp hơn</td>
+      </tr>
+      <tr>
+        <td>Debug</td>
+        <td>Dễ</td>
+        <td>Khó (stack trace tách rời)</td>
+      </tr>
+      <tr>
+        <td>Dùng khi</td>
+        <td>Method nhanh (&lt; 100ms)</td>
+        <td>Gọi external chậm, long polling</td>
+      </tr>
+    </table>
+
+    <h3>WebFlux vs MVC</h3>
+
+    <p><strong>WebFlux</strong> — reactive stack, chạy trên Netty, event loop, không block thread. Khác biệt cơ bản:</p>
+
+    <table>
+      <tr><th></th><th>Spring MVC</th><th>Spring WebFlux</th></tr>
+      <tr><td>Thread model</td><td>1 thread/request</td><td>Event loop (vài thread)</td></tr>
+      <tr><td>Backpressure</td><td>Không</td><td>Có (Reactive Streams)</td></tr>
+      <tr><td>Return type</td><td>Object, ResponseEntity</td><td>Mono, Flux</td></tr>
+      <tr><td>Server</td><td>Tomcat/Jetty</td><td>Netty</td></tr>
+      <tr><td>Khi nào dùng</td><td>CRUD, blocking code</td><td>High concurrency, streaming</td></tr>
+    </table>
+
+    <div class="warn">
+      Đừng chọn WebFlux chỉ vì "trend". Nếu code có JDBC, JPA (blocking) → WebFlux không giải quyết được gì, chỉ tăng complexity. Chỉ dùng WebFlux khi toàn bộ stack reactive.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Khi nào dùng Callable thay vì return trực tiếp?"<br>
+      <strong>Trả lời</strong>: Khi method cần gọi external service chậm (API, DB, file) — giữ thread Tomcat trong 5s làm lãng phí. Callable trả thread về pool ngay, chạy logic trên thread khác, nhờ đó tăng throughput. Không nên dùng cho method nhanh — overhead không cần thiết.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 13 ============ -->
+  <section id="s13">
+    <h2>13. Full Request Lifecycle — Diagram tổng hợp</h2>
+
+    <div class="stack-viz">
+╔════════════════════════════════════════════════════════════════╗
+║                       HTTP REQUEST                              ║
+║                    GET /api/users/123                           ║
+╚═══════════════════════════════┬════════════════════════════════╝
+                                │
+                                ▼
+╔════════════════════════════════════════════════════════════════╗
+║  SERVLET CONTAINER (Tomcat)                                    ║
+║                                                                 ║
+║  ┌───────────────────────────────────────────────────────────┐ ║
+║  │  FILTER CHAIN                                             │ ║
+║  │    1. CharacterEncodingFilter → UTF-8                     │ ║
+║  │    2. CorsFilter → check Origin                          │ ║
+║  │    3. SpringSecurityFilterChain → auth                    │ ║
+║  │    4. RequestContextFilter → bind thread                 │ ║
+║  └────────────────────┬──────────────────────────────────────┘ ║
+║                       │                                        ║
+║                       ▼                                        ║
+║  ┌───────────────────────────────────────────────────────────┐ ║
+║  │  DISPATCHER SERVLET (Front Controller)                    │ ║
+║  │                                                            │ ║
+║  │  ① HandlerMapping.getHandler()                            │ ║
+║  │     → UserController.get() (HandlerExecutionChain)       │ ║
+║  │                                                            │ ║
+║  │  ② HandlerAdapter.getHandlerAdapter()                     │ ║
+║  │     → RequestMappingHandlerAdapter                        │ ║
+║  │                                                            │ ║
+║  │  ③ INTERCEPTOR CHAIN (preHandle)                          │ ║
+║  │     ├─ RequestIdInterceptor.preHandle()  → true          │ ║
+║  │     ├─ LoggingInterceptor.preHandle()    → true          │ ║
+║  │     └─ AuthInterceptor.preHandle()       → true          │ ║
+║  │                                                            │ ║
+║  │  ④ ARGUMENT RESOLVERS                                     │ ║
+║  │     ├─ PathVariableMethodArgumentResolver → id=123       │ ║
+║  │     └─ Inject dependencies                                │ ║
+║  │                                                            │ ║
+║  │  ⑤ CONTROLLER METHOD (qua AOP proxy)                      │ ║
+║  │     ┌──────────────────────────────────────────────┐      │ ║
+║  │     │  AOP: LoggingAspect @Around                  │      │ ║
+║  │     │    ├─ Begin timer                             │      │ ║
+║  │     │    ├─ UserController.get(123)                 │      │ ║
+║  │     │    │    └─ userService.findById(123)          │      │ ║
+║  │     │    │         └─ AOP: @Transactional           │      │ ║
+║  │     │    │              ├─ beginTransaction()       │      │ ║
+║  │     │    │              ├─ Repository → DB          │      │ ║
+║  │     │    │              ├─ JPA map entity           │      │ ║
+║  │     │    │              └─ commit()                 │      │ ║
+║  │     │    └─ Log took 45ms                            │      │ ║
+║  │     └──────────────────────────────────────────────┘      │ ║
+║  │                                                            │ ║
+║  │  ⑥ RETURN VALUE HANDLER                                   │ ║
+║  │     HttpEntityMethodProcessor                             │ ║
+║  │     ├─ Set status (200/404...)                            │ ║
+║  │     ├─ Set headers                                        │ ║
+║  │     └─ HttpMessageConverter (Jackson) → JSON             │ ║
+║  │                                                            │ ║
+║  │  ⑦ INTERCEPTOR CHAIN (postHandle + afterCompletion)      │ ║
+║  │     ├─ AuthInterceptor.postHandle()                      │ ║
+║  │     ├─ LoggingInterceptor.postHandle()                   │ ║
+║  │     └─ ... afterCompletion()                              │ ║
+║  │                                                            │ ║
+║  │  ⑧ EXCEPTION HANDLER (nếu có)                             │ ║
+║  │     └─ @RestControllerAdvice                              │ ║
+║  │                                                            │ ║
+║  │  ⑨ VIEW RESOLVER (nếu có view)                            │ ║
+║  │     └─ ThymeleafViewResolver                              │ ║
+║  └────────────────────┬──────────────────────────────────────┘ ║
+║                       │                                        ║
+║                       ▼                                        ║
+║  ┌───────────────────────────────────────────────────────────┐ ║
+║  │  FILTER CHAIN (chiều về)                                  │ ║
+║  │    → gzip, logging END                                    │ ║
+║  └────────────────────┬──────────────────────────────────────┘ ║
+║                       │                                        ║
+╚═══════════════════════┼════════════════════════════════════════╝
+                        │
+                        ▼
+╔════════════════════════════════════════════════════════════════╗
+║                    HTTP RESPONSE                               ║
+║        200 OK  ·  application/json  ·  {user data}             ║
+╚════════════════════════════════════════════════════════════════╝
+    </div>
+
+    <h3>Exception flow — Khi controller ném exception</h3>
+
+    <div class="stack-viz">
+Controller method throws ResourceNotFoundException
+  │
+  ├─ AOP: @AfterThrowing advice
+  │
+  ├─ DispatcherServlet bắt exception
+  │
+  ├─ Interceptor.postHandle() KHÔNG chạy
+  │
+  ├─ HandlerExceptionResolver chain:
+  │    ├─ ExceptionHandlerExceptionResolver
+  │    │    └─ Tìm @ExceptionHandler phù hợp
+  │    │         └─ GlobalExceptionHandler.handleNotFound()
+  │    │              └─ Serialize ErrorResponse → JSON
+  │    │
+  │    ├─ Nếu không match → ResponseStatusExceptionResolver
+  │    │
+  │    └─ Nếu không match → DefaultHandlerExceptionResolver
+  │
+  ├─ Interceptor.afterCompletion(ex) — chạy với exception
+  │
+  └─ Filter chain (chiều về)
+       └─ Response 404 gửi client
+    </div>
+  </section>
+
+  <!-- ============ SECTION 14 ============ -->
+  <section id="s14">
+    <h2>14. Cấu hình MVC trong Spring Boot</h2>
+
+    <h3>WebMvcAutoConfiguration — Cái gì auto-config?</h3>
+
+    <p>Khi bạn thêm <code>spring-boot-starter-web</code>, Spring Boot tự config:</p>
+
+    <ul>
+      <li><code>DispatcherServlet</code> + mapping <code>/</code>.</li>
+      <li><code>RequestMappingHandlerMapping</code>, <code>RequestMappingHandlerAdapter</code>.</li>
+      <li><code>HttpMessageConverter</code> mặc định (Jackson, String, ByteArray...).</li>
+      <li><code>ViewResolver</code> cho template engine trên classpath.</li>
+      <li><code>HandlerExceptionResolver</code> chain.</li>
+      <li>Static resources handler (<code>/static</code>, <code>/public</code>...).</li>
+      <li>Default error page (<code>/error</code>).</li>
+    </ul>
+
+    <h3>WebMvcConfigurer — Custom MVC</h3>
+
+    <p>Interface chính để custom MVC mà không tắt auto-config:</p>
+
+    <pre><code>@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    // Thêm interceptor
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoggingInterceptor())
+                .addPathPatterns("/api/**");
+    }
+
+    // Thêm argument resolver
+    @Override
+    public void addArgumentResolvers(List&lt;HandlerMethodArgumentResolver&gt; resolvers) {
+        resolvers.add(new CurrentUserResolver());
+    }
+
+    // Thêm message converter
+    @Override
+    public void extendMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+        converters.add(new YamlHttpMessageConverter());
+    }
+
+    // CORS
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("https://myapp.com")
+                .allowedMethods("GET", "POST", "PUT", "DELETE");
+    }
+
+    // Static resources
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/files/**")
+                .addResourceLocations("file:uploads/");
+    }
+
+    // Formatter
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addFormatter(new DateFormatter("dd/MM/yyyy"));
+    }
+}</code></pre>
+
+    <h3>WebMvcRegistrations — Override bean mặc định</h3>
+
+    <p>Nếu muốn <strong>thay thế</strong> bean mặc định (không phải thêm):</p>
+
+    <pre><code>@Configuration
+public class CustomWebMvcRegistrations implements WebMvcRegistrations {
+
+    @Override
+    public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+        return new CustomRequestMappingHandlerMapping();
+    }
+
+    @Override
+    public RequestMappingHandlerAdapter getRequestMappingHandlerAdapter() {
+        return new CustomRequestMappingHandlerAdapter();
+    }
+}</code></pre>
+
+    <h3>@EnableWebMvc — Khi nào dùng?</h3>
+
+    <p><code>@EnableWebMvc</code> = import <code>DelegatingWebMvcConfiguration</code> — <strong>tắt toàn bộ auto-config MVC của Spring Boot</strong>.</p>
+
+    <div class="warn">
+      <strong>Hầu như không bao giờ dùng <code>@EnableWebMvc</code> trong Spring Boot.</strong> Nó tắt auto-config → mất static resources, mất Jackson, mất message converter mặc định → bạn phải config lại hết.
+    </div>
+
+    <p>Chỉ dùng khi: bạn muốn toàn quyền kiểm soát, hoặc dùng Spring thuần (không Boot).</p>
+
+    <h3>Bảng so sánh</h3>
+
+    <table>
+      <tr>
+        <th>Interface</th>
+        <th>Mục đích</th>
+        <th>Ảnh hưởng auto-config</th>
+      </tr>
+      <tr>
+        <td><code>WebMvcConfigurer</code></td>
+        <td>Custom — thêm/sửa</td>
+        <td>Không</td>
+      </tr>
+      <tr>
+        <td><code>WebMvcRegistrations</code></td>
+        <td>Override bean mặc định</td>
+        <td>Không</td>
+      </tr>
+      <tr>
+        <td><code>@EnableWebMvc</code></td>
+        <td>Toàn quyền</td>
+        <td><strong>TẮT</strong></td>
+      </tr>
+    </table>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "WebMvcConfigurer và @EnableWebMvc khác gì?"<br>
+      <strong>Trả lời</strong>: <code>WebMvcConfigurer</code> để custom MVC mà giữ auto-config (thêm interceptor, converter). <code>@EnableWebMvc</code> tắt auto-config → bạn phải config lại hết. Trong Spring Boot, gần như không bao giờ dùng <code>@EnableWebMvc</code>.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 15 ============ -->
+  <section id="s15">
+    <h2>15. Best Practices + Checklist + Interview tổng hợp</h2>
+
+    <h3>✅ Best Practices Controller</h3>
+
+    <ul>
+      <li><strong>Controller mỏng</strong> — chỉ nhận request, gọi service, trả response. Không business logic.</li>
+      <li><strong>Dùng DTO</strong> — không expose entity.</li>
+      <li><strong>@RestController</strong> — cho API JSON.</li>
+      <li><strong>@ResponseEntity</strong> khi cần status/header động.</li>
+      <li><strong>@Valid</strong> để validate request.</li>
+      <li><strong>@RestControllerAdvice</strong> cho xử lý exception tập trung.</li>
+      <li><strong>Constructor injection</strong> — không field injection.</li>
+      <li><strong>Không @Transactional trên controller</strong> — để ở service.</li>
+      <li><strong>Version API</strong>: <code>/api/v1/users</code>.</li>
+      <li><strong>Đúng HTTP status</strong>: 201 cho create, 204 cho delete, 404 cho not found.</li>
+    </ul>
+
+    <h3>❌ Anti-patterns</h3>
+
+    <ul>
+      <li><strong>Fat controller</strong> — logic trộn trong controller.</li>
+      <li><strong>Expose entity</strong> — lộ DB schema, dễ vòng lặp JSON.</li>
+      <li><strong>Try-catch trong controller</strong> — dùng @ExceptionHandler.</li>
+      <li><strong>Field injection</strong> trong controller.</li>
+      <li><strong>Response lỗi không thống nhất</strong> — mỗi nơi 1 format.</li>
+      <li><strong>Trả 200 cho mọi case</strong> — không dùng HTTP status.</li>
+      <li><strong>Business logic trong Filter/Interceptor</strong> — không phải chỗ của nó.</li>
+    </ul>
+
+    <h3>📝 Checklist tự đánh giá</h3>
+
+    <ul>
+      <li>✅ Phân biệt được Servlet và Servlet Container.</li>
+      <li>✅ Hiểu DispatcherServlet là Front Controller.</li>
+      <li>✅ Đọc được source <code>doDispatch()</code>.</li>
+      <li>✅ Biết HandlerMapping build bảng routing thế nào.</li>
+      <li>✅ Hiểu tại sao cần HandlerAdapter.</li>
+      <li>✅ Biết 3 method của HandlerInterceptor.</li>
+      <li>✅ Biết ArgumentResolver bind @RequestBody thế nào.</li>
+      <li>✅ Biết HttpMessageConverter chọn converter ra sao.</li>
+      <li>✅ Phân biệt @ResponseBody và ResponseEntity.</li>
+      <li>✅ Biết ViewResolver chỉ chạy khi trả view name.</li>
+      <li>✅ Biết @RestControllerAdvice hoạt động thế nào.</li>
+      <li>✅ <strong>Phân biệt rõ Filter vs Interceptor vs AOP</strong>.</li>
+      <li>✅ Biết khi nào dùng Callable, DeferredResult.</li>
+      <li>✅ Biết WebMvcConfigurer và @EnableWebMvc.</li>
+    </ul>
+
+    <h3>🎤 20 câu hỏi phỏng vấn tổng hợp</h3>
+
+    <div class="interview">
+      <ol>
+        <li>Servlet lifecycle có mấy bước?</li>
+        <li>DispatcherServlet là gì? Tại sao cần?</li>
+        <li>HandlerMapping làm gì?</li>
+        <li>Tại sao cần HandlerAdapter?</li>
+        <li>HandlerInterceptor có mấy method? Khi nào chạy?</li>
+        <li>Interceptor khác Filter chỗ nào?</li>
+        <li>Interceptor khác AOP chỗ nào?</li>
+        <li>Khi nào dùng Filter, khi nào dùng Interceptor?</li>
+        <li>@RequestBody được bind thế nào?</li>
+        <li>HttpMessageConverter hoạt động ra sao?</li>
+        <li>Jackson chọn ObjectMapper khi nào?</li>
+        <li>@ResponseBody và ResponseEntity khác gì?</li>
+        <li>ViewResolver chạy khi nào?</li>
+        <li>@RestControllerAdvice hoạt động thế nào?</li>
+        <li>Exception trong Filter có bắt được bởi @ExceptionHandler?</li>
+        <li>Callable và DeferredResult khác gì?</li>
+        <li>WebMvcConfigurer dùng làm gì?</li>
+        <li>@EnableWebMvc có nên dùng trong Spring Boot?</li>
+        <li>Thứ tự chạy của Filter → Interceptor → AOP?</li>
+        <li>Nếu 2 interceptor cùng return false thì sao?</li>
+      </ol>
+    </div>
+
+    <h3>👉 Chương tiếp theo</h3>
+
+    <p><strong>Chương 5: Transaction Management</strong> — sẽ đi sâu vào:</p>
+    <ul>
+      <li>ACID và Isolation level chi tiết.</li>
+      <li>Propagation types — REQUIRED, REQUIRES_NEW, NESTED.</li>
+      <li>Rollback rules — checked vs unchecked.</li>
+      <li>@Transactional hoạt động qua proxy thế nào.</li>
+      <li>Self-invocation và 3 cách fix.</li>
+      <li>Transaction synchronization.</li>
+      <li>Read-only optimization.</li>
+      <li>Best practices — khi nào dùng @Transactional.</li>
+    </ul>
+
+    <div class="chapter-nav">
+      <a href="#" class="disabled">← Chương 3: AOP</a>
+      <a href="#">Chương 5: Transaction Management →</a>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeToggle');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      root.classList.add('light');
+      themeBtn.textContent = '☀️';
+    } else {
+      root.classList.remove('light');
+      themeBtn.textContent = '🌙';
+    }
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  themeBtn.addEventListener('click', () => {
+    const next = root.classList.contains('light') ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+</script>
+<!-- highlight.js — CDN, browser cache dùng chung -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.hljs) return;
+
+    // Highlight mọi <code> trong <pre> thuộc section HOẶC source-code
+    // (bỏ qua .diagram, .stack-viz vì chúng là <pre> ASCII art, không phải code)
+    document.querySelectorAll('section pre > code, .source-code pre > code').forEach(el => {
+      hljs.highlightElement(el);
+    });
+  });
+</script>
+</body>
+</html>

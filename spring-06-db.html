@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Data JPA & Hibernate — Chi tiết chuyên sâu</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg-elev: #1e293b;
+    --bg-elev-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --heading: #a5b4fc;
+    --accent: #22d3ee;
+    --accent-2: #818cf8;
+    --code-bg: #0b1220;
+    --code-text: #7dd3fc;
+    --shadow: 0 4px 14px rgba(0,0,0,0.35);
+    --tip-bg: rgba(34,211,238,0.08);
+    --warn-bg: rgba(251,146,60,0.08);
+    --warn-border: #fb923c;
+    --good-bg: rgba(52,211,153,0.08);
+    --good-border: #34d399;
+    --bad-bg: rgba(239,68,68,0.08);
+    --bad-border: #ef4444;
+    --deep-bg: rgba(129,140,248,0.08);
+    --deep-border: #818cf8;
+    --interview-bg: rgba(168,85,247,0.08);
+    --interview-border: #a855f7;
+    --entity-color: #34d399;
+    --pc-color: #f97316;
+    --sql-color: #fbbf24;
+  }
+  html.light {
+    --bg: #f5f7fa;
+    --bg-elev: #ffffff;
+    --bg-elev-2: #f9fafb;
+    --border: #e5e7eb;
+    --text: #24292e;
+    --text-dim: #6b7280;
+    --heading: #4f46e5;
+    --accent: #06b6d4;
+    --accent-2: #4f46e5;
+    --code-bg: #eef2ff;
+    --code-text: #4338ca;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --tip-bg: rgba(6,182,212,0.08);
+    --warn-bg: rgba(251,146,60,0.1);
+    --warn-border: #ea580c;
+    --good-bg: rgba(16,185,129,0.08);
+    --good-border: #059669;
+    --bad-bg: rgba(239,68,68,0.08);
+    --bad-border: #dc2626;
+    --deep-bg: rgba(99,102,241,0.08);
+    --deep-border: #6366f1;
+    --interview-bg: rgba(168,85,247,0.08);
+    --interview-border: #9333ea;
+    --entity-color: #059669;
+    --pc-color: #ea580c;
+    --sql-color: #d97706;
+  }
+  * { box-sizing: border-box; }
+  html, body { transition: background 0.25s, color 0.25s; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0; background: var(--bg); color: var(--text); line-height: 1.75;
+  }
+  header {
+    background: linear-gradient(135deg, #1e1b4b, #0e7490);
+    color: #f8fafc; padding: 48px 20px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  header::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(129,140,248,0.25), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(34,211,238,0.2), transparent 45%);
+    pointer-events: none;
+  }
+  header .chapter { font-size: 12px; letter-spacing: 3px; opacity: 0.85; position: relative; z-index: 1; margin-bottom: 10px; }
+  header h1 { margin: 0 0 8px; font-size: 28px; position: relative; z-index: 1; }
+  header p { margin: 0; opacity: 0.9; font-size: 15px; position: relative; z-index: 1; }
+
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 100;
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.25); color: #f8fafc;
+    width: 42px; height: 42px; border-radius: 50%; font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .theme-toggle:hover { transform: scale(1.08); }
+
+  .container { max-width: 950px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .toc {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 26px; margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { margin-top: 0; font-size: 17px; color: var(--heading); }
+  .toc ol { padding-left: 22px; margin: 0; columns: 2; column-gap: 24px; }
+  @media (max-width: 600px) { .toc ol { columns: 1; } }
+  .toc li { margin: 6px 0; break-inside: avoid; }
+  .toc a { color: var(--accent); text-decoration: none; font-size: 13.5px; }
+  .toc a:hover { color: var(--accent-2); text-decoration: underline; }
+
+  section {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 26px 28px; margin-bottom: 22px;
+    box-shadow: var(--shadow); scroll-margin-top: 20px;
+  }
+  section h2 {
+    color: var(--heading); border-bottom: 2px solid var(--border);
+    padding-bottom: 12px; margin-top: 0; font-size: 22px;
+  }
+  section h3 { color: var(--accent); font-size: 17px; margin-top: 28px; margin-bottom: 12px; }
+  section h4 { color: var(--accent-2); font-size: 15px; margin-top: 20px; margin-bottom: 8px; }
+
+  section p { color: var(--text); margin: 10px 0; }
+  section code {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 2px 6px; border-radius: 4px; font-size: 90%;
+    font-family: "Consolas", "Monaco", monospace;
+    border: 1px solid var(--border);
+  }
+  section pre {
+    background: #0b1220; color: #e2e8f0;
+    padding: 16px 18px; border-radius: 8px; overflow-x: auto;
+    font-size: 13px; line-height: 1.6;
+    border: 1px solid #334155; margin: 12px 0;
+  }
+  html.light section pre { background: #1e293b; border-color: #1e293b; }
+  section pre code { background: transparent; color: inherit; padding: 0; border: none; }
+  section ul, section ol { padding-left: 22px; }
+  section li { margin: 6px 0; color: var(--text); }
+  section strong { color: #f1f5f9; }
+  html.light section strong { color: #0f172a; }
+  section em { color: var(--accent); font-style: normal; }
+
+  .tip, .warn, .good, .bad, .deep, .interview {
+    padding: 14px 18px; border-radius: 8px; margin: 16px 0;
+    font-size: 14px; color: var(--text); line-height: 1.7;
+  }
+  .tip { background: var(--tip-bg); border-left: 3px solid var(--accent); }
+  .tip::before { content: "💡 Tip: "; font-weight: 700; }
+  .warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border); }
+  .warn::before { content: "⚠️ Cảnh báo: "; font-weight: 700; }
+  .good { background: var(--good-bg); border-left: 3px solid var(--good-border); }
+  .good::before { content: "✅ Nên: "; font-weight: 700; }
+  .bad { background: var(--bad-bg); border-left: 3px solid var(--bad-border); }
+  .bad::before { content: "❌ Sai: "; font-weight: 700; }
+  .deep { background: var(--deep-bg); border-left: 3px solid var(--deep-border); }
+  .deep::before { content: "🔬 Đào sâu: "; font-weight: 700; }
+  .interview { background: var(--interview-bg); border-left: 3px solid var(--interview-border); }
+  .interview::before { content: "🎤 Phỏng vấn: "; font-weight: 700; }
+
+  .diagram {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px; margin: 16px 0;
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: 12.5px; line-height: 1.75;
+    color: var(--text); overflow-x: auto; white-space: pre;
+  }
+  html.light .diagram { background: #f8fafc; color: #475569; }
+
+  .side-by-side {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0;
+  }
+  @media (max-width: 700px) { .side-by-side { grid-template-columns: 1fr; } }
+  .side-by-side > div { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .side-by-side h5 {
+    margin: 0; padding: 8px 12px; font-size: 12px;
+    background: var(--bg-elev-2); color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .side-by-side h5.bad { color: var(--bad-border); }
+  .side-by-side h5.good { color: var(--good-border); }
+  .side-by-side pre { margin: 0; border-radius: 0; border: none; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px;
+  }
+  th, td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th { color: var(--heading); background: var(--bg-elev-2); font-weight: 600; }
+  td { color: var(--text); }
+
+  .key {
+    background: linear-gradient(90deg, rgba(34,211,238,0.15), transparent);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px; border-radius: 6px;
+    font-size: 15px; color: var(--text); margin: 18px 0; font-weight: 500;
+  }
+
+  .analogy {
+    background: linear-gradient(135deg, rgba(129,140,248,0.08), rgba(34,211,238,0.08));
+    border: 1px dashed var(--accent-2);
+    border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+  }
+  .analogy::before { content: "🎨 Ví von: "; font-weight: 700; color: var(--accent-2); }
+
+  .sql-log {
+    background: #0a0e1a; border: 1px solid #1e293b;
+    border-radius: 8px; padding: 14px 16px; margin: 12px 0;
+    font-family: "Consolas", monospace; font-size: 12.5px;
+    line-height: 1.6; color: #94a3b8; overflow-x: auto;
+    white-space: pre;
+  }
+  .sql-log .sql { color: var(--sql-color); font-weight: 600; }
+  .sql-log .param { color: #a78bfa; }
+  .sql-log .comment { color: #64748b; font-style: italic; }
+  .sql-log .bad-line { color: var(--bad-border); font-weight: 600; }
+  .sql-log .good-line { color: var(--good-border); font-weight: 600; }
+  html.light .sql-log { background: #0f172a; }
+
+  .source-code {
+    background: #1a1f2e; border: 1px solid #2d3748;
+    border-radius: 8px; margin: 14px 0; overflow: hidden;
+  }
+  .source-code .header {
+    background: #252d3d; padding: 8px 14px;
+    font-size: 11.5px; color: #68d391;
+    font-family: "Consolas", monospace;
+    border-bottom: 1px solid #2d3748;
+  }
+  .source-code pre { margin: 0; border-radius: 0; border: none; background: #1a1f2e; }
+  html.light .source-code { background: #f1f5f9; border-color: #cbd5e1; }
+  html.light .source-code .header { background: #e2e8f0; color: #059669; border-color: #cbd5e1; }
+  html.light .source-code pre { background: #f1f5f9; }
+
+  .chapter-nav {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin-top: 30px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .chapter-nav a {
+    flex: 1; padding: 12px 16px; text-align: center;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); text-decoration: none;
+    font-size: 13px; transition: all 0.15s;
+  }
+  .chapter-nav a:hover { border-color: var(--accent); }
+  .chapter-nav a.disabled { opacity: 0.4; pointer-events: none; }
+
+  .stack-viz {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px 20px; margin: 20px 0;
+    font-family: "Consolas", monospace; font-size: 12.5px;
+    color: var(--text); overflow-x: auto; white-space: pre; line-height: 1.5;
+  }
+  html.light .stack-viz { background: #f8fafc; color: #334155; }
+
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .tag.entity { background: rgba(52,211,153,0.15); color: var(--entity-color); }
+  .tag.pc { background: rgba(249,115,22,0.15); color: var(--pc-color); }
+  .tag.lazy { background: rgba(34,211,238,0.15); color: var(--accent); }
+  .tag.eager { background: rgba(239,68,68,0.15); color: var(--bad-border); }
+  .tag.good { background: rgba(52,211,153,0.15); color: var(--good-border); }
+  .tag.bad { background: rgba(239,68,68,0.15); color: var(--bad-border); }
+
+  /* Case study box */
+  .case-study {
+    background: linear-gradient(135deg, rgba(251,146,60,0.06), rgba(239,68,68,0.06));
+    border: 1px solid var(--warn-border);
+    border-radius: 10px; padding: 18px 20px; margin: 18px 0;
+  }
+  .case-study-title {
+    font-weight: 700; color: var(--warn-border);
+    font-size: 14px; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
+
+  @media(max-width: 600px) {
+    header h1 { font-size: 22px; }
+    section { padding: 18px 16px; }
+    .diagram { font-size: 11px; padding: 14px; }
+    .sql-log { font-size: 11px; }
+  }
+    /* ========== SYNTAX HIGHLIGHTING (highlight.js theme custom) ========== */
+  section pre code.hljs { display: block; padding: 0; background: transparent; }
+  .hljs { color: #e2e8f0; background: transparent; }
+
+  /* Comment, quote */
+  .hljs-comment,
+  .hljs-quote               { color: #64748b; font-style: italic; }
+
+  /* Từ khóa: public, class, if, return, new, void, static, final... */
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-section,
+  .hljs-doctag              { color: #c678dd; font-weight: 600; }
+
+  /* String, regex */
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-addition,
+  .hljs-template-variable   { color: #98c379; }
+
+  /* Tên hàm, method */
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-function .hljs-title{ color: #61afef; }
+
+  /* Tên class, type: String, Long, User, Optional */
+  .hljs-title.class_,
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-class .hljs-title   { color: #e5c07b; }
+
+  /* Số, hằng số */
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet              { color: #d19a66; }
+
+  /* Thuộc tính, biến, tham số */
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-variable,
+  .hljs-template-tag,
+  .hljs-params              { color: #d19a66; }
+
+  /* Annotation @Entity, @Override, @Transactional — xanh cyan nổi bật */
+  .hljs-meta,
+  .hljs-meta .hljs-keyword,
+  .hljs-meta .hljs-string   { color: #56b6c2; font-weight: 500; }
+
+  /* Toán tử, dấu câu */
+  .hljs-operator,
+  .hljs-punctuation         { color: #56b6c2; }
+
+  /* Tag HTML/XML */
+  .hljs-tag                 { color: #e06c75; }
+  .hljs-tag .hljs-name      { color: #e06c75; }
+  .hljs-tag .hljs-attr      { color: #d19a66; }
+
+  /* Property name trong YAML/properties */
+  .hljs-property            { color: #61afef; }
+
+  /* Xóa, thêm */
+  .hljs-deletion            { color: #e06c75; }
+  .hljs-emphasis            { font-style: italic; }
+  .hljs-strong              { font-weight: 700; }
+
+  /* Đảm bảo code block giữ nền tối dù Light mode */
+  section pre code.hljs { background: transparent !important; }
+
+  /* Inline code vẫn giữ style cũ, không bị highlight.js tô */
+  section code:not(.hljs) {
+    background: var(--code-bg);
+    color: var(--code-text);
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="Chuyển Dark/Light">🌙</button>
+
+<header>
+  <div class="chapter">CHƯƠNG 6 / 10 · SPRING DATA JPA &amp; HIBERNATE</div>
+  <h1>Spring Data JPA &amp; Hibernate — Chi tiết chuyên sâu</h1>
+  <p>JDBC · JdbcTemplate · Connection Pool · JPA · Hibernate · Persistence Context · N+1 · Locking · Cache</p>
+</header>
+
+<div class="container">
+
+  <div class="toc">
+    <h2>📑 Nội dung chương</h2>
+    <ol>
+      <li><a href="#s1">JDBC — Nền tảng (giới thiệu)</a></li>
+      <li><a href="#s2">Spring JDBC — JdbcTemplate (giới thiệu)</a></li>
+      <li><a href="#s3">Connection Pool — HikariCP (giới thiệu)</a></li>
+      <li><a href="#s4">JPA vs Hibernate vs Spring Data JPA</a></li>
+      <li><a href="#s5">⭐ Entity Lifecycle &amp; Persistence Context</a></li>
+      <li><a href="#s6">Mapping cơ bản — @Entity, @Column, @Id</a></li>
+      <li><a href="#s7">Mapping quan hệ — @OneToMany, @ManyToOne...</a></li>
+      <li><a href="#s8">⭐ FetchType LAZY vs EAGER — Chi tiết</a></li>
+      <li><a href="#s9">⭐ N+1 Query — Case study &amp; Fix</a></li>
+      <li><a href="#s10">Query — JPQL, Native, Criteria, Specification</a></li>
+      <li><a href="#s11">Locking — Optimistic &amp; Pessimistic</a></li>
+      <li><a href="#s12">Caching — L1 và L2</a></li>
+      <li><a href="#s13">Spring Data JPA — Repository</a></li>
+      <li><a href="#s14">Pagination, Sorting, Projection</a></li>
+      <li><a href="#s15">Auditing — @CreatedDate, @LastModifiedDate</a></li>
+      <li><a href="#s16">Best Practices + Checklist</a></li>
+    </ol>
+  </div>
+
+  <!-- ============ SECTION 1 ============ -->
+  <section id="s1">
+    <h2>1. JDBC — Nền tảng (giới thiệu)</h2>
+
+    <h3>JDBC là gì?</h3>
+
+    <p><strong>JDBC (Java Database Connectivity)</strong> là API chuẩn của Java để kết nối và thao tác với database quan hệ. Ra đời từ JDK 1.1, đến nay vẫn là nền tảng của mọi thư viện data access trong Java.</p>
+
+    <p>JDBC gồm 4 thành phần chính:</p>
+
+    <ul>
+      <li><strong>Driver</strong>: implementation cụ thể cho từng DB (MySQL Connector/J, PostgreSQL JDBC).</li>
+      <li><strong>Connection</strong>: kết nối đến DB — được quản lý bởi DriverManager hoặc DataSource.</li>
+      <li><strong>Statement / PreparedStatement</strong>: câu lệnh SQL để thực thi.</li>
+      <li><strong>ResultSet</strong>: kết quả trả về — con trỏ duyệt từng row.</li>
+    </ul>
+
+    <h3>Ví dụ JDBC thuần</h3>
+
+    <pre><code>public User findById(Long id) throws SQLException {
+    String sql = "SELECT id, name, email FROM users WHERE id = ?";
+
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, id);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                User u = new User();
+                u.setId(rs.getLong("id"));
+                u.setName(rs.getString("name"));
+                u.setEmail(rs.getString("email"));
+                return u;
+            }
+            return null;
+        }
+    }
+}</code></pre>
+
+    <h3>7 vấn đề của JDBC thuần</h3>
+
+    <ol>
+      <li><strong>Boilerplate khủng khiếp</strong>: getConnection, try-catch-finally, close... lặp đi lặp lại.</li>
+      <li><strong>Dễ SQL Injection</strong> nếu dùng <code>Statement</code> thay vì <code>PreparedStatement</code>.</li>
+      <li><strong>Phải tự map ResultSet → object</strong> — thủ công, dễ sai.</li>
+      <li><strong>Không có transaction management</strong> — tự commit/rollback.</li>
+      <li><strong>Không có connection pool</strong> — tạo connection mỗi lần → chậm 50-100ms.</li>
+      <li><strong>Không có caching</strong> — mỗi query đều chạm DB.</li>
+      <li><strong>Không portable</strong> — đổi DB → phải sửa SQL (dialect khác).</li>
+    </ol>
+
+    <h3>JDBC Driver types</h3>
+
+    <table>
+      <tr><th>Type</th><th>Cơ chế</th><th>Ví dụ</th></tr>
+      <tr><td>Type 1</td><td>JDBC-ODBC bridge</td><td>Deprecated</td></tr>
+      <tr><td>Type 2</td><td>Native API (C/C++)</td><td>Ít dùng</td></tr>
+      <tr><td>Type 3</td><td>Middleware server</td><td>Ít dùng</td></tr>
+      <tr><td><strong>Type 4</strong></td><td>Pure Java, native protocol</td><td>MySQL Connector/J, PostgreSQL JDBC</td></tr>
+    </table>
+
+    <div class="tip">Ngày nay 99% driver là Type 4 — pure Java, không cần native library. Đây là lý do app Java có thể chạy bất kỳ đâu mà không cần cài thêm gì.</div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "PreparedStatement khác Statement thế nào?"<br>
+      <strong>Trả lời</strong>: PreparedStatement pre-compile SQL ở DB → chống SQL Injection, nhanh hơn khi gọi nhiều lần cùng query. Statement nối chuỗi SQL → dễ bị injection.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 2 ============ -->
+  <section id="s2">
+    <h2>2. Spring JDBC — JdbcTemplate (giới thiệu)</h2>
+
+    <h3>Spring giải quyết vấn đề gì?</h3>
+
+    <p><strong>JdbcTemplate</strong> là wrapper của Spring quanh JDBC — lo hết boilerplate, để bạn chỉ tập trung viết SQL và map kết quả.</p>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">JDBC thuần — 20 dòng</h5>
+        <pre><code>Connection conn = null;
+PreparedStatement ps = null;
+ResultSet rs = null;
+try {
+    conn = dataSource.getConnection();
+    ps = conn.prepareStatement(sql);
+    ps.setLong(1, id);
+    rs = ps.executeQuery();
+    if (rs.next()) {
+        User u = new User();
+        u.setId(rs.getLong("id"));
+        u.setName(rs.getString("name"));
+        return u;
+    }
+    return null;
+} catch (SQLException e) {
+    throw new DataAccessException(e);
+} finally {
+    if (rs != null) rs.close();
+    if (ps != null) ps.close();
+    if (conn != null) conn.close();
+}</code></pre>
+      </div>
+      <div>
+        <h5 class="good">JdbcTemplate — 3 dòng</h5>
+        <pre><code>return jdbcTemplate.queryForObject(
+    "SELECT * FROM users WHERE id = ?",
+    userRowMapper,
+    id
+);</code></pre>
+        <p style="padding:8px 14px;font-size:13px;">Spring tự lấy connection, set param, đóng resource, chuyển exception.</p>
+      </div>
+    </div>
+
+    <h3>Các method chính</h3>
+
+    <pre><code>// Query 1 object
+User u = jdbc.queryForObject("SELECT * FROM users WHERE id = ?", rowMapper, 1L);
+
+// Query list
+List&lt;User&gt; users = jdbc.query("SELECT * FROM users WHERE status = ?", rowMapper, "ACTIVE");
+
+// Update
+int rows = jdbc.update("UPDATE users SET name = ? WHERE id = ?", "Bob", 1L);
+
+// Batch update — insert 1000 row hiệu quả
+jdbc.batchUpdate("INSERT INTO users (name) VALUES (?)",
+    users.stream().map(u -&gt; new Object[]{u.getName()}).toList());
+
+// NamedParameterJdbcTemplate — dùng :param
+Map&lt;String, Object&gt; params = Map.of("id", 1L, "status", "ACTIVE");
+namedJdbc.queryForObject(
+    "SELECT * FROM users WHERE id = :id AND status = :status",
+    params, rowMapper);</code></pre>
+
+    <h3>RowMapper — map ResultSet → object</h3>
+
+    <pre><code>public class UserRowMapper implements RowMapper&lt;User&gt; {
+    @Override
+    public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+        User u = new User();
+        u.setId(rs.getLong("id"));
+        u.setName(rs.getString("name"));
+        u.setEmail(rs.getString("email"));
+        return u;
+    }
+}</code></pre>
+
+    <h3>Khi nào dùng JdbcTemplate?</h3>
+
+    <ul>
+      <li><strong>Query phức tạp</strong> cần SQL cụ thể (window function, CTE, hint).</li>
+      <li><strong>Báo cáo, thống kê</strong> — không cần entity, chỉ cần data.</li>
+      <li><strong>Bulk operation</strong> hiệu năng cao — insert/update hàng loạt.</li>
+      <li><strong>Stored procedure</strong> phức tạp.</li>
+      <li><strong>Legacy DB</strong> không hỗ trợ JPA tốt.</li>
+    </ul>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Khi nào dùng JdbcTemplate thay vì JPA?"<br>
+      <strong>Trả lời</strong>: Khi cần query phức tạp, bulk operation, báo cáo thống kê, hoặc làm việc với legacy DB. JPA tốt cho CRUD, quan hệ phức tạp; JdbcTemplate tốt cho performance-critical và query không theo entity.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 3 ============ -->
+  <section id="s3">
+    <h2>3. Connection Pool — HikariCP (giới thiệu)</h2>
+
+    <h3>Vấn đề</h3>
+
+    <p>Mở 1 connection đến DB tốn 50-100ms (TCP handshake + auth + session init). Nếu mỗi query đều mở connection mới → app cực chậm.</p>
+
+    <h3>Connection Pool là gì?</h3>
+
+    <p><strong>Connection Pool</strong> = giữ sẵn N connection, tái sử dụng. App mượn 1 connection, dùng xong trả lại pool thay vì đóng.</p>
+
+    <div class="diagram">
+┌────────────────────────────────────────────────┐
+│            CONNECTION POOL (HikariCP)           │
+│                                                 │
+│   [conn1] [conn2] [conn3] ... [conn10]         │
+│      ↑      ↑      ↑                             │
+│      │      │      │                             │
+│      └──────┴──────┴─ App mượn/trả               │
+│                                                 │
+│   maximum-pool-size: 10                        │
+│   minimum-idle: 5                              │
+└────────────────────────────────────────────────┘
+                    │
+                    ▼
+              ┌──────────┐
+              │ Database │
+              └──────────┘
+    </div>
+
+    <h3>HikariCP — Pool mặc định Spring Boot 2+</h3>
+
+    <ul>
+      <li>Nhanh nhất trong các pool Java hiện nay.</li>
+      <li>Nhẹ — bytecode nhỏ, ít dependency.</li>
+      <li>Không lock contention — dùng lock-free design.</li>
+    </ul>
+
+    <h3>Cấu hình</h3>
+
+    <pre><code>spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/mydb
+    username: root
+    password: secret
+    hikari:
+      maximum-pool-size: 10       # tối đa 10 connection
+      minimum-idle: 5             # giữ ít nhất 5 sẵn
+      connection-timeout: 30000   # chờ pool 30s
+      idle-timeout: 600000        # đóng idle 10 phút
+      max-lifetime: 1800000       # connection sống 30 phút
+      pool-name: MyHikariPool</code></pre>
+
+    <h3>Công thức chọn pool size</h3>
+
+    <div class="key">
+      connections = ((core_count × 2) + effective_spindle_count)
+    </div>
+
+    <p>Ví dụ: 4 core, 1 SSD → khoảng 9-10 connection. Không phải càng lớn càng tốt — nhiều connection = nhiều context switch, DB lock contention.</p>
+
+    <h3>Monitoring</h3>
+
+    <pre><code># application.yml
+management.endpoints.web.exposure.include: health,metrics
+# → /actuator/metrics/hikaricp.connections.active
+# → /actuator/metrics/hikaricp.connections.pending</code></pre>
+
+    <div class="warn">
+      <strong>Connection leak</strong>: nếu app quên trả connection (không close), pool cạn dần → app treo. HikariCP có <code>leak-detection-threshold</code> để log cảnh báo.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Công thức chọn pool size?"<br>
+      <strong>Trả lời</strong>: <code>core_count × 2 + spindle_count</code>. Không phải càng lớn càng tốt — nhiều connection = nhiều context switch, DB lock. Ví dụ 4 core, 1 SSD → 9-10 connection.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 4 ============ -->
+  <section id="s4">
+    <h2>4. JPA vs Hibernate vs Spring Data JPA</h2>
+
+    <h3>Bức tranh phân tầng</h3>
+
+    <div class="stack-viz">
+┌──────────────────────────────────────────────────────┐
+│  Tầng 4: Spring Data JPA                             │
+│  (Repository interface, query method, @Query)        │
+├──────────────────────────────────────────────────────┤
+│  Tầng 3: JPA (specification) + Hibernate (impl)      │
+│  (@Entity, EntityManager, JPQL, Persistence Context) │
+├──────────────────────────────────────────────────────┤
+│  Tầng 2: Spring JDBC (JdbcTemplate)                  │
+├──────────────────────────────────────────────────────┤
+│  Tầng 1: JDBC (Java API)                             │
+│  (Connection, PreparedStatement, ResultSet)          │
+├──────────────────────────────────────────────────────┤
+│  Tầng 0: JDBC Driver (MySQL, PostgreSQL...)          │
+└──────────────────────────────────────────────────────┘
+    </div>
+
+    <h3>JPA là gì?</h3>
+
+    <p><strong>JPA (Java Persistence API)</strong> là <em>specification</em> — chuẩn định nghĩa cách map object Java ↔ bảng DB. Nó KHÔNG PHẢI implementation.</p>
+
+    <p>JPA định nghĩa:</p>
+    <ul>
+      <li>Annotation: <code>@Entity</code>, <code>@Table</code>, <code>@Id</code>, <code>@Column</code>...</li>
+      <li>Interface: <code>EntityManager</code>, <code>Query</code>, <code>TypedQuery</code>...</li>
+      <li>Ngôn ngữ: JPQL (Java Persistence Query Language).</li>
+      <li>Vòng đời entity, persistence context, transaction integration.</li>
+    </ul>
+
+    <h3>Hibernate là gì?</h3>
+
+    <p><strong>Hibernate</strong> là <em>implementation phổ biến nhất</em> của JPA. Ngoài việc implement đầy đủ JPA, Hibernate còn có API riêng (Session, Criteria, HQL).</p>
+
+    <p>Các implementation khác của JPA: EclipseLink (reference impl), OpenJPA, DataNucleus.</p>
+
+    <h3>Spring Data JPA là gì?</h3>
+
+    <p><strong>Spring Data JPA</strong> là lớp abstraction <em>trên JPA</em> — giúp bạn không phải viết code boilerplate khi dùng EntityManager.</p>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">JPA thuần — phải viết nhiều</h5>
+        <pre><code>@Repository
+public class UserRepositoryImpl {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    public User save(User u) {
+        if (u.getId() == null) {
+            em.persist(u);
+            return u;
+        }
+        return em.merge(u);
+    }
+
+    public Optional&lt;User&gt; findById(Long id) {
+        User u = em.find(User.class, id);
+        return Optional.ofNullable(u);
+    }
+
+    public List&lt;User&gt; findAll() {
+        return em.createQuery("SELECT u FROM User u", User.class)
+                 .getResultList();
+    }
+}</code></pre>
+      </div>
+      <div>
+        <h5 class="good">Spring Data JPA — 1 interface</h5>
+        <pre><code>public interface UserRepository
+        extends JpaRepository&lt;User, Long&gt; {
+    // save, findById, findAll, delete...
+    // Tất cả được sinh tự động!
+}</code></pre>
+        <p style="padding:8px 14px;font-size:13px;">Spring Data JPA tự sinh implementation dựa trên interface.</p>
+      </div>
+    </div>
+
+    <h3>Bảng so sánh</h3>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>JPA</th>
+        <th>Hibernate</th>
+        <th>Spring Data JPA</th>
+      </tr>
+      <tr>
+        <td>Loại</td>
+        <td>Specification</td>
+        <td>Implementation</td>
+        <td>Abstraction trên JPA</td>
+      </tr>
+      <tr>
+        <td>Cần viết code?</td>
+        <td>Nhiều (EntityManager)</td>
+        <td>Nhiều (Session)</td>
+        <td>Ít (chỉ interface)</td>
+      </tr>
+      <tr>
+        <td>Portable?</td>
+        <td>✅ Đổi impl được</td>
+        <td>⚠️ Gắn Hibernate</td>
+        <td>✅ Portability kế thừa JPA</td>
+      </tr>
+      <tr>
+        <td>Dùng khi</td>
+        <td>—</td>
+        <td>—</td>
+        <td>99% dự án Spring</td>
+      </tr>
+    </table>
+
+    <div class="tip">Trong Spring Boot, bạn hầu như chỉ dùng <strong>Spring Data JPA</strong> — nhưng bên dưới vẫn là Hibernate (default) implement JPA spec. Hiểu Hibernate = hiểu cách Spring Data JPA hoạt động.</div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "JPA và Hibernate khác gì?"<br>
+      <strong>Trả lời</strong>: JPA là specification (chuẩn) — định nghĩa annotation, interface, ngôn ngữ query. Hibernate là implementation cụ thể của JPA. Giống như Servlet là spec, Tomcat là implementation. Spring Data JPA là abstraction trên JPA, giúp giảm boilerplate.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 5 ============ -->
+  <section id="s5">
+    <h2>5. ⭐ Entity Lifecycle &amp; Persistence Context</h2>
+
+    <p>Đây là <strong>khái niệm quan trọng nhất</strong> của JPA. Hiểu nó = hiểu tại sao JPA hoạt động như nó hoạt động.</p>
+
+    <h3>Persistence Context là gì?</h3>
+
+    <p><strong>Persistence Context</strong> là một "cache tầng 1" của EntityManager — chứa tất cả entity đang được quản lý trong 1 transaction.</p>
+
+    <div class="analogy">
+      Tưởng tượng Persistence Context như một "bảng trắng" trên bàn làm việc. Khi bạn load entity từ DB, nó được ghi lên bảng trắng. Trong suốt transaction, bạn thao tác trên bảng trắng. Khi commit, Hibernate so sánh bảng trắng với DB và ghi các thay đổi xuống.
+    </div>
+
+    <h3>Sơ đồ Persistence Context</h3>
+
+    <div class="stack-viz">
+┌────────────────────────────────────────────────────────────┐
+│           ENTITY MANAGER (Persistence Context)              │
+│                                                             │
+│  ┌────────────────────────────────────────────────────┐   │
+│  │  Managed Entities (đang được quản lý)              │   │
+│  │                                                     │   │
+│  │   User(id=1, name="Alice")                         │   │
+│  │      ├─ Snapshot: {name: "Alice"}   ← copy gốc     │   │
+│  │      └─ Current:  {name: "Alice"}                  │   │
+│  │                                                     │   │
+│  │   Order(id=100, status="PENDING")                  │   │
+│  │      ├─ Snapshot: {status: "PENDING"}              │   │
+│  │      └─ Current:  {status: "DONE"}  ← đã đổi      │   │
+│  │                                                     │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Khi flush/commit:                                          │
+│    So sánh Current vs Snapshot                              │
+│    Nếu khác → sinh UPDATE                                   │
+└────────────────────────────────────────────────────────────┘
+    </div>
+
+    <h3>4 trạng thái của Entity</h3>
+
+    <table>
+      <tr>
+        <th>Trạng thái</th>
+        <th>Ý nghĩa</th>
+        <th>Đặc điểm</th>
+      </tr>
+      <tr>
+        <td><span class="tag entity">Transient</span></td>
+        <td>Object Java mới tạo, chưa liên kết với DB</td>
+        <td><code>new User()</code> — không được quản lý</td>
+      </tr>
+      <tr>
+        <td><span class="tag pc">Managed</span></td>
+        <td>Đang trong Persistence Context</td>
+        <td>Có trong cache, dirty checking hoạt động</td>
+      </tr>
+      <tr>
+        <td><span class="tag lazy">Detached</span></td>
+        <td>Từng managed nhưng context đã đóng</td>
+        <td>Không còn dirty checking, có ID</td>
+      </tr>
+      <tr>
+        <td><span class="tag bad">Removed</span></td>
+        <td>Đánh dấu xóa, sẽ xóa khi flush</td>
+        <td><code>em.remove()</code> — sẽ DELETE khi commit</td>
+      </tr>
+    </table>
+
+    <h3>Chuyển đổi trạng thái</h3>
+
+    <div class="stack-viz">
+                     new User()
+                          │
+                          ▼
+                    ┌──────────────┐
+                    │  TRANSIENT   │ ← chưa có ID
+                    └──────┬───────┘
+                           │ em.persist()
+                           ▼
+                    ┌──────────────┐
+                    │   MANAGED    │ ← dirty checking hoạt động
+                    └──┬────────┬──┘
+                       │        │
+        em.detach()    │        │  em.remove()
+        em.clear()     │        │  em.close()
+        tx commit      │        │
+                       ▼        ▼
+              ┌──────────────┐  ┌──────────────┐
+              │  DETACHED    │  │   REMOVED    │
+              └──────┬───────┘  └──────┬───────┘
+                     │                 │
+                     │ em.merge()      │ flush
+                     │                 ▼
+                     │           ┌──────────────┐
+                     └─────────► │  MANAGED +   │
+                                 │  DELETE at   │
+                                 │  commit      │
+                                 └──────────────┘
+    </div>
+
+    <h3>Dirty Checking — Trái tim của JPA</h3>
+
+    <p><strong>Dirty Checking</strong> là cơ chế Hibernate tự phát hiện entity đã thay đổi và sinh câu UPDATE khi flush — bạn không cần gọi <code>save()</code>.</p>
+
+    <pre><code>@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserRepository repo;
+
+    @Transactional
+    public void changeName(Long id, String newName) {
+        User user = repo.findById(id).orElseThrow();
+        user.setName(newName);
+        // ← KHÔNG gọi repo.save()
+        // Khi transaction commit → Hibernate tự sinh UPDATE
+    }
+}</code></pre>
+
+    <p><strong>SQL log</strong>:</p>
+
+    <div class="sql-log"><span class="comment">-- Khi findById:</span>
+<span class="sql">SELECT</span> id, name, email <span class="sql">FROM</span> users <span class="sql">WHERE</span> id = <span class="param">1</span>
+
+<span class="comment">-- Khi commit (dirty checking phát hiện name đã đổi):</span>
+<span class="sql">UPDATE</span> users <span class="sql">SET</span> name = <span class="param">'Bob'</span>, email = <span class="param">'a@b.com'</span> <span class="sql">WHERE</span> id = <span class="param">1</span></div>
+
+    <h3>Cơ chế hoạt động của Dirty Checking</h3>
+
+    <div class="stack-viz">
+1. Load User từ DB
+   ├─ Hibernate load row → tạo object
+   ├─ Lưu snapshot: {name: "Alice", email: "a@b.com"}
+   └─ Đặt object vào Persistence Context
+
+2. Bạn đổi name
+   └─ user.setName("Bob")
+      └─ Object trong PC giờ là {name: "Bob", email: "a@b.com"}
+      └─ Snapshot vẫn là {name: "Alice", ...}
+
+3. Khi flush/commit
+   ├─ Hibernate duyệt mọi managed entity
+   ├─ So sánh Current vs Snapshot
+   ├─ Nếu khác → sinh UPDATE với các field khác
+   └─ Execute SQL
+
+4. Kết quả
+   └─ DB đã update — bạn không cần gọi save()
+    </div>
+
+    <h3>Identity Map — 1 row = 1 object</h3>
+
+    <p>Trong 1 persistence context, mỗi row trong DB chỉ map đến <strong>đúng 1 object</strong>. Đây là Identity Map pattern.</p>
+
+    <pre><code>@Transactional
+public void demo() {
+    User u1 = em.find(User.class, 1L);   // ← SELECT
+    User u2 = em.find(User.class, 1L);   // ← KHÔNG query lại
+
+    System.out.println(u1 == u2);   // true — cùng object!
+}</code></pre>
+
+    <p><strong>Lợi ích</strong>: tránh load trùng, đảm bảo consistency trong transaction.</p>
+
+    <h3>Flush vs Commit</h3>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>Flush</th>
+        <th>Commit</th>
+      </tr>
+      <tr>
+        <td>Làm gì</td>
+        <td>Ghi thay đổi xuống DB (SQL chạy)</td>
+        <td>Xác nhận transaction vĩnh viễn</td>
+      </tr>
+      <tr>
+        <td>Rollback được?</td>
+        <td>✅ Có — chưa commit</td>
+        <td>❌ Không — đã vĩnh viễn</td>
+      </tr>
+      <tr>
+        <td>Tự động?</td>
+        <td>Trước query, trước commit</td>
+        <td>Khi transaction kết thúc</td>
+      </tr>
+    </table>
+
+    <h3>4 loại FlushMode</h3>
+
+    <ul>
+      <li><strong>AUTO</strong> (mặc định): flush trước query liên quan entity đã thay đổi.</li>
+      <li><strong>COMMIT</strong>: chỉ flush khi commit — dùng khi query không liên quan.</li>
+      <li><strong>MANUAL</strong>: chỉ flush khi gọi <code>em.flush()</code> — dùng trong batch.</li>
+      <li><strong>ALWAYS</strong>: flush trước mọi query — chậm nhất.</li>
+    </ul>
+
+    <div class="deep">
+      <strong>Đào sâu — Tại sao auto flush trước query?</strong> Giả sử bạn đổi <code>user.name = "Bob"</code>, rồi chạy <code>SELECT u WHERE u.name = 'Bob'</code>. Nếu không flush trước, Hibernate sẽ không thấy user trong DB (vì chưa update) → kết quả thiếu. Flush trước query đảm bảo consistency.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Persistence context là gì? Dirty checking hoạt động thế nào?"<br>
+      <strong>Trả lời</strong>: Persistence Context là cache tầng 1 của EntityManager — chứa mọi managed entity trong transaction. Dirty checking hoạt động bằng cách: khi load entity, Hibernate lưu 1 snapshot. Khi flush, so sánh current object vs snapshot → nếu khác → sinh UPDATE. Nhờ đó không cần gọi save().
+    </div>
+  </section>
+
+  <!-- ============ SECTION 6 ============ -->
+  <section id="s6">
+    <h2>6. Mapping cơ bản — @Entity, @Column, @Id</h2>
+
+    <h3>Entity tối thiểu</h3>
+
+    <pre><code>@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String name;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Transient
+    private String temporaryData;   // ← không map vào DB
+
+    // getter/setter
+}</code></pre>
+
+    <h3>Các annotation chính</h3>
+
+    <table>
+      <tr><th>Annotation</th><th>Ý nghĩa</th></tr>
+      <tr><td><code>@Entity</code></td><td>Đánh dấu class là entity</td></tr>
+      <tr><td><code>@Table</code></td><td>Chỉ định tên bảng</td></tr>
+      <tr><td><code>@Id</code></td><td>Khóa chính</td></tr>
+      <tr><td><code>@GeneratedValue</code></td><td>Chiến lược sinh ID</td></tr>
+      <tr><td><code>@Column</code></td><td>Cấu hình column</td></tr>
+      <tr><td><code>@Enumerated</code></td><td>Map enum — STRING hoặc ORDINAL</td></tr>
+      <tr><td><code>@Temporal</code></td><td>Map Date — DATE, TIME, TIMESTAMP</td></tr>
+      <tr><td><code>@Transient</code></td><td>Không map vào DB</td></tr>
+      <tr><td><code>@Lob</code></td><td>Large object — BLOB/CLOB</td></tr>
+      <tr><td><code>@Embedded</code></td><td>Nhúng value object</td></tr>
+    </table>
+
+    <h3>@GeneratedValue — 4 chiến lược sinh ID</h3>
+
+    <table>
+      <tr>
+        <th>Strategy</th>
+        <th>Cơ chế</th>
+        <th>Ưu</th>
+        <th>Nhược</th>
+      </tr>
+      <tr>
+        <td><strong>IDENTITY</strong></td>
+        <td>Auto-increment của DB</td>
+        <td>Đơn giản, phổ biến</td>
+        <td>Không hỗ trợ batch insert</td>
+      </tr>
+      <tr>
+        <td><strong>SEQUENCE</strong></td>
+        <td>Dùng sequence của DB</td>
+        <td>Batch insert tốt</td>
+        <td>Cần DB hỗ trợ (Oracle, PostgreSQL)</td>
+      </tr>
+      <tr>
+        <td><strong>TABLE</strong></td>
+        <td>Bảng riêng sinh ID</td>
+        <td>Portable nhất</td>
+        <td>Chậm — có lock bảng</td>
+      </tr>
+      <tr>
+        <td><strong>AUTO</strong></td>
+        <td>Hibernate chọn</td>
+        <td>Linh hoạt</td>
+        <td>Không đoán trước được</td>
+      </tr>
+    </table>
+
+    <h3>Khuyến nghị chọn strategy</h3>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="good">PostgreSQL, Oracle → SEQUENCE</h5>
+        <pre><code>@Id
+@GeneratedValue(strategy = GenerationType.SEQUENCE,
+    generator = "user_seq")
+@SequenceGenerator(name = "user_seq",
+    sequenceName = "users_id_seq",
+    allocationSize = 50)
+private Long id;</code></pre>
+        <p style="padding:8px 14px;font-size:13px;">allocationSize=50 → lấy 50 ID 1 lần, giảm round-trip.</p>
+      </div>
+      <div>
+        <h5 class="warn">MySQL → IDENTITY (chấp nhận)</h5>
+        <pre><code>@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;</code></pre>
+        <p style="padding:8px 14px;font-size:13px;">MySQL không có sequence thật → dùng IDENTITY.</p>
+      </div>
+    </div>
+
+    <h3>@Embedded — Nhúng value object</h3>
+
+    <pre><code>@Embeddable
+public class Address {
+    private String street;
+    private String city;
+    private String zipCode;
+}
+
+@Entity
+public class User {
+    @Id @GeneratedValue Long id;
+
+    @Embedded
+    private Address address;
+    // → Cột street, city, zip_code nằm chung bảng users
+}</code></pre>
+
+    <div class="warn">
+      <strong>Không dùng Lombok @Data cho entity</strong>. Vì <code>@Data</code> sinh <code>equals/hashCode</code> dựa trên mọi field → dễ gây bug với lazy loading và trong HashSet/HashMap. Chỉ dùng <code>@Getter/@Setter</code>.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Chiến lược sinh ID nào tốt nhất?"<br>
+      <strong>Trả lời</strong>: SEQUENCE với allocationSize lớn (như 50) là tốt nhất cho PostgreSQL/Oracle — hỗ trợ batch insert. MySQL không có sequence → dùng IDENTITY (không hỗ trợ batch insert nhưng chấp nhận được). Tránh TABLE vì chậm.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 7 ============ -->
+  <section id="s7">
+    <h2>7. Mapping quan hệ — @OneToMany, @ManyToOne, @ManyToMany</h2>
+
+    <h3>4 loại quan hệ</h3>
+
+    <table>
+      <tr><th>Annotation</th><th>Quan hệ</th><th>Ví dụ</th></tr>
+      <tr><td><code>@ManyToOne</code></td><td>Nhiều con → 1 cha</td><td>Order → User</td></tr>
+      <tr><td><code>@OneToMany</code></td><td>1 cha → nhiều con</td><td>User → Orders</td></tr>
+      <tr><td><code>@OneToOne</code></td><td>1-1</td><td>User → Profile</td></tr>
+      <tr><td><code>@ManyToMany</code></td><td>N-N (qua bảng trung gian)</td><td>User ↔ Roles</td></tr>
+    </table>
+
+    <h3>Ví dụ User ↔ Order</h3>
+
+    <pre><code>@Entity
+public class User {
+
+    @Id @GeneratedValue Long id;
+    private String name;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List&lt;Order&gt; orders = new ArrayList&lt;&gt;();
+}
+
+@Entity
+@Table(name = "orders")
+public class Order {
+
+    @Id @GeneratedValue Long id;
+    private BigDecimal total;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}</code></pre>
+
+    <h3>Sơ đồ quan hệ</h3>
+
+    <div class="stack-viz">
+       USER (1)                    ORDER (N)
+    ┌────────────┐              ┌──────────────────┐
+    │ id (PK)    │◄─────────────│ user_id (FK)     │
+    │ name       │              │ id (PK)          │
+    └────────────┘              │ total            │
+                                └──────────────────┘
+
+    Owner side (quản lý FK) = Order (bên @ManyToOne)
+    Inverse side              = User  (bên @OneToMany có mappedBy)
+    </div>
+
+    <h3>Owner side vs Inverse side</h3>
+
+    <p><strong>Owner side</strong> = bên sở hữu foreign key = bên có <code>@JoinColumn</code> = bên <code>@ManyToOne</code>.</p>
+
+    <p><strong>Inverse side</strong> = bên có <code>mappedBy</code> = bên <code>@OneToMany</code>.</p>
+
+    <p><strong>Quy tắc quan trọng</strong>: Khi bạn muốn tạo quan hệ, phải set FK ở <em>owner side</em>:</p>
+
+    <pre><code>// ❌ SAI — chỉ set ở inverse side
+User user = new User();
+Order order = new Order();
+user.getOrders().add(order);   // ← không có tác dụng với DB!
+
+// ✅ ĐÚNG — set cả 2 để consistent trong memory
+user.getOrders().add(order);
+order.setUser(user);           // ← FK thực sự được ghi</code></pre>
+
+    <h3>Cascade types</h3>
+
+    <table>
+      <tr><th>Cascade</th><th>Khi cha làm gì → con bị ảnh hưởng</th></tr>
+      <tr><td><code>PERSIST</code></td><td>persist cha → persist con</td></tr>
+      <tr><td><code>MERGE</code></td><td>merge cha → merge con</td></tr>
+      <tr><td><code>REMOVE</code></td><td>xóa cha → xóa con</td></tr>
+      <tr><td><code>REFRESH</code></td><td>refresh cha → refresh con</td></tr>
+      <tr><td><code>DETACH</code></td><td>detach cha → detach con</td></tr>
+      <tr><td><code>ALL</code></td><td>tất cả</td></tr>
+    </table>
+
+    <h3>orphanRemoval vs cascade REMOVE</h3>
+
+    <div class="side-by-side">
+      <div>
+        <h5>cascade = REMOVE</h5>
+        <pre><code>// Xóa cha → xóa mọi con
+userRepo.delete(user);
+// → DELETE FROM orders WHERE user_id = ?
+// → DELETE FROM users WHERE id = ?</code></pre>
+      </div>
+      <div>
+        <h5 class="good">orphanRemoval = true</h5>
+        <pre><code>// Xóa con khỏi collection cha → xóa con
+user.getOrders().remove(order);
+// → DELETE FROM orders WHERE id = ?
+// Cha vẫn tồn tại</code></pre>
+      </div>
+    </div>
+
+    <h3>@ManyToMany — Ít dùng</h3>
+
+    <pre><code>@Entity
+public class User {
+    @ManyToMany
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set&lt;Role&gt; roles = new HashSet&lt;&gt;();
+}</code></pre>
+
+    <p><strong>Tại sao ít dùng?</strong></p>
+    <ul>
+      <li>Không kiểm soát được bảng trung gian (không thêm field được).</li>
+      <li>Cascade phức tạp — dễ xóa nhầm.</li>
+      <li>Performance kém khi số lượng lớn.</li>
+    </ul>
+
+    <p><strong>Thay thế</strong>: tạo entity trung gian <code>UserRole</code> với <code>@ManyToOne</code> đến cả 2 bên.</p>
+
+    <div class="tip">
+      <strong>Best practice</strong>:
+      <ul>
+        <li>Luôn <code>@ManyToOne(fetch = LAZY)</code>.</li>
+        <li>Luôn set FK ở owner side.</li>
+        <li>Cẩn thận cascade — chỉ dùng cho quan hệ cha-con thực sự.</li>
+        <li>Tránh <code>@ManyToMany</code> — tạo entity trung gian.</li>
+      </ul>
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "mappedBy là gì? Owner side là bên nào?"<br>
+      <strong>Trả lời</strong>: <code>mappedBy</code> chỉ ra bên nào KHÔNG sở hữu FK — luôn đặt ở phía <code>@OneToMany</code>. Owner side là bên có <code>@ManyToOne</code> + <code>@JoinColumn</code> — bên thực sự ghi FK xuống DB. Khi tạo quan hệ phải set FK ở owner side, nếu không thì DB không lưu.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 8 ============ -->
+  <section id="s8">
+    <h2>8. ⭐ FetchType LAZY vs EAGER — Chi tiết</h2>
+
+    <h3>Khái niệm</h3>
+
+    <p><strong>FetchType</strong> quyết định khi nào Hibernate load dữ liệu của quan hệ:</p>
+
+    <ul>
+      <li><span class="tag lazy">LAZY</span>: load khi bạn <em>truy cập</em> vào field đó.</li>
+      <li><span class="tag eager">EAGER</span>: load <em>ngay lập tức</em> khi load entity cha.</li>
+    </ul>
+
+    <h3>Giá trị mặc định — Gây bất ngờ</h3>
+
+    <table>
+      <tr><th>Quan hệ</th><th>Mặc định</th></tr>
+      <tr><td><code>@OneToMany</code></td><td><span class="tag lazy">LAZY</span></td></tr>
+      <tr><td><code>@ManyToMany</code></td><td><span class="tag lazy">LAZY</span></td></tr>
+      <tr><td><code>@ManyToOne</code></td><td><span class="tag eager">EAGER</span> ⚠️</td></tr>
+      <tr><td><code>@OneToOne</code></td><td><span class="tag eager">EAGER</span> ⚠️</td></tr>
+    </table>
+
+    <div class="warn">
+      <code>@ManyToOne</code> mặc định EAGER là <strong>vấn đề lớn</strong> trong nhiều dự án. Mỗi lần load entity con, cha cũng bị load theo → N+1 tiềm ẩn.
+    </div>
+
+    <h3>Sơ đồ EAGER vs LAZY</h3>
+
+    <div class="stack-viz">
+EAGER — Load ngay:
+   User u = userRepo.findById(1L)
+   │
+   ├─ SELECT * FROM users WHERE id = 1
+   │
+   ├─ Ngay lập tức:
+   │   SELECT * FROM orders WHERE user_id = 1
+   │   SELECT * FROM roles WHERE user_id = 1
+   │   SELECT * FROM profiles WHERE user_id = 1
+   │   ... (mọi quan hệ EAGER)
+   │
+   └─ Return User với mọi field đã load
+
+LAZY — Load khi cần:
+   User u = userRepo.findById(1L)
+   │
+   ├─ SELECT * FROM users WHERE id = 1
+   │
+   └─ Return User, các quan hệ là PROXY (chưa load)
+
+   Khi bạn gọi: u.getOrders().size()
+   │
+   └─ Lúc này mới load:
+      SELECT * FROM orders WHERE user_id = 1
+    </div>
+
+    <h3>Cơ chế proxy của LAZY</h3>
+
+    <p>Khi Hibernate load entity cha có quan hệ LAZY, nó tạo <strong>proxy object</strong> — subclass của entity thật — chưa có data.</p>
+
+    <div class="stack-viz">
+User (real object)
+├─ id: 1
+├─ name: "Alice"
+└─ orders: ProxyOrderList ← Đây là proxy
+     ├─ Không chứa data thật
+     ├─ Giữ reference đến Session
+     └─ Khi truy cập → query DB
+
+Khi bạn gọi u.getOrders():
+  ├─ Nếu Session còn mở:
+  │    └─ Query DB → load thật
+  └─ Nếu Session đã đóng:
+       └─ LazyInitializationException ❌
+    </div>
+
+    <h3>Ví dụ code — Thấy rõ sự khác biệt</h3>
+
+    <pre><code>@Entity
+public class User {
+    @Id @GeneratedValue Long id;
+    private String name;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List&lt;Order&gt; orders = new ArrayList&lt;&gt;();
+
+    @ManyToOne(fetch = FetchType.LAZY)   // ← override mặc định EAGER
+    @JoinColumn(name = "team_id")
+    private Team team;
+}</code></pre>
+
+    <h3>SQL log — So sánh EAGER vs LAZY</h3>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">EAGER — Load thừa</h5>
+        <div class="sql-log"><span class="comment">-- User.team là EAGER (mặc định @ManyToOne)</span>
+<span class="sql">SELECT</span> u.* <span class="sql">FROM</span> users u <span class="sql">WHERE</span> u.id = <span class="param">1</span>
+
+<span class="comment">-- Hibernate tự load Team theo</span>
+<span class="sql">SELECT</span> t.* <span class="sql">FROM</span> teams t <span class="sql">WHERE</span> t.id = <span class="param">5</span>
+
+<span class="bad-line">// 2 query — kể cả khi không cần Team</span></div>
+      </div>
+      <div>
+        <h5 class="good">LAZY — Chỉ load khi cần</h5>
+        <div class="sql-log"><span class="comment">-- User.team là LAZY</span>
+<span class="sql">SELECT</span> u.* <span class="sql">FROM</span> users u <span class="sql">WHERE</span> u.id = <span class="param">1</span>
+
+<span class="good-line">// 1 query — nếu không truy cập team</span>
+
+<span class="comment">-- Khi gọi u.getTeam().getName():</span>
+<span class="sql">SELECT</span> t.* <span class="sql">FROM</span> teams t <span class="sql">WHERE</span> t.id = <span class="param">5</span></div>
+      </div>
+    </div>
+
+    <h3>LazyInitializationException — Bug kinh điển</h3>
+
+    <p>Khi bạn truy cập field LAZY <em>ngoài transaction</em> → exception.</p>
+
+    <div class="bad">
+      <strong>Ví dụ bug</strong>:
+    </div>
+
+    <pre><code>@Service
+public class UserService {
+
+    @Transactional(readOnly = true)
+    public User findById(Long id) {
+        return userRepo.findById(id).orElseThrow();
+        // ← Transaction kết thúc khi return
+        // ← Session đóng
+    }
+}
+
+@RestController
+public class UserController {
+
+    @GetMapping("/users/{id}")
+    public UserDto get(@PathVariable Long id) {
+        User user = service.findById(id);
+        int count = user.getOrders().size();
+        // ← ❌ LazyInitializationException
+        // Session đã đóng, không load được orders
+        return UserMapper.toDto(user);
+    }
+}</code></pre>
+
+    <p><strong>Exception</strong>:</p>
+
+    <div class="sql-log"><span class="bad-line">org.hibernate.LazyInitializationException: failed to lazily initialize
+a collection of role: User.orders, could not initialize proxy - no Session</span></div>
+
+    <h3>4 cách fix LazyInitializationException</h3>
+
+    <h4>Cách 1: JOIN FETCH — Query lấy luôn quan hệ</h4>
+
+    <pre><code>public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.orders WHERE u.id = :id")
+    Optional&lt;User&gt; findWithOrders(@Param("id") Long id);
+}</code></pre>
+
+    <p><strong>SQL</strong>:</p>
+
+    <div class="sql-log"><span class="sql">SELECT</span> u.*, o.*
+<span class="sql">FROM</span> users u
+<span class="sql">LEFT JOIN</span> orders o <span class="sql">ON</span> u.id = o.user_id
+<span class="sql">WHERE</span> u.id = <span class="param">1</span>
+
+<span class="good-line">// 1 query — orders đã có sẵn → không cần lazy load nữa</span></div>
+
+    <h4>Cách 2: @EntityGraph — Khai báo attribute</h4>
+
+    <pre><code>@EntityGraph(attributePaths = {"orders", "team"})
+@Query("SELECT u FROM User u WHERE u.id = :id")
+Optional&lt;User&gt; findDetailById(@Param("id") Long id);</code></pre>
+
+    <h4>Cách 3: DTO Projection — Chỉ lấy field cần</h4>
+
+    <pre><code>public record UserWithOrderCount(Long id, String name, long orderCount) { }
+
+@Query("""
+    SELECT new com.example.UserWithOrderCount(u.id, u.name, COUNT(o))
+    FROM User u LEFT JOIN u.orders o
+    WHERE u.id = :id
+    GROUP BY u.id, u.name
+""")
+Optional&lt;UserWithOrderCount&gt; findWithOrderCount(@Param("id") Long id);</code></pre>
+
+    <h4>Cách 4: Open Session in View (OSIV) — Không khuyến nghị</h4>
+
+    <pre><code># application.yml
+spring:
+  jpa:
+    open-in-view: true    # ← mặc định trong Spring Boot</code></pre>
+
+    <p>Spring giữ Session mở suốt request → lazy load ngoài service vẫn hoạt động. Nhưng:</p>
+
+    <ul>
+      <li>Giữ connection DB lâu → cạn pool.</li>
+      <li>Che giấu N+1 — query xảy ra ở tầng view.</li>
+      <li>Không kiểm soát được transaction boundary.</li>
+    </ul>
+
+    <div class="warn">
+      <strong>Spring Boot 3.x khuyến nghị tắt OSIV</strong>: <code>spring.jpa.open-in-view=false</code>. Nhưng nếu tắt, phải fix LazyInitializationException bằng 1 trong 3 cách trên.
+    </div>
+
+    <h3>Bảng so sánh</h3>
+
+    <table>
+      <tr>
+        <th>Fetch</th>
+        <th>Ưu</th>
+        <th>Nhược</th>
+      </tr>
+      <tr>
+        <td><span class="tag lazy">LAZY</span></td>
+        <td>Không load thừa, performance tốt</td>
+        <td>Có thể gây LazyInitializationException</td>
+      </tr>
+      <tr>
+        <td><span class="tag eager">EAGER</span></td>
+        <td>Không lo exception</td>
+        <td>Load thừa, N+1 tiềm ẩn, chậm</td>
+      </tr>
+    </table>
+
+    <div class="key">
+      <strong>Best practice</strong>: Mọi quan hệ → <span class="tag lazy">LAZY</span>. Khi cần load quan hệ → dùng <code>JOIN FETCH</code> hoặc <code>@EntityGraph</code>. Không bao giờ dùng EAGER cho collection.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "LAZY vs EAGER? LazyInitializationException fix thế nào?"<br>
+      <strong>Trả lời</strong>: LAZY load khi truy cập, EAGER load ngay. Mặc định: @OneToMany/@ManyToMany = LAZY, @ManyToOne/@OneToOne = EAGER. LazyInitializationException xảy ra khi truy cập field LAZY ngoài transaction → fix bằng JOIN FETCH, @EntityGraph, hoặc DTO projection. Không nên dùng OSIV để che giấu.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 9 ============ -->
+  <section id="s9">
+    <h2>9. ⭐ N+1 Query — Case study &amp; Fix chi tiết</h2>
+
+    <p>Đây là <strong>bug performance phổ biến nhất</strong> trong JPA. Mình sẽ đi qua 4 case study thực tế.</p>
+
+    <h3>N+1 là gì?</h3>
+
+    <p>Khi bạn load N entity cha, rồi truy cập quan hệ con → phát sinh thêm N query (mỗi cha 1 query load con). Tổng = 1 + N.</p>
+
+    <!-- CASE STUDY 1 -->
+    <div class="case-study">
+      <div class="case-study-title">Case Study 1 — Classic N+1 với @OneToMany</div>
+
+      <h4>Code có bug</h4>
+
+      <pre><code>@Service
+public class OrderService {
+
+    public List&lt;OrderSummary&gt; getOrderSummaries() {
+        List&lt;User&gt; users = userRepo.findAll();   // ← 1 query
+
+        return users.stream()
+            .map(u -&gt; new OrderSummary(
+                u.getName(),
+                u.getOrders().size()      // ← N query (mỗi user 1 query)
+            ))
+            .toList();
+    }
+}</code></pre>
+
+      <h4>SQL log thực tế</h4>
+
+      <div class="sql-log"><span class="comment">-- Query 1: load users</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> users                              <span class="comment">← 1 query</span>
+
+<span class="comment">-- Query 2..N+1: mỗi user load orders</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> orders <span class="sql">WHERE</span> user_id = <span class="param">1</span>       <span class="bad-line">← N+1</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> orders <span class="sql">WHERE</span> user_id = <span class="param">2</span>       <span class="bad-line">← N+2</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> orders <span class="sql">WHERE</span> user_id = <span class="param">3</span>       <span class="bad-line">← N+3</span>
+...
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> orders <span class="sql">WHERE</span> user_id = <span class="param">1000</span>    <span class="bad-line">← N+1000</span>
+
+<span class="comment">// Tổng: 1 + 1000 = 1001 query chỉ để lấy count!</span></div>
+
+      <h4>Fix 1 — DTO Projection (tốt nhất cho case này)</h4>
+
+      <pre><code>public record OrderSummary(String userName, long orderCount) { }
+
+public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+
+    @Query("""
+        SELECT new com.example.OrderSummary(u.name, COUNT(o))
+        FROM User u LEFT JOIN u.orders o
+        GROUP BY u.id, u.name
+    """)
+    List&lt;OrderSummary&gt; findOrderSummaries();
+}</code></pre>
+
+      <h4>SQL sau khi fix</h4>
+
+      <div class="sql-log"><span class="sql">SELECT</span> u.name, COUNT(o.id) <span class="sql">AS</span> cnt
+<span class="sql">FROM</span> users u
+<span class="sql">LEFT JOIN</span> orders o <span class="sql">ON</span> u.id = o.user_id
+<span class="sql">GROUP BY</span> u.id, u.name
+
+<span class="good-line">// 1 query duy nhất — từ 1001 → 1!</span></div>
+    </div>
+
+    <!-- CASE STUDY 2 -->
+    <div class="case-study">
+      <div class="case-study-title">Case Study 2 — N+1 với @ManyToOne (mặc định EAGER)</div>
+
+      <h4>Code có bug</h4>
+
+      <pre><code>@Entity
+public class Order {
+    @Id @GeneratedValue Long id;
+
+    @ManyToOne   // ← mặc định EAGER
+    @JoinColumn(name = "user_id")
+    private User user;
+}
+
+@Service
+public class OrderService {
+
+    public List&lt;OrderDto&gt; getAll() {
+        List&lt;Order&gt; orders = orderRepo.findAll();   // ← 1 query
+
+        return orders.stream()
+            .map(o -&gt; new OrderDto(
+                o.getId(),
+                o.getUser().getName()   // ← N query vì EAGER
+            ))
+            .toList();
+    }
+}</code></pre>
+
+      <h4>SQL log</h4>
+
+      <div class="sql-log"><span class="sql">SELECT</span> * <span class="sql">FROM</span> orders                              <span class="comment">← 1 query</span>
+
+<span class="comment">-- Do @ManyToOne EAGER, Hibernate tự load User cho mỗi order</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> users <span class="sql">WHERE</span> id = <span class="param">10</span>              <span class="bad-line">← N</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> users <span class="sql">WHERE</span> id = <span class="param">20</span>              <span class="bad-line">← N+1</span>
+...
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> users <span class="sql">WHERE</span> id = <span class="param">9990</span>            <span class="bad-line">← N+1000</span></div>
+
+      <h4>Fix 1 — Đổi sang LAZY + JOIN FETCH</h4>
+
+      <pre><code>@ManyToOne(fetch = FetchType.LAZY)   // ← đổi thành LAZY
+@JoinColumn(name = "user_id")
+private User user;
+
+@Query("SELECT o FROM Order o JOIN FETCH o.user")
+List&lt;Order&gt; findAllWithUser();</code></pre>
+
+      <h4>SQL sau khi fix</h4>
+
+      <div class="sql-log"><span class="sql">SELECT</span> o.*, u.*
+<span class="sql">FROM</span> orders o
+<span class="sql">INNER JOIN</span> users u <span class="sql">ON</span> o.user_id = u.id
+
+<span class="good-line">// 1 query — từ 1001 → 1</span></div>
+
+      <h4>Fix 2 — @EntityGraph</h4>
+
+      <pre><code>@EntityGraph(attributePaths = "user")
+List&lt;Order&gt; findAll();</code></pre>
+    </div>
+
+    <!-- CASE STUDY 3 -->
+    <div class="case-study">
+      <div class="case-study-title">Case Study 3 — N+1 với nhiều collection (MultipleBagFetchException)</div>
+
+      <h4>Code có bug</h4>
+
+      <pre><code>@Entity
+public class User {
+    @OneToMany(mappedBy = "user")
+    private List&lt;Order&gt; orders = new ArrayList&lt;&gt;();
+
+    @OneToMany(mappedBy = "user")
+    private List&lt;Address&gt; addresses = new ArrayList&lt;&gt;();
+}
+
+// Query cố JOIN FETCH 2 collection
+@Query("SELECT u FROM User u JOIN FETCH u.orders JOIN FETCH u.addresses")
+List&lt;User&gt; findAllDetail();</code></pre>
+
+      <h4>Exception xảy ra</h4>
+
+      <div class="sql-log"><span class="bad-line">org.hibernate.loader.MultipleBagFetchException:
+cannot simultaneously fetch multiple bags</span></div>
+
+      <h4>Tại sao?</h4>
+
+      <p>Khi JOIN 2 collection, kết quả trả về là <strong>cartesian product</strong> — mỗi order × mỗi address. Với 3 orders và 2 addresses → 6 row cho 1 user. Hibernate không biết dedup thế nào.</p>
+
+      <h4>Fix 1 — Đổi List thành Set (không phải lúc nào cũng đúng)</h4>
+
+      <pre><code>@OneToMany(mappedBy = "user")
+private Set&lt;Order&gt; orders = new HashSet&lt;&gt;();
+
+@OneToMany(mappedBy = "user")
+private Set&lt;Address&gt; addresses = new HashSet&lt;&gt;();</code></pre>
+
+      <p>Sau đó JOIN FETCH cả 2 được — nhưng vẫn có cartesian product, chỉ dedup bằng Set.</p>
+
+      <h4>Fix 2 — @BatchSize (khuyến nghị nhất)</h4>
+
+      <pre><code>@Entity
+public class User {
+    @OneToMany(mappedBy = "user")
+    @BatchSize(size = 20)
+    private List&lt;Order&gt; orders;
+
+    @OneToMany(mappedBy = "user")
+    @BatchSize(size = 20)
+    private List&lt;Address&gt; addresses;
+}</code></pre>
+
+      <p><strong>SQL sau khi fix</strong>:</p>
+
+      <div class="sql-log"><span class="sql">SELECT</span> * <span class="sql">FROM</span> users                          <span class="comment">← 1 query</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> orders <span class="sql">WHERE</span> user_id <span class="sql">IN</span> (<span class="param">1..20</span>)   <span class="comment">← N/20</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> orders <span class="sql">WHERE</span> user_id <span class="sql">IN</span> (<span class="param">21..40</span>)  <span class="comment">← N/20</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> addresses <span class="sql">WHERE</span> user_id <span class="sql">IN</span> (<span class="param">1..20</span>)
+...
+
+<span class="good-line">// Từ 2001 query → 1 + N/20 + N/20 ≈ 101</span></div>
+
+      <h4>Fix 3 — Tách query riêng cho từng collection</h4>
+
+      <pre><code>// Query 1
+List&lt;User&gt; users = userRepo.findAll();
+
+// Query 2 — load hết orders
+List&lt;Long&gt; userIds = users.stream().map(User::getId).toList();
+List&lt;Order&gt; allOrders = orderRepo.findByUserIdIn(userIds);
+// → 1 query với WHERE user_id IN (...)
+
+// Query 3 — load hết addresses
+List&lt;Address&gt; allAddresses = addressRepo.findByUserIdIn(userIds);
+
+// Merge trong memory
+users.forEach(u -&gt; {
+    u.setOrders(allOrders.stream().filter(o -&gt; o.getUser().getId().equals(u.getId())).toList());
+    u.setAddresses(allAddresses.stream().filter(a -&gt; a.getUser().getId().equals(u.getId())).toList());
+});</code></pre>
+    </div>
+
+    <!-- CASE STUDY 4 -->
+    <div class="case-study">
+      <div class="case-study-title">Case Study 4 — N+1 trong pagination (bug khó phát hiện)</div>
+
+      <h4>Code có bug</h4>
+
+      <pre><code>@Query("SELECT u FROM User u JOIN FETCH u.orders")
+Page&lt;User&gt; findAllWithOrders(Pageable pageable);</code></pre>
+
+      <h4>Warning của Hibernate</h4>
+
+      <div class="sql-log"><span class="bad-line">HHH90003004: firstResult/maxResults specified with collection fetch;
+applying in memory!</span></div>
+
+      <h4>Vấn đề</h4>
+
+      <p>Với pagination, Spring cần <code>LIMIT 10 OFFSET 0</code>. Nhưng khi JOIN FETCH collection, mỗi user có nhiều order → 1 user có thể chiếm nhiều row. Hibernate không thể cắt LIMIT ở SQL — phải load <strong>tất cả</strong> users rồi cắt trong memory → performance tệ hơn cả N+1.</p>
+
+      <h4>Fix — 2 query approach</h4>
+
+      <pre><code>// Query 1: Lấy ID của users với phân trang
+@Query("SELECT u.id FROM User u WHERE u.status = :status")
+Page&lt;Long&gt; findUserIdsByStatus(@Param("status") Status status, Pageable pageable);
+
+// Query 2: Lấy users kèm orders theo IDs
+@Query("SELECT DISTINCT u FROM User u JOIN FETCH u.orders WHERE u.id IN :ids")
+List&lt;User&gt; findByIdInWithOrders(@Param("ids") List&lt;Long&gt; ids);</code></pre>
+
+      <pre><code>@Service
+public class UserService {
+
+    public Page&lt;User&gt; search(Status status, Pageable pageable) {
+        Page&lt;Long&gt; idsPage = repo.findUserIdsByStatus(status, pageable);
+
+        List&lt;User&gt; users = repo.findByIdInWithOrders(idsPage.getContent());
+
+        return new PageImpl&lt;&gt;(users, pageable, idsPage.getTotalElements());
+    }
+}</code></pre>
+
+      <p><strong>SQL</strong>:</p>
+
+      <div class="sql-log"><span class="comment">-- Query 1: pagination IDs</span>
+<span class="sql">SELECT</span> u.id <span class="sql">FROM</span> users u <span class="sql">WHERE</span> u.status = <span class="param">'ACTIVE'</span>
+<span class="sql">LIMIT</span> 10 <span class="sql">OFFSET</span> 0
+
+<span class="comment">-- Query 2: load full data cho 10 ID</span>
+<span class="sql">SELECT DISTINCT</span> u.*, o.*
+<span class="sql">FROM</span> users u
+<span class="sql">LEFT JOIN</span> orders o <span class="sql">ON</span> u.id = o.user_id
+<span class="sql">WHERE</span> u.id <span class="sql">IN</span> (<span class="param">1,2,3,...,10</span>)
+
+<span class="good-line">// 2 query — pagination đúng, không load thừa</span></div>
+    </div>
+
+    <h3>Công cụ phát hiện N+1</h3>
+
+    <table>
+      <tr><th>Công cụ</th><th>Cách dùng</th></tr>
+      <tr><td><code>spring.jpa.show-sql=true</code></td><td>In SQL ra console</td></tr>
+      <tr><td><code>logging.level.org.hibernate.SQL=DEBUG</code></td><td>Log SQL có format</td></tr>
+      <tr><td><code>logging.level.org.hibernate.orm.jdbc.bind=TRACE</code></td><td>Log cả param</td></tr>
+      <tr><td><code>hibernate.generate_statistics=true</code></td><td>Thống kê số query</td></tr>
+      <tr><td><strong>P6Spy</strong></td><td>Log SQL có param cụ thể</td></tr>
+      <tr><td><strong>datasource-proxy</strong></td><td>Đếm số query per request</td></tr>
+      <tr><td><strong>Hibernate Statistics</strong></td><td>Query count, entity load count</td></tr>
+    </table>
+
+    <h3>Bảng tổng hợp các cách fix N+1</h3>
+
+    <table>
+      <tr>
+        <th>Cách</th>
+        <th>Khi nào dùng</th>
+        <th>Ưu</th>
+        <th>Nhược</th>
+      </tr>
+      <tr>
+        <td><code>JOIN FETCH</code></td>
+        <td>1 collection, không phân trang</td>
+        <td>1 query, nhanh</td>
+        <td>Cartesian product nếu nhiều collection</td>
+      </tr>
+      <tr>
+        <td><code>@EntityGraph</code></td>
+        <td>Đơn giản, khai báo declarative</td>
+        <td>Gọn hơn JOIN FETCH</td>
+        <td>Vẫn có MultipleBagFetchException</td>
+      </tr>
+      <tr>
+        <td><code>@BatchSize</code></td>
+        <td>Nhiều collection, pagination</td>
+        <td>Không cartesian</td>
+        <td>Vẫn có N/batch query</td>
+      </tr>
+      <tr>
+        <td>DTO Projection</td>
+        <td>Chỉ cần 1 vài field</td>
+        <td>Nhanh nhất</td>
+        <td>Mất tính object-oriented</td>
+      </tr>
+      <tr>
+        <td>2-query approach</td>
+        <td>Pagination + JOIN FETCH</td>
+        <td>Đúng pagination</td>
+        <td>Code dài hơn</td>
+      </tr>
+    </table>
+
+    <div class="key">
+      <strong>Nguyên tắc chọn</strong>:<br>
+      • Chỉ cần count/aggregate → <strong>DTO Projection</strong>.<br>
+      • Load 1 collection, không phân trang → <strong>JOIN FETCH</strong>.<br>
+      • Load nhiều collection → <strong>@BatchSize</strong>.<br>
+      • Có phân trang → <strong>2-query approach</strong>.
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "N+1 là gì? Có mấy cách fix?"<br>
+      <strong>Trả lời</strong>: N+1 là khi load N entity cha rồi truy cập quan hệ con → phát sinh N query phụ. Fix: (1) JOIN FETCH — 1 query, (2) @EntityGraph — declarative, (3) @BatchSize — batch nhiều ID, (4) DTO Projection — chỉ select field cần, (5) 2-query approach cho pagination. Chọn theo use case: pagination cần 2-query, chỉ count cần projection, nhiều collection cần @BatchSize.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 10 ============ -->
+  <section id="s10">
+    <h2>10. Query — JPQL, Native, Criteria, Specification</h2>
+
+    <h3>So sánh 4 cách query</h3>
+
+    <table>
+      <tr>
+        <th>Cách</th>
+        <th>Ưu</th>
+        <th>Nhược</th>
+      </tr>
+      <tr>
+        <td><strong>JPQL</strong></td>
+        <td>Portable, type-safe-ish, đọc dễ</td>
+        <td>Không dùng được function đặc thù DB</td>
+      </tr>
+      <tr>
+        <td><strong>Native SQL</strong></td>
+        <td>Mạnh nhất, dùng mọi function DB</td>
+        <td>Không portable, phải map thủ công</td>
+      </tr>
+      <tr>
+        <td><strong>Criteria API</strong></td>
+        <td>Type-safe 100%, dynamic</td>
+        <td>Verbose, khó đọc</td>
+      </tr>
+      <tr>
+        <td><strong>Specification</strong></td>
+        <td>Dynamic, tái sử dụng</td>
+        <td>Phức tạp hơn JPQL</td>
+      </tr>
+    </table>
+
+    <h3>JPQL — Java Persistence Query Language</h3>
+
+    <pre><code>// Query trên ENTITY (không phải table)
+@Query("SELECT u FROM User u WHERE u.email = :email AND u.status = :status")
+Optional&lt;User&gt; findActiveByEmail(@Param("email") String e,
+                                  @Param("status") Status s);
+
+// JOIN
+@Query("SELECT o FROM Order o JOIN o.user u WHERE u.name = :name")
+List&lt;Order&gt; findByUserName(@Param("name") String name);
+
+// Aggregate
+@Query("SELECT COUNT(u) FROM User u WHERE u.createdAt &gt; :date")
+long countNewUsers(@Param("date") LocalDate date);
+
+// UPDATE / DELETE cần @Modifying
+@Modifying
+@Transactional
+@Query("UPDATE User u SET u.status = :status WHERE u.id IN :ids")
+int updateStatus(@Param("ids") List&lt;Long&gt; ids, @Param("status") Status s);</code></pre>
+
+    <h3>Native Query — SQL thật</h3>
+
+    <pre><code>@Query(value = """
+    SELECT u.*, COUNT(o.id) AS order_count
+    FROM users u
+    LEFT JOIN orders o ON u.id = o.user_id
+    WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :kw, '%'))
+    GROUP BY u.id
+    HAVING COUNT(o.id) &gt; :minOrders
+""", nativeQuery = true)
+List&lt;Object[]&gt; searchActiveUsers(@Param("kw") String kw,
+                                 @Param("minOrders") int min);
+
+// Map vào DTO
+@Query(value = "SELECT ...", nativeQuery = true)
+List&lt;UserDto&gt; searchUsers(...);</code></pre>
+
+    <h3>Criteria API — Type-safe 100%</h3>
+
+    <pre><code>public List&lt;User&gt; search(String name, Status status, Integer minAge) {
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery&lt;User&gt; cq = cb.createQuery(User.class);
+    Root&lt;User&gt; root = cq.from(User.class);
+
+    List&lt;Predicate&gt; preds = new ArrayList&lt;&gt;();
+    if (name != null) preds.add(cb.like(root.get("name"), "%" + name + "%"));
+    if (status != null) preds.add(cb.equal(root.get("status"), status));
+    if (minAge != null) preds.add(cb.ge(root.get("age"), minAge));
+
+    cq.where(preds.toArray(new Predicate[0]));
+    cq.orderBy(cb.desc(root.get("createdAt")));
+
+    return em.createQuery(cq).getResultList();
+}</code></pre>
+
+    <h3>Specification — Dynamic query dễ tái sử dụng</h3>
+
+    <pre><code>public class UserSpecs {
+
+    public static Specification&lt;User&gt; nameLike(String name) {
+        return (root, q, cb) -&gt; name == null ? null
+            : cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+    }
+
+    public static Specification&lt;User&gt; hasStatus(Status status) {
+        return (root, q, cb) -&gt; status == null ? null
+            : cb.equal(root.get("status"), status);
+    }
+
+    public static Specification&lt;User&gt; createdAfter(LocalDate date) {
+        return (root, q, cb) -&gt; date == null ? null
+            : cb.greaterThanOrEqualTo(root.get("createdAt"), date.atStartOfDay());
+    }
+}
+
+// Sử dụng
+public Page&lt;User&gt; search(UserFilter filter, Pageable pageable) {
+    Specification&lt;User&gt; spec = Specification.where(null)
+        .and(UserSpecs.nameLike(filter.getName()))
+        .and(UserSpecs.hasStatus(filter.getStatus()))
+        .and(UserSpecs.createdAfter(filter.getFromDate()));
+
+    return userRepo.findAll(spec, pageable);
+}</code></pre>
+
+    <div class="tip">
+      <strong>Chọn cách nào?</strong>
+      <ul>
+        <li>Query cố định → JPQL với <code>@Query</code>.</li>
+        <li>Query động với nhiều filter → Specification.</li>
+        <li>Cần function đặc thù DB → Native Query.</li>
+        <li>Muốn type-safe hoàn toàn (refactor không sợ sai) → Criteria/Specification.</li>
+      </ul>
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "JPQL khác Native Query chỗ nào?"<br>
+      <strong>Trả lời</strong>: JPQL query trên entity (không phải table), portable across DB, Hibernate dịch sang SQL tương ứng. Native Query là SQL thật, chạy trực tiếp DB, dùng được mọi function đặc thù nhưng không portable. Chọn JPQL khi có thể, Native khi cần function đặc thù hoặc optimize performance.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 11 ============ -->
+  <section id="s11">
+    <h2>11. Locking — Optimistic &amp; Pessimistic</h2>
+
+    <h3>Vấn đề concurrency</h3>
+
+    <p>2 user cùng sửa 1 row → last write wins → mất dữ liệu của người trước.</p>
+
+    <div class="stack-viz">
+Time   User A                          User B
+────   ────────────────────────────    ────────────────────────────
+t1     Đọc: balance = 1000
+t2                                      Đọc: balance = 1000
+t3     Sửa: +500 → 1500
+t4                                      Sửa: +300 → 1300
+t5     Ghi 1500                         ← User A bị mất update của B
+t6                                      Ghi 1300 (đè lên 1500)
+    </div>
+
+    <h3>Optimistic Lock — Giả định ít conflict</h3>
+
+    <p>Dùng cột <code>version</code> để phát hiện conflict:</p>
+
+    <pre><code>@Entity
+public class Product {
+    @Id @GeneratedValue Long id;
+    private int quantity;
+
+    @Version
+    private Long version;   // ← cột version trong DB
+}</code></pre>
+
+    <p><strong>Cơ chế</strong>:</p>
+
+    <div class="sql-log"><span class="comment">-- Khi SELECT: đọc cả version</span>
+<span class="sql">SELECT</span> id, quantity, version <span class="sql">FROM</span> products <span class="sql">WHERE</span> id = <span class="param">1</span>
+<span class="comment">-- → quantity=10, version=5</span>
+
+<span class="comment">-- Khi UPDATE: check version</span>
+<span class="sql">UPDATE</span> products
+<span class="sql">SET</span> quantity = <span class="param">15</span>, version = <span class="param">6</span>
+<span class="sql">WHERE</span> id = <span class="param">1</span> <span class="sql">AND</span> version = <span class="param">5</span>
+<span class="comment">-- Nếu version đã đổi (user khác update) → 0 row updated → OptimisticLockException</span></div>
+
+    <p><strong>Khi conflict</strong>:</p>
+
+    <pre><code>@Transactional
+public void updateQuantity(Long id, int delta) {
+    Product p = productRepo.findById(id).orElseThrow();
+    p.setQuantity(p.getQuantity() + delta);
+    // Khi commit → nếu version mismatch → OptimisticLockException
+}</code></pre>
+
+    <p><strong>Retry khi conflict</strong>:</p>
+
+    <pre><code>@Retryable(
+    retryFor = OptimisticLockingFailureException.class,
+    maxAttempts = 3,
+    backoff = @Backoff(delay = 100)
+)
+@Transactional
+public void updateQuantity(Long id, int delta) {
+    Product p = productRepo.findById(id).orElseThrow();
+    p.setQuantity(p.getQuantity() + delta);
+}</code></pre>
+
+    <h3>Pessimistic Lock — Khóa DB ngay</h3>
+
+    <pre><code>public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    Optional&lt;Product&gt; findByIdForUpdate(@Param("id") Long id);
+}</code></pre>
+
+    <p><strong>SQL</strong>:</p>
+
+    <div class="sql-log"><span class="sql">SELECT</span> * <span class="sql">FROM</span> products <span class="sql">WHERE</span> id = <span class="param">1</span> <span class="sql">FOR UPDATE</span>
+<span class="comment">-- Lock row này. Thread khác gọi FOR UPDATE sẽ phải chờ.</span></div>
+
+    <p><strong>Các loại lock</strong>:</p>
+
+    <table>
+      <tr><th>LockModeType</th><th>SQL</th><th>Ý nghĩa</th></tr>
+      <tr><td><code>PESSIMISTIC_READ</code></td><td><code>FOR SHARE</code></td><td>Shared lock — nhiều thread đọc được</td></tr>
+      <tr><td><code>PESSIMISTIC_WRITE</code></td><td><code>FOR UPDATE</code></td><td>Exclusive lock — chỉ 1 thread</td></tr>
+      <tr><td><code>PESSIMISTIC_FORCE_INCREMENT</code></td><td><code>FOR UPDATE</code> + version++</td><td>Khóa + tăng version</td></tr>
+    </table>
+
+    <h3>So sánh</h3>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>Optimistic</th>
+        <th>Pessimistic</th>
+      </tr>
+      <tr>
+        <td>Cơ chế</td>
+        <td>Version check</td>
+        <td>DB lock</td>
+      </tr>
+      <tr>
+        <td>Khi conflict</td>
+        <td>Exception khi commit</td>
+        <td>Thread chờ lock</td>
+      </tr>
+      <tr>
+        <td>Performance</td>
+        <td>Tốt khi ít conflict</td>
+        <td>Tốt khi conflict nhiều</td>
+      </tr>
+      <tr>
+        <td>Deadlock</td>
+        <td>Không</td>
+        <td>Có thể</td>
+      </tr>
+      <tr>
+        <td>Use case</td>
+        <td>Web app đa số</td>
+        <td>Bán vé, trừ kho</td>
+      </tr>
+    </table>
+
+    <div class="warn">
+      <strong>Pessimistic lock có thể gây deadlock</strong> nếu 2 transaction lock 2 row theo thứ tự ngược nhau. Luôn lock theo thứ tự cố định (ví dụ: theo ID tăng dần).
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Optimistic vs Pessimistic lock?"<br>
+      <strong>Trả lời</strong>: Optimistic dùng cột version — check khi update, throw exception nếu conflict. Phù hợp khi ít conflict, web app. Pessimistic dùng SELECT FOR UPDATE — khóa row, thread khác chờ. Phù hợp khi conflict cao (bán vé, trừ kho) nhưng có thể deadlock.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 12 ============ -->
+  <section id="s12">
+    <h2>12. Caching — L1 và L2</h2>
+
+    <h3>Hai tầng cache</h3>
+
+    <div class="stack-viz">
+┌──────────────────────────────────────────────────────┐
+│              APPLICATION                              │
+│                                                       │
+│  ┌────────────────────────────────────────────────┐ │
+│  │  L1 Cache (Persistence Context)                │ │
+│  │  - Scope: 1 EntityManager / 1 transaction      │ │
+│  │  - Tự động, không tắt được                     │ │
+│  │  - Mất khi transaction kết thúc                │ │
+│  └────────────────────────────────────────────────┘ │
+│                       │                               │
+│  ┌────────────────────▼───────────────────────────┐ │
+│  │  L2 Cache (Shared)                             │ │
+│  │  - Scope: toàn app (SessionFactory level)      │ │
+│  │  - Cần cấu hình                                │ │
+│  │  - Provider: Ehcache, Caffeine, Redis          │ │
+│  │  - Cross-session → chia sẻ giữa các transaction│ │
+│  └────────────────────────────────────────────────┘ │
+│                       │                               │
+└───────────────────────┼───────────────────────────────┘
+                        │
+                        ▼
+                  ┌──────────┐
+                  │ Database │
+                  └──────────┘
+    </div>
+
+    <h3>L1 Cache — Persistence Context</h3>
+
+    <p>Đã nói ở mục 5 — không cần config, mỗi transaction có 1 Persistence Context riêng.</p>
+
+    <div class="sql-log"><span class="comment">-- Trong cùng 1 transaction:</span>
+em.find(User.class, 1L);   <span class="sql">→ SELECT</span>
+em.find(User.class, 1L);   <span class="good-line">→ Cache hit, không query</span>
+em.find(User.class, 1L);   <span class="good-line">→ Cache hit</span>
+
+<span class="comment">// Chỉ 1 query cho 3 lần find!</span></div>
+
+    <h3>L2 Cache — Cấu hình</h3>
+
+    <pre><code># application.yml
+spring:
+  jpa:
+    properties:
+      hibernate:
+        cache:
+          use_second_level_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+        javax:
+          cache:
+            provider: org.ehcache.jsr107.EhcacheCachingProvider</code></pre>
+
+    <p>Trên entity:</p>
+
+    <pre><code>@Entity
+@Cacheable                        // ← đánh dấu entity được cache L2
+@org.hibernate.annotations.Cache(
+    usage = CacheConcurrencyStrategy.READ_WRITE
+)
+public class Product {
+    @Id Long id;
+    private String name;
+    private BigDecimal price;
+}</code></pre>
+
+    <h3>Cache Concurrency Strategy</h3>
+
+    <table>
+      <tr>
+        <th>Strategy</th>
+        <th>Khi nào dùng</th>
+      </tr>
+      <tr>
+        <td><code>READ_ONLY</code></td>
+        <td>Data không bao giờ thay đổi — nhanh nhất</td>
+      </tr>
+      <tr>
+        <td><code>READ_WRITE</code></td>
+        <td>Data thay đổi, cần consistent — có lock</td>
+      </tr>
+      <tr>
+        <td><code>NONSTRICT_READ_WRITE</code></td>
+        <td>Chấp nhận stale tạm thời — nhanh hơn</td>
+      </tr>
+      <tr>
+        <td><code>TRANSACTIONAL</code></td>
+        <td>Full transactional — chậm, cần JTA</td>
+      </tr>
+    </table>
+
+    <h3>Query Cache — Cache kết quả query</h3>
+
+    <pre><code># Bật query cache
+hibernate.cache.use_query_cache: true
+
+// Trên query
+@QueryHints(@QueryHint(name = "org.hibernate.cacheable", value = "true"))
+@Query("SELECT p FROM Product p WHERE p.category = :cat")
+List&lt;Product&gt; findByCategory(@Param("cat") String cat);</code></pre>
+
+    <h3>L2 Cache hoạt động thế nào?</h3>
+
+    <div class="stack-viz">
+Transaction 1:
+  em.find(Product.class, 1L)
+    │
+    ├─ L1 cache miss
+    ├─ L2 cache miss
+    ├─ SELECT FROM products → load
+    ├─ Put vào L1
+    └─ Put vào L2
+    │
+  commit → L1 cleared, L2 giữ
+
+Transaction 2 (transaction mới):
+  em.find(Product.class, 1L)
+    │
+    ├─ L1 cache miss
+    ├─ L2 cache HIT → return object (không query DB)
+    ├─ Put vào L1
+    └─ Return
+    │
+  commit
+    </div>
+
+    <div class="warn">
+      <strong>Cache invalidation — vấn đề muôn thuở</strong>. Khi update entity, L2 cache của entity đó phải bị invalidate. Hibernate tự làm — nhưng nếu bạn update DB bằng native SQL hoặc thao tác ngoài Hibernate → cache stale.
+    </div>
+
+    <h3>Khi nào dùng L2?</h3>
+
+    <ul>
+      <li>✅ Data ít thay đổi (categories, countries, config).</li>
+      <li>✅ Read-heavy, write-rare.</li>
+      <li>✅ Reference data load nhiều lần.</li>
+      <li>❌ Data thay đổi liên tục (stock, balance).</li>
+      <li>❌ Query có filter động.</li>
+    </ul>
+
+    <h3>So sánh L1 vs L2 vs Spring Cache</h3>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>L1 Cache</th>
+        <th>L2 Cache</th>
+        <th>Spring @Cacheable</th>
+      </tr>
+      <tr>
+        <td>Scope</td>
+        <td>Transaction</td>
+        <td>SessionFactory</td>
+        <td>Application</td>
+      </tr>
+      <tr>
+        <td>Cần config?</td>
+        <td>Không</td>
+        <td>Có</td>
+        <td>Có</td>
+      </tr>
+      <tr>
+        <td>Cache gì</td>
+        <td>Entity</td>
+        <td>Entity + query</td>
+        <td>Method result</td>
+      </tr>
+      <tr>
+        <td>Bypass?</td>
+        <td>Không</td>
+        <td>Có (evict)</td>
+        <td>Có</td>
+      </tr>
+      <tr>
+        <td>Provider</td>
+        <td>Hibernate</td>
+        <td>Ehcache/Caffeine/Redis</td>
+        <td>Caffeine/Redis</td>
+      </tr>
+    </table>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Hibernate L1 vs L2 cache?"<br>
+      <strong>Trả lời</strong>: L1 là Persistence Context — scope 1 transaction, tự động, không tắt được. L2 là shared cache — scope toàn app, cần config provider (Ehcache/Caffeine/Redis), chỉ áp dụng cho entity có @Cacheable. L2 cần invalidate khi update — nếu thao tác DB ngoài Hibernate thì cache stale.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 13 ============ -->
+  <section id="s13">
+    <h2>13. Spring Data JPA — Repository</h2>
+
+    <h3>Repository hierarchy</h3>
+
+    <div class="stack-viz">
+┌─────────────────────────────────┐
+│  Repository&lt;T, ID&gt;              │ ← marker interface
+├─────────────────────────────────┤
+│  CrudRepository&lt;T, ID&gt;          │ ← CRUD cơ bản
+├─────────────────────────────────┤
+│  PagingAndSortingRepository     │ ← thêm pagination
+├─────────────────────────────────┤
+│  JpaRepository&lt;T, ID&gt;           │ ← thêm JPA-specific
+└─────────────────────────────────┘
+    </div>
+
+    <pre><code>public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+    // Đã có sẵn: save, findById, findAll, delete, count...
+}</code></pre>
+
+    <h3>Các method có sẵn trong JpaRepository</h3>
+
+    <table>
+      <tr><th>Method</th><th>Chức năng</th></tr>
+      <tr><td><code>save(S entity)</code></td><td>Insert hoặc Update</td></tr>
+      <tr><td><code>saveAll(Iterable)</code></td><td>Save nhiều</td></tr>
+      <tr><td><code>findById(ID)</code></td><td>Tìm theo ID — trả Optional</td></tr>
+      <tr><td><code>findAll()</code></td><td>Lấy hết</td></tr>
+      <tr><td><code>findAll(Pageable)</code></td><td>Phân trang</td></tr>
+      <tr><td><code>count()</code></td><td>Đếm</td></tr>
+      <tr><td><code>existsById(ID)</code></td><td>Kiểm tra tồn tại</td></tr>
+      <tr><td><code>delete(entity)</code></td><td>Xóa</td></tr>
+      <tr><td><code>deleteById(ID)</code></td><td>Xóa theo ID</td></tr>
+      <tr><td><code>deleteAll()</code></td><td>Xóa hết</td></tr>
+      <tr><td><code>flush()</code></td><td>Force flush</td></tr>
+      <tr><td><code>saveAndFlush()</code></td><td>Save + flush ngay</td></tr>
+    </table>
+
+    <h3>Query Method — Sinh query từ tên method</h3>
+
+    <p>Spring Data JPA parse tên method và sinh JPQL query.</p>
+
+    <pre><code>// Cấu trúc: find[Top/First][N]By + Field + [Operator] + [And/Or] + ...
+List&lt;User&gt; findByName(String name);
+List&lt;User&gt; findByNameAndAge(String name, int age);
+List&lt;User&gt; findByAgeGreaterThan(int age);
+Optional&lt;User&gt; findByEmailIgnoreCase(String email);
+long countByStatus(Status status);
+boolean existsByEmail(String email);
+List&lt;User&gt; findTop10ByOrderByCreatedAtDesc();
+List&lt;User&gt; findByStatusIn(List&lt;Status&gt; statuses);
+List&lt;User&gt; findByNameContaining(String kw);
+List&lt;User&gt; findByNameStartingWith(String prefix);
+void deleteByStatus(Status status);
+long deleteByCreatedAtBefore(LocalDateTime date);</code></pre>
+
+    <h3>Keywords phổ biến</h3>
+
+    <table>
+      <tr>
+        <th>Keyword</th>
+        <th>Ví dụ</th>
+        <th>JPQL</th>
+      </tr>
+      <tr><td>And / Or</td><td><code>findByNameAndAge</code></td><td>WHERE name = ? AND age = ?</td></tr>
+      <tr><td>GreaterThan / LessThan</td><td><code>findByAgeGreaterThan</code></td><td>WHERE age &gt; ?</td></tr>
+      <tr><td>Between</td><td><code>findByAgeBetween</code></td><td>WHERE age BETWEEN ? AND ?</td></tr>
+      <tr><td>Like / Containing</td><td><code>findByNameContaining</code></td><td>WHERE name LIKE %?%</td></tr>
+      <tr><td>StartingWith</td><td><code>findByNameStartingWith</code></td><td>WHERE name LIKE ?%</td></tr>
+      <tr><td>In</td><td><code>findByStatusIn</code></td><td>WHERE status IN (?)</td></tr>
+      <tr><td>IsNull / IsNotNull</td><td><code>findByEmailIsNull</code></td><td>WHERE email IS NULL</td></tr>
+      <tr><td>OrderBy</td><td><code>findByStatusOrderByCreatedAtDesc</code></td><td>ORDER BY created_at DESC</td></tr>
+      <tr><td>Top / First</td><td><code>findTop5ByStatus</code></td><td>LIMIT 5</td></tr>
+      <tr><td>IgnoreCase</td><td><code>findByNameIgnoreCase</code></td><td>WHERE LOWER(name) = LOWER(?)</td></tr>
+    </table>
+
+    <h3>@Query — Custom JPQL</h3>
+
+    <pre><code>@Query("SELECT u FROM User u WHERE u.email = :email AND u.status = :status")
+Optional&lt;User&gt; findActiveByEmail(@Param("email") String e,
+                                  @Param("status") Status s);
+
+// Update / Delete cần @Modifying
+@Modifying
+@Transactional
+@Query("UPDATE User u SET u.status = 'INACTIVE' WHERE u.lastLogin &lt; :date")
+int deactivateOldUsers(@Param("date") LocalDateTime date);</code></pre>
+
+    <h3>Custom Repository Implementation</h3>
+
+    <p>Khi cần logic phức tạp không fit interface:</p>
+
+    <pre><code>public interface UserRepositoryCustom {
+    List&lt;User&gt; searchByComplexCriteria(UserFilter filter);
+}
+
+public class UserRepositoryImpl implements UserRepositoryCustom {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    public List&lt;User&gt; searchByComplexCriteria(UserFilter filter) {
+        // Criteria API, native query, etc.
+    }
+}
+
+public interface UserRepository extends JpaRepository&lt;User, Long&gt;,
+                                          UserRepositoryCustom {
+    // Spring tự tìm UserRepositoryImpl và mix in
+}</code></pre>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Spring Data JPA sinh query từ method name thế nào?"<br>
+      <strong>Trả lời</strong>: Spring parse tên method theo convention: <code>find[TopN]By + Property + Operator + And/Or + ...</code>. Ví dụ <code>findByNameAndAgeGreaterThan</code> → <code>WHERE name = ? AND age &gt; ?</code>. Nếu quá phức tạp → dùng @Query với JPQL. Nếu cần logic phức tạp hơn → custom repository impl.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 14 ============ -->
+  <section id="s14">
+    <h2>14. Pagination, Sorting, Projection</h2>
+
+    <h3>Pageable và Page</h3>
+
+    <pre><code>// Tạo Pageable
+Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+
+// Query
+Page&lt;User&gt; page = userRepo.findAll(pageable);
+
+// Đọc kết quả
+List&lt;User&gt; content = page.getContent();          // 10 user
+int totalPages = page.getTotalPages();
+long totalElements = page.getTotalElements();
+int currentPage = page.getNumber();
+boolean hasNext = page.hasNext();</code></pre>
+
+    <h3>Page vs Slice vs List</h3>
+
+    <table>
+      <tr>
+        <th>Type</th>
+        <th>Total count?</th>
+        <th>Query</th>
+        <th>Khi nào dùng</th>
+      </tr>
+      <tr>
+        <td><code>Page&lt;T&gt;</code></td>
+        <td>✅ Có (COUNT query)</td>
+        <td>2 query</td>
+        <td>UI cần hiển thị số trang</td>
+      </tr>
+      <tr>
+        <td><code>Slice&lt;T&gt;</code></td>
+        <td>❌ Không</td>
+        <td>1 query (fetch size+1)</td>
+        <td>Infinite scroll, "Load more"</td>
+      </tr>
+      <tr>
+        <td><code>List&lt;T&gt;</code></td>
+        <td>❌ Không</td>
+        <td>1 query</td>
+        <td>Không cần phân trang</td>
+      </tr>
+    </table>
+
+    <div class="deep">
+      <strong>Đào sâu — Tại sao Page chậm hơn Slice?</strong> Vì Page cần <code>SELECT COUNT(*)</code> để biết tổng số. Với bảng lớn hoặc JOIN phức tạp, count query có thể chậm hơn cả data query. Slice chỉ fetch N+1 row để biết còn tiếp không.
+    </div>
+
+    <h3>Pagination với Controller</h3>
+
+    <pre><code>@GetMapping("/users")
+public Page&lt;UserDto&gt; list(
+        @PageableDefault(size = 20, sort = "createdAt", direction = DESC)
+        Pageable pageable) {
+    return userService.findAll(pageable).map(UserMapper::toDto);
+}</code></pre>
+
+    <p>Client gọi:</p>
+
+    <div class="sql-log">GET /users?page=0&size=20&sort=name,asc</div>
+
+    <h3>Projection — Chỉ lấy field cần</h3>
+
+    <h4>Interface-based projection</h4>
+
+    <pre><code>public interface UserNameOnly {
+    String getName();
+    String getEmail();
+}
+
+public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+    List&lt;UserNameOnly&gt; findByStatus(Status status);
+}</code></pre>
+
+    <p><strong>SQL</strong>:</p>
+
+    <div class="sql-log"><span class="comment">-- Chỉ select 2 cột thay vì toàn bộ entity</span>
+<span class="sql">SELECT</span> u.name, u.email <span class="sql">FROM</span> users u <span class="sql">WHERE</span> u.status = <span class="param">'ACTIVE'</span></div>
+
+    <h4>Class-based projection (DTO)</h4>
+
+    <pre><code>public record UserSummary(Long id, String name, long orderCount) { }
+
+@Query("""
+    SELECT new com.example.UserSummary(u.id, u.name, COUNT(o))
+    FROM User u LEFT JOIN u.orders o
+    GROUP BY u.id, u.name
+""")
+List&lt;UserSummary&gt; findSummaries();</code></pre>
+
+    <h4>Dynamic projection</h4>
+
+    <pre><code>// Repository
+&lt;T&gt; List&lt;T&gt; findByStatus(Status status, Class&lt;T&gt; type);
+
+// Dùng
+List&lt;UserNameOnly&gt; names = repo.findByStatus(Status.ACTIVE, UserNameOnly.class);
+List&lt;UserSummary&gt; summaries = repo.findByStatus(Status.ACTIVE, UserSummary.class);</code></pre>
+
+    <h3>Keyset Pagination — Tốt hơn OFFSET với dataset lớn</h3>
+
+    <div class="side-by-side">
+      <div>
+        <h5 class="bad">OFFSET pagination</h5>
+        <pre><code>SELECT * FROM users
+ORDER BY id
+LIMIT 20 OFFSET 10000
+
+-- DB phải scan 10000 row
+-- rồi bỏ đi → chậm dần</code></pre>
+      </div>
+      <div>
+        <h5 class="good">Keyset pagination</h5>
+        <pre><code>SELECT * FROM users
+WHERE id &gt; 10000
+ORDER BY id
+LIMIT 20
+
+-- Dùng index trên id
+-- Không scan row bị bỏ</code></pre>
+      </div>
+    </div>
+
+    <p>Spring Data JPA không hỗ trợ keyset sẵn — dùng <code>@Query</code> custom:</p>
+
+    <pre><code>@Query("SELECT u FROM User u WHERE u.id &gt; :lastId ORDER BY u.id")
+List&lt;User&gt; findNextPage(@Param("lastId") Long lastId, Pageable pageable);</code></pre>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Page và Slice khác gì?"<br>
+      <strong>Trả lời</strong>: Page chạy thêm COUNT query để biết tổng số → 2 query. Slice chỉ fetch size+1 để biết còn tiếp không → 1 query. Page dùng cho UI có hiển thị số trang. Slice dùng cho infinite scroll, load more — nhanh hơn.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 15 ============ -->
+  <section id="s15">
+    <h2>15. Auditing — @CreatedDate, @LastModifiedDate</h2>
+
+    <h3>Auditing là gì?</h3>
+
+    <p>Tự động ghi lại thông tin: ai tạo, khi nào tạo, ai sửa, khi nào sửa — không cần set thủ công.</p>
+
+    <h3>Bật Auditing</h3>
+
+    <pre><code>@Configuration
+@EnableJpaAuditing   // ← bật tính năng
+public class JpaConfig { }</code></pre>
+
+    <h3>Đánh dấu entity</h3>
+
+    <pre><code>@Entity
+@EntityListeners(AuditingEntityListener.class)   // ← bật listener
+public class User {
+
+    @Id @GeneratedValue Long id;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    @CreatedBy
+    @Column(updatable = false)
+    private String createdBy;
+
+    @LastModifiedBy
+    private String lastModifiedBy;
+}</code></pre>
+
+    <h3>Cung cấp user hiện tại — AuditorAware</h3>
+
+    <pre><code>@Component
+public class SecurityAuditorAware implements AuditorAware&lt;String&gt; {
+
+    @Override
+    public Optional&lt;String&gt; getCurrentAuditor() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return Optional.of("system");
+        }
+        return Optional.of(auth.getName());
+    }
+}</code></pre>
+
+    <h3>Base Entity — Tái sử dụng</h3>
+
+    <pre><code>@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+@Getter @Setter
+public abstract class BaseEntity {
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    @CreatedBy
+    @Column(updatable = false)
+    private String createdBy;
+
+    @LastModifiedBy
+    private String lastModifiedBy;
+}
+
+@Entity
+public class User extends BaseEntity {
+    @Id @GeneratedValue Long id;
+    private String name;
+}</code></pre>
+
+    <h3>Soft Delete — Xóa mềm</h3>
+
+    <pre><code>@Entity
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class User {
+
+    @Id @GeneratedValue Long id;
+    private boolean deleted = false;
+}</code></pre>
+
+    <ul>
+      <li><code>@SQLDelete</code>: khi gọi delete → chạy UPDATE thay vì DELETE.</li>
+      <li><code>@Where</code>: mọi query tự thêm <code>WHERE deleted = false</code>.</li>
+    </ul>
+
+    <div class="tip">
+      Với Hibernate 6+, dùng <code>@SQLRestriction</code> thay cho <code>@Where</code> (deprecated).
+    </div>
+
+    <div class="interview">
+      <strong>Câu hỏi</strong>: "Làm sao tự động ghi created_at, updated_at?"<br>
+      <strong>Trả lời</strong>: Bật <code>@EnableJpaAuditing</code> ở config, thêm <code>@EntityListeners(AuditingEntityListener.class)</code> trên entity, đánh dấu field với <code>@CreatedDate</code>, <code>@LastModifiedDate</code>. Cho audit user → implement <code>AuditorAware</code> để lấy user từ SecurityContext.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 16 ============ -->
+  <section id="s16">
+    <h2>16. Best Practices + Checklist</h2>
+
+    <h3>✅ Best Practices — Entity Design</h3>
+
+    <ul>
+      <li>Dùng <code>Long</code> cho ID, không dùng <code>int</code>.</li>
+      <li><strong>Không</strong> dùng Lombok <code>@Data</code> cho entity — chỉ <code>@Getter/@Setter</code>.</li>
+      <li>Cẩn thận với <code>equals/hashCode</code> — dùng business key hoặc ID (nhưng ID null khi chưa persist).</li>
+      <li>Không dùng <code>@Builder</code> mà thiếu no-arg constructor — Hibernate cần.</li>
+      <li>Dùng <code>BaseEntity</code> cho audit fields — DRY.</li>
+      <li>Cột có <code>nullable = false</code> cho field bắt buộc.</li>
+    </ul>
+
+    <h3>✅ Best Practices — Quan hệ</h3>
+
+    <ul>
+      <li><strong>Luôn LAZY</strong> cho mọi quan hệ — override mặc định EAGER của <code>@ManyToOne</code>.</li>
+      <li>Set FK ở <em>owner side</em> — không chỉ thêm vào collection.</li>
+      <li>Cascade chỉ cho quan hệ cha-con thực sự (User-Order là không).</li>
+      <li>Tránh <code>@ManyToMany</code> — tạo entity trung gian.</li>
+      <li>Dùng <code>Set</code> thay <code>List</code> khi cần MultipleBagFetch.</li>
+    </ul>
+
+    <h3>✅ Best Practices — Query</h3>
+
+    <ul>
+      <li>DTO Projection khi chỉ cần vài field.</li>
+      <li><code>JOIN FETCH</code> khi cần load quan hệ.</li>
+      <li><code>@EntityGraph</code> cho declarative — gọn hơn.</li>
+      <li><code>@BatchSize</code> khi nhiều collection.</li>
+      <li>2-query approach khi pagination + JOIN FETCH.</li>
+      <li>Bật SQL log khi dev — phát hiện N+1 sớm.</li>
+    </ul>
+
+    <h3>✅ Best Practices — Transaction</h3>
+
+    <ul>
+      <li><code>@Transactional(readOnly = true)</code> cho query.</li>
+      <li>Transaction ngắn — không gọi external API trong transaction.</li>
+      <li>Không dùng OSIV trong production (Spring Boot 3 khuyến nghị tắt).</li>
+    </ul>
+
+    <h3>❌ Anti-patterns</h3>
+
+    <ul>
+      <li>Dùng EAGER cho mọi quan hệ.</li>
+      <li>Expose entity trực tiếp ra API — dùng DTO.</li>
+      <li>OSIV bật trong production — che giấu N+1.</li>
+      <li>Query trong vòng lặp — N+1.</li>
+      <li>Không pagination khi load table lớn.</li>
+      <li>Dùng <code>findAll()</code> rồi filter trong code — phải dùng query.</li>
+      <li>Update entity bằng <code>save()</code> khi đã managed — chỉ cần set field.</li>
+    </ul>
+
+    <h3>Cấu hình khuyến nghị</h3>
+
+    <pre><code># application.yml
+spring:
+  jpa:
+    open-in-view: false              # ← TẮT OSIV
+    show-sql: false                  # ← chỉ bật khi debug
+    hibernate:
+      ddl-auto: validate             # ← production: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 50             # ← batch insert/update
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 20 # ← global batch fetch
+        generate_statistics: false   # ← bật khi debug N+1
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG         # ← debug SQL
+    org.hibernate.orm.jdbc.bind: TRACE</code></pre>
+
+    <h3>📝 Checklist tự đánh giá</h3>
+
+    <ul>
+      <li>✅ Hiểu JDBC, JdbcTemplate, Connection Pool.</li>
+      <li>✅ Phân biệt JPA, Hibernate, Spring Data JPA.</li>
+      <li>✅ Hiểu Persistence Context và 4 trạng thái entity.</li>
+      <li>✅ Hiểu dirty checking hoạt động thế nào.</li>
+      <li>✅ Biết cơ chế Identity Map và FlushMode.</li>
+      <li>✅ Biết các annotation mapping.</li>
+      <li>✅ Hiểu chiến lược sinh ID.</li>
+      <li>✅ Biết owner side vs inverse side.</li>
+      <li>✅ Hiểu LAZY vs EAGER và LazyInitializationException.</li>
+      <li>✅ Fix được LazyInitializationException bằng 3 cách.</li>
+      <li>✅ <strong>Nhận diện và fix N+1 query</strong>.</li>
+      <li>✅ Biết JPQL, Native, Criteria, Specification.</li>
+      <li>✅ Hiểu Optimistic vs Pessimistic lock.</li>
+      <li>✅ Biết Hibernate L1 và L2 cache.</li>
+      <li>✅ Biết Spring Data JPA repository hierarchy.</li>
+      <li>✅ Phân biệt Page vs Slice.</li>
+      <li>✅ Biết Projection và Keyset pagination.</li>
+      <li>✅ Biết Auditing với @CreatedDate.</li>
+    </ul>
+
+    <h3>🎤 25 câu hỏi phỏng vấn tổng hợp</h3>
+
+    <div class="interview">
+      <ol>
+        <li>JDBC, JPA, Hibernate, Spring Data JPA khác gì?</li>
+        <li>Persistence Context là gì?</li>
+        <li>Có mấy trạng thái entity? Kể tên?</li>
+        <li>Dirty checking hoạt động thế nào?</li>
+        <li>Identity Map là gì?</li>
+        <li>Flush vs Commit khác gì?</li>
+        <li>@GeneratedValue — chiến lược nào tốt nhất?</li>
+        <li>mappedBy là gì? Owner side là bên nào?</li>
+        <li>Cascade types? Khi nào dùng?</li>
+        <li>orphanRemoval khác cascade REMOVE thế nào?</li>
+        <li>LAZY vs EAGER — mặc định của từng quan hệ?</li>
+        <li>LazyInitializationException — nguyên nhân và cách fix?</li>
+        <li>N+1 query là gì? Có mấy cách fix?</li>
+        <li>JOIN FETCH khác @EntityGraph thế nào?</li>
+        <li>MultipleBagFetchException — tại sao?</li>
+        <li>@BatchSize hoạt động thế nào?</li>
+        <li>Pagination + JOIN FETCH có vấn đề gì?</li>
+        <li>JPQL khác Native Query?</li>
+        <li>Specification dùng khi nào?</li>
+        <li>Optimistic vs Pessimistic lock?</li>
+        <li>Hibernate L1 vs L2 cache?</li>
+        <li>Query Cache dùng khi nào?</li>
+        <li>Page vs Slice khác gì?</li>
+        <li>Projection là gì? Có mấy loại?</li>
+        <li>Auditing — làm sao tự động ghi created_at?</li>
+      </ol>
+    </div>
+
+    <h3>🎯 Câu chốt cần nhớ</h3>
+
+    <div class="key">
+      <strong>Persistence Context</strong> = cache tầng 1, nơi dirty checking hoạt động.<br>
+      <strong>LAZY</strong> mọi quan hệ, load khi cần bằng JOIN FETCH / @EntityGraph.<br>
+      <strong>N+1</strong> = bug performance phổ biến nhất — fix bằng Projection, JOIN FETCH, @BatchSize.<br>
+      <strong>Optimistic lock</strong> cho ít conflict, <strong>Pessimistic lock</strong> cho conflict cao.<br>
+      <strong>L1 cache</strong> tự động, <strong>L2 cache</strong> cần config + provider.
+    </div>
+
+    <h3>👉 Chương tiếp theo</h3>
+
+    <p><strong>Chương 7: Spring Security &amp; JWT</strong> — sẽ đi sâu vào:</p>
+    <ul>
+      <li>Security Filter Chain chi tiết.</li>
+      <li>Authentication vs Authorization.</li>
+      <li>UserDetailsService, AuthenticationProvider.</li>
+      <li>JWT — cấu trúc, signing, verification.</li>
+      <li>Refresh token, rotation.</li>
+      <li>OAuth2 và OpenID Connect.</li>
+      <li>Method security với @PreAuthorize.</li>
+      <li>Security cho microservices.</li>
+    </ul>
+
+    <div class="chapter-nav">
+      <a href="#" class="disabled">← Chương 5: Transaction</a>
+      <a href="#">Chương 7: Spring Security →</a>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeToggle');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      root.classList.add('light');
+      themeBtn.textContent = '☀️';
+    } else {
+      root.classList.remove('light');
+      themeBtn.textContent = '🌙';
+    }
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  themeBtn.addEventListener('click', () => {
+    const next = root.classList.contains('light') ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+</script>
+<!-- highlight.js — CDN, browser cache dùng chung, ~0 chi phí load -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  // Highlight tất cả <code> trong <pre> của section
+  // (bỏ qua .sql-log vì nó đã có màu custom riêng)
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.hljs) return;
+
+    document.querySelectorAll('section pre > code').forEach(el => {
+      // Tự nhận diện ngôn ngữ (Java, YAML, SQL, XML...)
+      hljs.highlightElement(el);
+    });
+
+    // Nếu theme thay đổi → không cần re-highlight vì màu .hljs
+    // được định nghĩa tường minh, không phụ thuộc dark/light
+  });
+</script>
+</body>
+</html>
